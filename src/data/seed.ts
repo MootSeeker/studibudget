@@ -1,15 +1,21 @@
 import { catalogFor } from './catalog'
 import type { StudiBudgetDB } from './db'
+import { createStore, type Draft } from './store'
 import { defaultSemesters } from '../domain/period'
-import type { Area, Category, Country, Living, Settings } from '../domain/types'
+import type { Country, Living } from '../domain/types'
 
 export const newId = () => crypto.randomUUID()
-const stamp = () => new Date().toISOString()
 
-export function defaultSettings(country: Country, living: Living, hasCar: boolean): Settings {
+/** Feste ID: Es gibt pro Konto genau eine Einstellungen-Zeile (muss eine gültige UUID sein, der Server verlangt es). */
+export const SETTINGS_ID = '00000000-0000-4000-8000-000000000001'
+
+export function defaultSettings(
+  country: Country,
+  living: Living,
+  hasCar: boolean,
+): Draft<'settings'> {
   return {
-    id: 'settings',
-    updatedAt: stamp(),
+    id: SETTINGS_ID,
     deleted: false,
     country,
     living,
@@ -31,14 +37,13 @@ export async function seedFromCatalog(
   living: Living,
   hasCar: boolean,
 ): Promise<void> {
-  const items = catalogFor(country, living, hasCar)
-  const areas = new Map<string, Area>()
-  const categories: Category[] = []
-  for (const it of items) {
+  const store = createStore(db)
+  const areas = new Map<string, Draft<'areas'>>()
+  const categories: Draft<'categories'>[] = []
+  for (const it of catalogFor(country, living, hasCar)) {
     if (!areas.has(it.area)) {
       areas.set(it.area, {
         id: newId(),
-        updatedAt: stamp(),
         deleted: false,
         name: it.area,
         order: areas.size,
@@ -47,7 +52,6 @@ export async function seedFromCatalog(
     }
     categories.push({
       id: newId(),
-      updatedAt: stamp(),
       deleted: false,
       areaId: areas.get(it.area)!.id,
       name: it.name,
@@ -59,9 +63,7 @@ export async function seedFromCatalog(
       catalogKey: it.key,
     })
   }
-  await db.transaction('rw', db.settings, db.areas, db.categories, async () => {
-    await db.settings.put(defaultSettings(country, living, hasCar))
-    await db.areas.bulkPut([...areas.values()])
-    await db.categories.bulkPut(categories)
-  })
+  await store.put('settings', defaultSettings(country, living, hasCar))
+  await store.putMany('areas', [...areas.values()])
+  await store.putMany('categories', categories)
 }

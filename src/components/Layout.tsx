@@ -1,12 +1,14 @@
 import { useState } from 'react'
 import { NavLink, Outlet } from 'react-router'
 import { PAGES } from '../pages'
+import { describeStatus, useSync } from '../sync/SyncProvider'
 import { applyTheme, loadTheme, type ThemeChoice } from '../theme'
 
 const NEXT: Record<ThemeChoice, ThemeChoice> = { system: 'light', light: 'dark', dark: 'system' }
 const LABEL: Record<ThemeChoice, string> = { system: 'System', light: 'Hell', dark: 'Dunkel' }
 
 export function Layout() {
+  const sync = useSync()
   const [theme, setTheme] = useState<ThemeChoice>(loadTheme)
 
   function cycleTheme() {
@@ -35,8 +37,16 @@ export function Layout() {
         ))}
         <button
           type="button"
+          onClick={sync.syncNow}
+          title="Jetzt synchronisieren"
+          className="mt-auto rounded-md px-3 py-2 text-left text-xs text-muted hover:bg-surface"
+        >
+          {describeStatus(sync.status, sync.pending)}
+        </button>
+        <button
+          type="button"
           onClick={cycleTheme}
-          className="mt-auto rounded-md border border-border px-3 py-2 text-left text-sm text-muted md:mt-4"
+          className="rounded-md border border-border px-3 py-2 text-left text-sm text-muted"
         >
           Darstellung: {LABEL[theme]}
         </button>
