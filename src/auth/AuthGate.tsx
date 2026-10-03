@@ -1,4 +1,5 @@
 import { useState, type ReactNode } from 'react'
+import { LegalPage } from '../legal/LegalPage'
 import { useAuth } from './AuthProvider'
 import { Card, Field, Form, buttonClass, linkButtonClass } from './ui'
 
@@ -265,6 +266,7 @@ function Recovery() {
 export function AuthGate({ children }: { children: ReactNode }) {
   const auth = useAuth()
   const [screen, setScreen] = useState<Screen>('login')
+  const [legal, setLegal] = useState<'datenschutz' | 'impressum' | null>(null)
 
   if (!auth.configured)
     return (
@@ -278,9 +280,34 @@ export function AuthGate({ children }: { children: ReactNode }) {
   if (auth.state.status === 'loading') return <p className="p-8 text-muted">Lädt …</p>
   if (auth.state.status === 'recovery') return <Recovery />
   if (auth.state.status === 'out') {
-    if (screen === 'register') return <Register go={setScreen} />
-    if (screen === 'forgot') return <Forgot go={setScreen} />
-    return <Login go={setScreen} />
+    if (legal)
+      return (
+        <div className="mx-auto max-w-2xl p-4 md:p-8">
+          <button className={`${linkButtonClass} mb-4`} onClick={() => setLegal(null)}>
+            ← Zurück
+          </button>
+          <LegalPage slug={legal} />
+        </div>
+      )
+    return (
+      <>
+        {screen === 'register' ? (
+          <Register go={setScreen} />
+        ) : screen === 'forgot' ? (
+          <Forgot go={setScreen} />
+        ) : (
+          <Login go={setScreen} />
+        )}
+        <footer className="mx-auto mt-6 flex max-w-md justify-center gap-4 pb-8 text-sm">
+          <button className={linkButtonClass} onClick={() => setLegal('datenschutz')}>
+            Datenschutz
+          </button>
+          <button className={linkButtonClass} onClick={() => setLegal('impressum')}>
+            Impressum
+          </button>
+        </footer>
+      </>
+    )
   }
   return <>{children}</>
 }

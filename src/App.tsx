@@ -2,6 +2,7 @@ import type { ReactElement } from 'react'
 import { HashRouter, Navigate, Route, Routes } from 'react-router'
 import { Layout } from './components/Layout'
 import { Budget } from './pages/Budget'
+import { LegalPage } from './legal/LegalPage'
 import { Ausgleich } from './pages/Ausgleich'
 import { Konten } from './pages/Konten'
 import { Statistik } from './pages/Statistik'
@@ -19,6 +20,8 @@ const PAGE_ELEMENTS: Record<string, ReactElement> = {
   '/ausgleich': <Ausgleich />,
   '/budget': <Budget />,
   '/einstellungen': <Einstellungen />,
+  '/datenschutz': <LegalPage slug="datenschutz" />,
+  '/impressum': <LegalPage slug="impressum" />,
 }
 
 export default function App() {
@@ -34,6 +37,8 @@ export default function App() {
               element={PAGE_ELEMENTS[p.path] ?? <Platzhalter titel={p.label} />}
             />
           ))}
+          <Route path="/datenschutz" element={PAGE_ELEMENTS['/datenschutz']} />
+          <Route path="/impressum" element={PAGE_ELEMENTS['/impressum']} />
         </Route>
       </Routes>
     </HashRouter>

@@ -194,3 +194,21 @@ gespeicherte Wert zwischendurch ändert (Speichern kommt zurück, ein anderes Ge
   und CSP (kein `unsafe-*` bei Skripten, keine Platzhalter, `connect-src` passt zum konfigurierten Server) werden am fertigen
   `dist/` geprüft.
 - **Grösse:** Hauptpaket ca. 720 kB (gzip 208 kB); die Backup-Prüfung (`zod`) ist ausgelagert (gzip 26 kB).
+
+## Abschluss: rechtliche Seiten, Handy, Bedienbarkeit
+
+- **Datenschutz und Impressum sind ein Gerüst, kein Text.** `src/legal/content.ts` enthält die Abschnitte mit
+  `TODO(human)`-Markierungen; solange eine offen ist, zeigt die Seite den Hinweis «Entwurf, rechtlich nicht gültig».
+  Die Seiten sind auch vor der Anmeldung erreichbar (Link unter dem Anmeldeformular) und in der App im Menü.
+  `npm run check:launch` schlägt fehl, bis alles ausgefüllt ist, und ist bewusst **nicht** Teil von `verify`.
+  Technische Fakten als Grundlage stehen in `docs/start-checkliste.md`.
+- **Registrierung geschlossen:** Meldet Supabase, dass Registrierungen ausgeschaltet sind, erscheint «Die Registrierung ist im
+  Moment geschlossen.» statt einer technischen Meldung.
+- **Handy:** Unter 768 px Breite gibt es einen Kopf mit Menü-Knopf (meldet `aria-expanded`, schliesst nach der Auswahl);
+  Navigationspunkte sind mindestens 44 px hoch. Zeilen der Buchungsliste brechen um, damit Notizen lesbar bleiben.
+  Geprüft bei 375 px: keine Seite scrollt seitlich, breite Tabellen scrollen in ihrem Bereich.
+- **Tastatur:** Erster Tab-Halt ist «Zum Inhalt springen» (ein Knopf, kein `#`-Anker, weil die Adresse für das Routing
+  gebraucht wird); überall ein sichtbarer Fokusrahmen; jeder Monat in den Diagrammen ist fokussierbar.
+- **Seitentitel** folgen der Seite («Statistik – StudiBudget»).
+- **Kontraste** werden bei jedem Testlauf aus den Farb-Tokens berechnet (`src/test/contrast.test.ts`): Text mindestens 4.5:1,
+  Ränder von Eingabefeldern mindestens 3:1 (eigenes Token `--control`), in Hell und Dunkel.

@@ -8,6 +8,7 @@
   --text: #1c2330;
   --muted: #5b6577;
   --border: #dfe3ea;
+  --control: #7d8799;
   --accent: #2563eb;
   --accent-text: #ffffff;
   --ok: #15803d;
@@ -23,6 +24,7 @@
   --text: #e8ecf3;
   --muted: #9aa5b8;
   --border: #2b3441;
+  --control: #6b768a;
   --accent: #6c9bff;
   --accent-text: #0b1220;
   --ok: #4ade80;
@@ -38,11 +40,18 @@
   --color-text: var(--text);
   --color-muted: var(--muted);
   --color-border: var(--border);
+  --color-control: var(--control);
   --color-accent: var(--accent);
   --color-accent-text: var(--accent-text);
   --color-ok: var(--ok);
   --color-warn: var(--warn);
   --color-bad: var(--bad);
+}
+
+/* Sichtbarer Fokus für die Tastaturbedienung (Felder haben zusätzlich einen eigenen Ring). */
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
 }
 
 body {

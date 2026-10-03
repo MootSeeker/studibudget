@@ -1,4 +1,5 @@
 import { render, screen } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { AuthGate } from './AuthGate'
 import { checkPassword, MIN_PASSWORD_LENGTH } from './flows'
@@ -45,6 +46,20 @@ describe('AuthGate', () => {
     auth.state = { status: 'in', email: 'a@b.ch', notice: null }
     render(<AuthGate>GEHEIM</AuthGate>)
     expect(screen.getByText('GEHEIM')).toBeInTheDocument()
+  })
+})
+
+describe('Rechtliche Seiten vor der Anmeldung', () => {
+  it('Datenschutz und Impressum sind von der Anmeldung aus erreichbar und führen zurück', async () => {
+    const user = userEvent.setup()
+    render(<AuthGate>GEHEIM</AuthGate>)
+    await user.click(screen.getByRole('button', { name: 'Datenschutz' }))
+    expect(screen.getByRole('heading', { level: 1, name: 'Datenschutz' })).toBeInTheDocument()
+    expect(screen.queryByText('GEHEIM')).not.toBeInTheDocument()
+    await user.click(screen.getByRole('button', { name: '← Zurück' }))
+    expect(screen.getByRole('heading', { name: 'Anmelden' })).toBeInTheDocument()
+    await user.click(screen.getByRole('button', { name: 'Impressum' }))
+    expect(screen.getByRole('heading', { level: 1, name: 'Impressum' })).toBeInTheDocument()
   })
 })
 

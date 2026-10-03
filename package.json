@@ -14,7 +14,8 @@
     "format": "prettier --write .",
     "verify": "npm run lint && npm run typecheck && npm run test && npm run build && npm run check:build",
     "test:db": "vitest run --config vitest.db.config.ts",
-    "check:build": "node scripts/check-build.mjs"
+    "check:build": "node scripts/check-build.mjs",
+    "check:launch": "node scripts/check-launch.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.117.2",
