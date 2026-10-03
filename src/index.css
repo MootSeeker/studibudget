@@ -10,6 +10,9 @@
   --border: #dfe3ea;
   --accent: #2563eb;
   --accent-text: #ffffff;
+  --ok: #15803d;
+  --warn: #b45309;
+  --bad: #b91c1c;
 }
 
 :root[data-theme='dark'] {
@@ -20,6 +23,9 @@
   --border: #2b3441;
   --accent: #6c9bff;
   --accent-text: #0b1220;
+  --ok: #4ade80;
+  --warn: #fbbf24;
+  --bad: #f87171;
 }
 
 @theme inline {
@@ -30,6 +36,9 @@
   --color-border: var(--border);
   --color-accent: var(--accent);
   --color-accent-text: var(--accent-text);
+  --color-ok: var(--ok);
+  --color-warn: var(--warn);
+  --color-bad: var(--bad);
 }
 
 body {
