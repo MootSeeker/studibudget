@@ -138,3 +138,10 @@ Der Server speichert nur: E-Mail, verpackte Schlüssel, Datensatz-ID, `hlc`, Lö
 - **Sparziele:** Stand = Anfangsbestand + Einzahlungen − Entnahmen aus Spar-Buchungen mit diesem Ziel. Die nötige Rate
   rechnet vom aktuellen Monat bis einschliesslich Zielmonat. Ziele werden archiviert, nicht gelöscht; ein archiviertes
   Ziel blockiert seinen Namen nicht mehr.
+
+## Eingabefelder mit Entwurf
+
+Beträge werden in `DraftInput` bearbeitet: Das Feld behält den getippten Text, bis man es verlässt, auch wenn sich der
+gespeicherte Wert zwischendurch ändert (Speichern kommt zurück, ein anderes Gerät synchronisiert). Zuvor wurde das Feld
+über `key={…wert}` neu aufgebaut, wodurch getippter Text verloren ging. Der Entwurf gehört zu einem Feld und einem Monat
+(`key` mit Monat auf der Budget-Seite), damit er nicht in einen anderen Monat mit gleichem Wert hinüberwandert.

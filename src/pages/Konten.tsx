@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { buttonClass, inputClass } from '../auth/ui'
+import { DraftInput } from '../components/DraftInput'
 import { WealthChart } from '../components/charts/WealthChart'
 import { MONTH_NAMES } from '../components/MonthSelect'
 import { createAccountOps } from '../data/accountOps'
@@ -115,17 +116,20 @@ function GoalCard({
       <div className="grid gap-2 sm:grid-cols-3">
         <label className="block space-y-1 text-sm">
           <span className="text-muted">Zielbetrag</span>
-          <input
+          <DraftInput
             aria-label={`Zielbetrag ${goal.name}`}
             className={inputClass}
             inputMode="decimal"
-            defaultValue={(goal.targetCents / 100).toFixed(2)}
-            key={goal.targetCents}
-            onBlur={(e) => {
-              const c = parseAmount(e.target.value)
-              if (c === null) return setErr('Bitte gib einen gültigen Betrag ein.')
+            value={(goal.targetCents / 100).toFixed(2)}
+            onCommit={(text) => {
+              const c = parseAmount(text)
+              if (c === null) {
+                setErr('Bitte gib einen gültigen Betrag ein.')
+                return false
+              }
               setErr(null)
-              if (c !== goal.targetCents) run(() => ops.updateGoal(goal, { targetCents: c }))
+              if (c === goal.targetCents) return false
+              run(() => ops.updateGoal(goal, { targetCents: c }))
             }}
           />
         </label>
@@ -145,17 +149,20 @@ function GoalCard({
         </label>
         <label className="block space-y-1 text-sm">
           <span className="text-muted">Anfangsbestand</span>
-          <input
+          <DraftInput
             aria-label={`Anfangsbestand ${goal.name}`}
             className={inputClass}
             inputMode="decimal"
-            defaultValue={(goal.startCents / 100).toFixed(2)}
-            key={goal.startCents}
-            onBlur={(e) => {
-              const c = e.target.value.trim() === '' ? 0 : parseAmount(e.target.value)
-              if (c === null || c < 0) return setErr('Bitte gib einen gültigen Betrag ein.')
+            value={(goal.startCents / 100).toFixed(2)}
+            onCommit={(text) => {
+              const c = text.trim() === '' ? 0 : parseAmount(text)
+              if (c === null || c < 0) {
+                setErr('Bitte gib einen gültigen Betrag ein.')
+                return false
+              }
               setErr(null)
-              if (c !== goal.startCents) run(() => ops.updateGoal(goal, { startCents: c }))
+              if (c === goal.startCents) return false
+              run(() => ops.updateGoal(goal, { startCents: c }))
             }}
           />
         </label>
@@ -198,18 +205,25 @@ export function Konten() {
     fn().catch((e) => setError(e instanceof Error ? e.message : 'Das hat nicht geklappt.'))
   }
 
-  function saveBalance(a: Account, month: string, raw: string) {
+  /** Gibt `false` zurück, wenn nichts gespeichert wird (unverändert oder ungültig); dann zeigt das Feld wieder den alten Wert. */
+  function saveBalance(a: Account, month: string, raw: string): boolean | void {
     const current = balances.find((b) => b.accountId === a.id && b.month === month)
     const trimmed = raw.trim()
-    if (trimmed === '') return current ? run(() => ops.setBalance(a, month, null)) : undefined
+    if (trimmed === '') {
+      if (!current) return false
+      return void run(() => ops.setBalance(a, month, null))
+    }
     const cents = parseAmount(trimmed)
-    if (cents === null) return setError(`«${raw}» ist kein gültiger Betrag.`)
+    if (cents === null) {
+      setError(`«${raw}» ist kein gültiger Betrag.`)
+      return false
+    }
     if (
       current &&
       enteredBalance(a.kind, current.amountCents) ===
         (a.kind === 'schuld' ? Math.abs(cents) : cents)
     )
-      return
+      return false
     run(() => ops.setBalance(a, month, cents))
   }
 
@@ -388,16 +402,15 @@ export function Konten() {
                         const b = balances.find((x) => x.accountId === a.id && x.month === m)
                         return (
                           <td key={a.id} className="px-1 py-1">
-                            <input
+                            <DraftInput
                               aria-label={`Stand ${a.name} ${monthName(m)}`}
                               className={`${inputClass} min-w-24 text-right ${a.include ? '' : 'opacity-60'}`}
                               inputMode="decimal"
                               placeholder="–"
-                              defaultValue={
+                              value={
                                 b ? (enteredBalance(a.kind, b.amountCents) / 100).toFixed(2) : ''
                               }
-                              key={`${a.id}-${m}-${b?.amountCents ?? 'x'}-${a.kind}`}
-                              onBlur={(e) => saveBalance(a, m, e.target.value)}
+                              onCommit={(text) => saveBalance(a, m, text)}
                             />
                           </td>
                         )

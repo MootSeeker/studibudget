@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { buttonClass, inputClass } from '../auth/ui'
+import { DraftInput } from '../components/DraftInput'
 import { MONTH_NAMES } from '../components/MonthSelect'
 import { TemplatesPanel } from '../components/TemplatesPanel'
 import { createCategoryOps } from '../data/categoryOps'
@@ -51,21 +52,24 @@ function CategoryRow({ cat, areas, amount, month, canUp, canDown, run, setBudget
             {TYPE_LABEL[cat.type]}
           </span>
         </div>
-        <input
+        <DraftInput
+          key={`${cat.id}-${month}`}
           aria-label={`Monatsbudget ${cat.name}`}
           className={`${inputClass} text-right`}
           inputMode="decimal"
           placeholder="0.00"
-          defaultValue={amount > 0 ? (amount / 100).toFixed(2) : ''}
-          key={`${cat.id}-${month}-${amount}`}
-          onBlur={async (e) => {
-            const value = e.target.value
-            if (parseAmount(value || '0') === amount) return setBudgetError(null)
+          value={amount > 0 ? (amount / 100).toFixed(2) : ''}
+          onCommit={async (text) => {
+            if (parseAmount(text || '0') === amount) {
+              setBudgetError(null)
+              return false
+            }
             try {
-              await setBudget(cat, value)
+              await setBudget(cat, text)
               setBudgetError(null)
             } catch (err) {
               setBudgetError(err instanceof Error ? err.message : 'Ungültiger Betrag.')
+              throw err
             }
           }}
         />
