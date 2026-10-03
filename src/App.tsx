@@ -1,8 +1,15 @@
+import type { ReactElement } from 'react'
 import { HashRouter, Navigate, Route, Routes } from 'react-router'
 import { Layout } from './components/Layout'
+import { Eingabe } from './pages/Eingabe'
 import { Einstellungen } from './pages/Einstellungen'
 import { Platzhalter } from './pages/Platzhalter'
 import { PAGES } from './pages'
+
+const PAGE_ELEMENTS: Record<string, ReactElement> = {
+  '/eingabe': <Eingabe />,
+  '/einstellungen': <Einstellungen />,
+}
 
 export default function App() {
   return (
@@ -14,9 +21,7 @@ export default function App() {
             <Route
               key={p.path}
               path={p.path}
-              element={
-                p.path === '/einstellungen' ? <Einstellungen /> : <Platzhalter titel={p.label} />
-              }
+              element={PAGE_ELEMENTS[p.path] ?? <Platzhalter titel={p.label} />}
             />
           ))}
         </Route>

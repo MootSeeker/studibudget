@@ -1,10 +1,26 @@
 import { render, screen } from '@testing-library/react'
-import { describe, expect, it } from 'vitest'
+import { beforeEach, describe, expect, it } from 'vitest'
+import { db } from './data/db'
+import { completeOnboarding } from './data/onboarding'
+import { defaultSemesters } from './domain/period'
 import App from './App'
 import { SyncProvider } from './sync/SyncProvider'
 import { PAGES } from './pages'
 
 describe('App', () => {
+  beforeEach(async () => {
+    await db.wipe()
+    await completeOnboarding(db, {
+      country: 'CH',
+      living: 'allein',
+      hasCar: false,
+      partnerSharePct: 50,
+      persons: [],
+      semesters: defaultSemesters('CH'),
+      budgets: {},
+    })
+  })
+
   it('zeigt alle sieben Seiten in der Navigation', () => {
     render(
       <SyncProvider>
@@ -18,12 +34,12 @@ describe('App', () => {
     expect(PAGES).toHaveLength(7)
   })
 
-  it('leitet auf die Eingabe-Seite weiter', () => {
+  it('leitet auf die Eingabe-Seite weiter', async () => {
     render(
       <SyncProvider>
         <App />
       </SyncProvider>,
     )
-    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Eingabe')
+    expect(await screen.findByRole('heading', { level: 1, name: 'Eingabe' })).toBeInTheDocument()
   })
 })
