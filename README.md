@@ -8,6 +8,11 @@ Jahr auswerten.
 
 ## Entwicklung
 
+Die App braucht ein Supabase-Projekt. Lokal: `npx supabase start` (Docker), dann aus
+`npx supabase status -o env` die Werte `API_URL` und `ANON_KEY` als `VITE_SUPABASE_URL` und
+`VITE_SUPABASE_ANON_KEY` in `.env.local` eintragen (Vorlage: `.env.example`). Bestätigungs-Mails
+landet lokal im Mail-Fänger unter http://127.0.0.1:54324.
+
 ```bash
 npm install
 npm run dev      # Entwicklungsserver

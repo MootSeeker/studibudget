@@ -31,3 +31,16 @@ Der Server speichert nur: E-Mail, verpackte Schlüssel, Datensatz-ID, `hlc`, Lö
   (Last-Writer-Wins pro Datensatz, max. 500 pro Aufruf, Chiffretext < 200 kB).
 - `delete_account()` löscht Benutzer und alle Daten (Cascade).
 - `npm run test:db` prüft das gegen ein lokales Supabase (Docker, `npx supabase start`).
+
+## Konto-Abläufe
+
+- **Registrierung:** Die verpackten Schlüssel reisen als Metadaten mit dem Signup. Ein Datenbank-Trigger
+  übernimmt sie in `user_keys` und entfernt sie aus den Metadaten (auch bei späteren Updates). So geht nichts
+  verloren, obwohl wegen der E-Mail-Bestätigung zunächst keine Sitzung entsteht.
+- **Login:** Der Schlüssel-Ableitungsaufwand (`kdf`) ist in v1 fest (600'000 Iterationen), weil er vor dem
+  Login noch nicht vom Server gelesen werden kann.
+- **PKCE:** Links aus E-Mails kommen mit `?code=…` zurück und passen damit zum Hash-Routing. Der Link zum
+  Passwort-Zurücksetzen muss im selben Browser geöffnet werden, in dem er angefordert wurde.
+- **Passwort ändern:** Zuerst wird das Auth-Passwort gesetzt, dann der Datenschlüssel neu verpackt (3 Versuche).
+  Bleibt der zweite Schritt trotzdem aus, rettet der Wiederherstellungsschlüssel.
+- **Abmelden** löscht Sitzung, lokale Daten und lokalen Schlüssel.
