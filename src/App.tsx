@@ -2,6 +2,7 @@ import type { ReactElement } from 'react'
 import { HashRouter, Navigate, Route, Routes } from 'react-router'
 import { Layout } from './components/Layout'
 import { Budget } from './pages/Budget'
+import { Konten } from './pages/Konten'
 import { Statistik } from './pages/Statistik'
 import { Monat } from './pages/Monat'
 import { Eingabe } from './pages/Eingabe'
@@ -13,6 +14,7 @@ const PAGE_ELEMENTS: Record<string, ReactElement> = {
   '/eingabe': <Eingabe />,
   '/monat': <Monat />,
   '/statistik': <Statistik />,
+  '/konten': <Konten />,
   '/budget': <Budget />,
   '/einstellungen': <Einstellungen />,
 }

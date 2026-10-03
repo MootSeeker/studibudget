@@ -62,3 +62,25 @@ export function useAllTransactions() {
     [],
   )
 }
+
+export function useAccounts() {
+  return useLiveQuery(
+    async () =>
+      (await db.accounts.toArray()).filter((a) => !a.deleted).sort((a, b) => a.order - b.order),
+    [],
+    [],
+  )
+}
+
+export function useAccountBalances() {
+  return useLiveQuery(
+    async () => (await db.accountBalances.toArray()).filter((b) => !b.deleted),
+    [],
+    [],
+  )
+}
+
+/** Alle Sparziele, auch archivierte (die Seite filtert). */
+export function useAllGoals() {
+  return useLiveQuery(async () => (await db.goals.toArray()).filter((g) => !g.deleted), [], [])
+}

@@ -64,7 +64,7 @@ describe('Budget-Seite', () => {
     expect(await db.budgets.count()).toBe(1)
 
     await user.click(screen.getByRole('button', { name: 'Nächster Monat' }))
-    expect(input()).toHaveValue('850.00') // gilt weiter
+    await waitFor(() => expect(input()).toHaveValue('850.00')) // gilt weiter
     await user.clear(input())
     await user.type(input(), '900')
     await user.tab()
@@ -75,7 +75,41 @@ describe('Budget-Seite', () => {
     ])
 
     await user.click(screen.getByRole('button', { name: 'Vorheriger Monat' }))
-    expect(input()).toHaveValue('850.00') // früher bleibt unverändert
+    await waitFor(() => expect(input()).toHaveValue('850.00')) // früher bleibt unverändert
+  })
+
+  it('der Entwurf eines Feldes wandert nicht in einen anderen Monat mit', async () => {
+    // Folgemonat hat einen eigenen Eintrag mit demselben Wert (800), den das Feld im Startmonat vor der Änderung zeigt.
+    const miete = await catByKey('miete')
+    await store.put('budgets', {
+      id: crypto.randomUUID(),
+      deleted: false,
+      categoryId: miete.id,
+      validFrom: NOW,
+      amountCents: 80000,
+    })
+    await store.put('budgets', {
+      id: crypto.randomUUID(),
+      deleted: false,
+      categoryId: miete.id,
+      validFrom: addMonths(NOW, 1),
+      amountCents: 80000,
+    })
+    const user = await setup()
+    const input = () => screen.getByLabelText('Monatsbudget Miete')
+    await waitFor(() => expect(input()).toHaveValue('800.00'))
+    await user.clear(input())
+    await user.type(input(), '850')
+    await user.tab()
+    await waitFor(async () =>
+      expect(
+        (await db.budgets.toArray()).some((b) => b.validFrom === NOW && b.amountCents === 85000),
+      ).toBe(true),
+    )
+    await user.click(screen.getByRole('button', { name: 'Nächster Monat' }))
+    await waitFor(() => expect(input()).toHaveValue('800.00')) // eigener Wert des Folgemonats, nicht der getippte Text
+    await new Promise((r) => setTimeout(r, 200))
+    expect(input()).toHaveValue('800.00')
   })
 
   it('ungültiger Betrag zeigt einen Fehler und speichert nichts', async () => {
