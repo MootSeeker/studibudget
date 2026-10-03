@@ -155,18 +155,4 @@ describe('Eingabe-Seite', () => {
     await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument())
     expect(await db.transactions.count()).toBe(2)
   })
-
-  it('Vorlagen lassen sich pausieren', async () => {
-    const { user, pick } = await setup()
-    await user.type(screen.getByLabelText(/Betrag/), '50')
-    await pick('Kategorie', 'Handyabo')
-    await user.click(screen.getByLabelText(/Jeden Monat wiederholen/))
-    await user.click(screen.getByRole('button', { name: 'Speichern' }))
-    await screen.findByText(/Fixkosten-Vorlagen \(1\)/)
-    await user.click(screen.getByText(/Fixkosten-Vorlagen/))
-    await user.click(screen.getByRole('button', { name: 'Pausieren' }))
-    await screen.findByText('pausiert')
-    await user.click(screen.getByRole('button', { name: 'Vorheriger Monat' }))
-    expect(screen.queryByRole('button', { name: 'Prüfen und buchen' })).not.toBeInTheDocument()
-  })
 })

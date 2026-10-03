@@ -50,3 +50,7 @@ export function useMonthTransactions(month: string) {
     [],
   )
 }
+
+export function useBudgets() {
+  return useLiveQuery(async () => (await db.budgets.toArray()).filter((b) => !b.deleted), [], [])
+}

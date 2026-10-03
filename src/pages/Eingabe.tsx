@@ -3,7 +3,6 @@ import { BookTemplatesDialog } from '../components/BookTemplatesDialog'
 import { EntryForm } from '../components/EntryForm'
 import { MonthList } from '../components/MonthList'
 import { MONTH_NAMES } from '../components/MonthSelect'
-import { TemplatesPanel } from '../components/TemplatesPanel'
 import { db } from '../data/db'
 import {
   useAreas,
@@ -162,8 +161,6 @@ export function Eingabe() {
           window.confirm('Buchung löschen?') && void store.remove('transactions', t.id)
         }
       />
-
-      <TemplatesPanel templates={templates} categories={categories} country={country} />
 
       {booking && (
         <BookTemplatesDialog

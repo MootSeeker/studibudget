@@ -84,3 +84,15 @@ Der Server speichert nur: E-Mail, verpackte Schlüssel, Datensatz-ID, `hlc`, Lö
   gelöschte Buchung macht die Vorlage für den Monat wieder offen. Die Verwaltung (Betrag, Monate, pausieren,
   löschen) liegt vorerst auf der Eingabe-Seite.
 - **Anzeige:** Die Liste zeigt immer den Eigenanteil; bei geteilten Buchungen steht dahinter der Gesamtbetrag.
+
+## Budget
+
+- **Gültig ab Monat:** Ein Budget ist ein Eintrag «ab Monat X». Eine Änderung im selben Monat überschreibt den
+  Eintrag, in einem späteren Monat legt sie einen neuen an; frühere Monate behalten ihren Wert (wichtig für
+  «Plan vs. Ist» in der Statistik).
+- **Summen** zählen nur sichtbare Kategorien. «Bleibt übrig» = Einnahmen − Ausgaben − Sparen (Plan).
+- **Kategorien** werden nie gelöscht, nur ausgeblendet; Reihenfolge per ↑/↓ innerhalb des Bereichs, Wechsel
+  des Bereichs hängt die Kategorie ans Ende des neuen Bereichs. Namen innerhalb eines Bereichs sind eindeutig.
+- **Übertrag** (nur Ausgaben) startet im gewählten Monat; der Rest früherer Monate wird addiert, Überschreitungen
+  abgezogen (siehe `rolloverCents`).
+- **Fixkosten-Vorlagen** werden auf dieser Seite verwaltet (zuvor auf der Eingabe-Seite).
