@@ -7,6 +7,7 @@ import { usePersons } from '../../data/hooks'
 import { newId } from '../../data/seed'
 import { store } from '../../data/store'
 import { defaultSemesters } from '../../domain/period'
+import { isDuplicateName } from '../../domain/persons'
 import type { Country, Living, Semester, Settings, ThemeChoice } from '../../domain/types'
 import { applyTheme } from '../../theme'
 
@@ -185,12 +186,21 @@ export function PersonsSection({ settings }: { settings: Settings }) {
   const [name, setName] = useState('')
   const [pct, setPct] = useState(String(settings.myPartnerSharePct))
   const [pctError, setPctError] = useState<string | null>(null)
+  const [nameError, setNameError] = useState<string | null>(null)
 
   if (settings.living !== 'wg' && settings.living !== 'partner') return null
   const label = settings.living === 'wg' ? 'Mitbewohner/innen' : 'Partner/in'
 
   async function add() {
     if (!name.trim()) return
+    if (
+      isDuplicateName(
+        name,
+        persons.map((p) => p.name),
+      )
+    )
+      return setNameError(`«${name.trim()}» gibt es schon. Bitte wähle einen anderen Namen.`)
+    setNameError(null)
     await store.put('persons', { id: newId(), deleted: false, name: name.trim(), active: true })
     setName('')
   }
@@ -213,6 +223,19 @@ export function PersonsSection({ settings }: { settings: Settings }) {
               defaultValue={p.name}
               onBlur={(e) => {
                 const v = e.target.value.trim()
+                if (
+                  v &&
+                  v !== p.name &&
+                  isDuplicateName(
+                    v,
+                    persons.filter((x) => x.id !== p.id).map((x) => x.name),
+                  )
+                ) {
+                  setNameError(`«${v}» gibt es schon. Bitte wähle einen anderen Namen.`)
+                  e.target.value = p.name
+                  return
+                }
+                setNameError(null)
                 if (v && v !== p.name) {
                   const { updatedAt: _u, ...rest } = p
                   void store.put('persons', { ...rest, name: v })
@@ -264,6 +287,11 @@ export function PersonsSection({ settings }: { settings: Settings }) {
             Speichern
           </button>
         </div>
+      )}
+      {nameError && (
+        <p role="alert" className="text-sm text-red-600">
+          {nameError}
+        </p>
       )}
       {pctError && (
         <p role="alert" className="text-sm text-red-600">
