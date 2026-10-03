@@ -84,3 +84,11 @@ export function useAccountBalances() {
 export function useAllGoals() {
   return useLiveQuery(async () => (await db.goals.toArray()).filter((g) => !g.deleted), [], [])
 }
+
+export function useSettlements() {
+  return useLiveQuery(
+    async () => (await db.settlements.toArray()).filter((s) => !s.deleted),
+    [],
+    [],
+  )
+}

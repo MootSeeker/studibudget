@@ -145,3 +145,17 @@ Beträge werden in `DraftInput` bearbeitet: Das Feld behält den getippten Text,
 gespeicherte Wert zwischendurch ändert (Speichern kommt zurück, ein anderes Gerät synchronisiert). Zuvor wurde das Feld
 über `key={…wert}` neu aufgebaut, wodurch getippter Text verloren ging. Der Entwurf gehört zu einem Feld und einem Monat
 (`key` mit Monat auf der Budget-Seite), damit er nicht in einen anderen Monat mit gleichem Wert hinüberwandert.
+
+## Ausgleich
+
+- **Eine Quelle für die Wirkung:** `effectsOf(buchung)` berechnet, wie eine gemeinsame Buchung die Salden verschiebt; Saldo,
+  Liste der gemeinsamen Buchungen und Vorschau benutzen dieselbe Funktion. Positiv = die Person schuldet mir, negativ = ich
+  schulde ihr. Bezahlt jemand anderes für Personen ohne mich, ändert sich mein Saldo nicht.
+- **Ausgleichszahlungen** («Ich habe Geld erhalten/bezahlt») verschieben nur den Saldo und zählen weder als Einnahme noch als
+  Ausgabe, sind also nicht im Budget. «Ausgleichen» füllt das Formular mit der passenden Richtung und dem offenen Betrag vor,
+  eine Vorschau zeigt den Saldo nach der Zahlung (auch bei Teil- oder Überzahlung). Löschen ist ein Grabstein, der Saldo
+  stellt sich wieder her.
+- **Inaktive Personen** erscheinen nur, solange noch etwas offen ist.
+- **Namen von Personen sind eindeutig** (ohne Beachtung von Gross-/Kleinschreibung und Randleerzeichen), im Assistenten, beim
+  Anlegen und beim Umbenennen. Sonst wäre der Ausgleich nicht mehr eindeutig lesbar.
+- Bei «allein» oder «bei den Eltern» zeigt die Seite nur einen Hinweis; im Menü erscheint sie dort gar nicht.

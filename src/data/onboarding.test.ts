@@ -54,6 +54,17 @@ describe('completeOnboarding', () => {
   })
 })
 
+describe('doppelte Namen', () => {
+  it('die Einrichtung lehnt doppelte Personen ab und legt nichts an', async () => {
+    const db = fresh()
+    await expect(
+      completeOnboarding(db, input({ persons: ['Anna', ' anna'] }), '2026-10'),
+    ).rejects.toThrow('mehrfach')
+    expect(await db.persons.count()).toBe(0)
+    expect(await db.settings.count()).toBe(0)
+  })
+})
+
 describe('Katalog bei Änderungen', () => {
   const ctx = { country: 'CH' as const, living: 'wg' as const, hasCar: false }
 

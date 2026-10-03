@@ -61,6 +61,18 @@ describe('Wizard', () => {
     expect(screen.getByText(/Schritt 2 von 4/)).toBeInTheDocument()
   })
 
+  it('WG mit doppelten Namen lässt sich nicht weiter', async () => {
+    const { user, next } = setup()
+    await next()
+    await user.click(screen.getByRole('radio', { name: /^WG/ }))
+    await user.type(screen.getByLabelText('Mitbewohner/in 1'), 'Anna')
+    await user.click(screen.getByRole('button', { name: 'Person hinzufügen' }))
+    await user.type(screen.getByLabelText('Mitbewohner/in 2'), ' anna ')
+    await next()
+    expect(screen.getByRole('alert')).toHaveTextContent('kommt mehrfach vor')
+    expect(screen.getByText(/Schritt 2 von 4/)).toBeInTheDocument()
+  })
+
   it('Partner/in: Anteil wird geprüft und übernommen', async () => {
     const { onFinish, user, next } = setup()
     await next()

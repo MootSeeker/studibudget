@@ -2,6 +2,7 @@ import type { ReactElement } from 'react'
 import { HashRouter, Navigate, Route, Routes } from 'react-router'
 import { Layout } from './components/Layout'
 import { Budget } from './pages/Budget'
+import { Ausgleich } from './pages/Ausgleich'
 import { Konten } from './pages/Konten'
 import { Statistik } from './pages/Statistik'
 import { Monat } from './pages/Monat'
@@ -15,6 +16,7 @@ const PAGE_ELEMENTS: Record<string, ReactElement> = {
   '/monat': <Monat />,
   '/statistik': <Statistik />,
   '/konten': <Konten />,
+  '/ausgleich': <Ausgleich />,
   '/budget': <Budget />,
   '/einstellungen': <Einstellungen />,
 }

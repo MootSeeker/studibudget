@@ -4,6 +4,7 @@ import { catalogFor } from '../data/catalog'
 import type { OnboardingInput } from '../data/onboarding'
 import { parseAmount } from '../domain/money'
 import { defaultSemesters } from '../domain/period'
+import { firstDuplicate } from '../domain/persons'
 import type { Country, Living, Semester } from '../domain/types'
 import { MonthSelect } from '../components/MonthSelect'
 
@@ -66,6 +67,8 @@ export function Wizard({ onFinish }: { onFinish: (input: OnboardingInput) => Pro
     if (step === 1) {
       if (living === 'wg' && filledNames.length === 0)
         return 'Trage mindestens eine Mitbewohnerin oder einen Mitbewohner ein.'
+      if (living === 'wg' && firstDuplicate(filledNames))
+        return `«${firstDuplicate(filledNames)}» kommt mehrfach vor. Die Namen müssen verschieden sein.`
       if (living === 'partner') {
         if (filledNames.length === 0)
           return 'Trage den Namen deiner Partnerin oder deines Partners ein.'
