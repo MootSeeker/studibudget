@@ -159,3 +159,38 @@ gespeicherte Wert zwischendurch ändert (Speichern kommt zurück, ein anderes Ge
 - **Namen von Personen sind eindeutig** (ohne Beachtung von Gross-/Kleinschreibung und Randleerzeichen), im Assistenten, beim
   Anlegen und beim Umbenennen. Sonst wäre der Ausgleich nicht mehr eindeutig lesbar.
 - Bei «allein» oder «bei den Eltern» zeigt die Seite nur einen Hinweis; im Menü erscheint sie dort gar nicht.
+
+## Backup
+
+- **Datei:** JSON mit `app`, `schemaVersion`, `exportedAt` und allen nicht gelöschten Datensätzen je Tabelle, ohne
+  Sync-Zeitstempel. Die Datei ist **nicht verschlüsselt** (die App sagt es an der Stelle, wo man sie herunterlädt).
+- **Prüfung beim Einspielen** (`zod`, wird erst beim Einspielen nachgeladen): App-Kennung, Version (neuere wird abgelehnt),
+  Typen und Wertebereiche jedes Feldes, IDs als UUID (der Server verlangt es), Anteile müssen den Betrag ergeben, alle
+  Verweise zwischen Tabellen müssen aufgehen, Einstellungen müssen vorhanden und die Einrichtung abgeschlossen sein.
+  Unbekannte Zusatzfelder werden verworfen.
+- **Einspielen ersetzt alles** und läuft in **einer** Transaktion (ganz oder gar nichts). Was nicht im Backup steht, wird als
+  gelöscht markiert und kommt so auch auf die anderen Geräte; alles Übernommene wird neu gestempelt und synchronisiert.
+  Vorher zeigt die App den Inhalt (Anzahl je Art) und fragt nach.
+- **Selbstprüfung beim Export:** Der Export prüft seine eigene Datei mit derselben Prüfung. Enthalten die eigenen Daten eine
+  Unstimmigkeit, wird keine Datei erstellt, und die App nennt den Grund, statt ein Backup zu liefern, das sich im Ernstfall
+  nicht einspielen lässt. (Gefunden an echten Testdaten.)
+- **Erinnerung:** aus / 7 / 14 / 30 Tage; Hinweis oben, wenn noch nie gesichert wurde (und es Daten gibt) oder das letzte
+  Backup zu alt ist; pro Sitzung wegklickbar.
+- **Dauerhafter Speicher:** Nach der Einrichtung bittet die App den Browser um `navigator.storage.persist()`; verweigert er es,
+  steht ein Hinweis im Backup-Bereich.
+
+## App (PWA) und Sicherheit
+
+- **Installierbar und offline:** `vite-plugin-pwa` erzeugt Manifest und Service Worker. Vorab geladen wird die App selbst
+  (18 Dateien, ca. 0.8 MB); Antworten des Servers werden nie gecacht. Das Manifest hat `scope`/`start_url` `/studibudget/`
+  und ein maskierbares Icon. Icons und Favicon erzeugt `scripts/make-icons.mjs` ohne zusätzliche Abhängigkeit.
+- **Updates:** `registerType: 'prompt'`. Eine neue Version wird nur gemeldet («Jetzt aktualisieren»), nie heimlich aktiviert.
+  Der Service Worker wird beim Start der App registriert, auch vor der Anmeldung.
+- **Content-Security-Policy** als Meta-Tag (GitHub Pages erlaubt keine Kopfzeilen), nur im Build: `default-src 'self'`,
+  keine Skripte ausser den eigenen Dateien, `connect-src` nur die eigene Seite und das Supabase-Projekt, kein `eval`.
+  `style-src` braucht `'unsafe-inline'` wegen der Balkenbreiten (`style`-Attribute). `frame-ancestors` lässt sich per
+  Meta-Tag nicht setzen; die App hat keine Anmeldung per Fremdseite, das Risiko ist gering.
+- **Build-Prüfung** (`npm run check:build`, Teil von `verify`): Manifest, Icons, Service Worker, Vorabladung der App-Hülle
+  und CSP (kein `unsafe-*` bei Skripten, keine Platzhalter, `connect-src` passt zum konfigurierten Server) werden am fertigen
+  `dist/` geprüft.
+- **Grösse:** Hauptpaket ca. 720 kB (gzip 208 kB); die Backup-Prüfung (`zod`) ist ausgelagert (gzip 26 kB).

@@ -87,7 +87,31 @@ export function createStore(db: StudiBudgetDB = defaultDb, now: () => number = D
     listeners.forEach((l) => l())
   }
 
+  /** Mehrere Tabellen in EINER Transaktion schreiben: entweder alles oder nichts (für den Backup-Import). */
+  async function writeBatch(entries: { name: SyncedTable; drafts: object[] }[]): Promise<void> {
+    const total = entries.reduce((n, e) => n + e.drafts.length, 0)
+    if (total === 0) return
+    await db.transaction(
+      'rw',
+      [...SYNCED_TABLES.map((t) => db.table(t)), db.syncState, db.outbox],
+      async () => {
+        const state = await loadSyncState(db)
+        let clock: ClockState = { wall: state.wall, counter: state.counter }
+        for (const { name, drafts } of entries) {
+          for (const d of drafts) {
+            clock = tick(clock, now())
+            await db.table(name).put({ ...d, updatedAt: format(clock, state.deviceId) })
+            await db.outbox.add({ table: name, recordId: (d as Synced).id })
+          }
+        }
+        await db.syncState.put({ ...state, ...clock })
+      },
+    )
+    listeners.forEach((l) => l())
+  }
+
   return {
+    writeBatch,
     put: <N extends SyncedTable>(name: N, draft: Draft<N>) => write(name, [draft]),
     putMany: write,
     async remove(name: SyncedTable, id: string): Promise<void> {
