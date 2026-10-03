@@ -17,3 +17,13 @@ npm run verify   # Lint, Typen, Tests, Build
 ## Lizenz
 
 GPL-3.0-or-later, siehe [LICENSE](LICENSE).
+
+## Datenbank-Tests (lokales Supabase)
+
+Braucht Docker.
+
+```bash
+npx supabase start
+npm run test:db
+npx supabase stop
+```
