@@ -49,11 +49,12 @@ export function EntryForm(props: EntryFormProps) {
   const [note, setNote] = useState(initial?.note ?? '')
   const [shared, setShared] = useState(Boolean(initial?.shared))
   const [paidBy, setPaidBy] = useState<Who>(initial?.shared?.paidBy ?? 'me')
-  const [participants, setParticipants] = useState<Who[]>(
-    initial?.shared
-      ? initial.shared.parts.map((p) => p.who)
-      : ['me', ...activePersons.map((p) => p.id)],
+  // Beteiligte: Solange man sie nicht selbst ändert, sind es «ich + alle aktiven Personen» (auch wenn die Personen erst
+  // einen Moment nach dem Öffnen des Formulars geladen sind). Beim Bearbeiten gelten zuerst die gespeicherten Beteiligten.
+  const [participantsOverride, setParticipantsOverride] = useState<Who[] | null>(
+    initial?.shared ? initial.shared.parts.map((p) => p.who) : null,
   )
+  const participants: Who[] = participantsOverride ?? ['me', ...activePersons.map((p) => p.id)]
   const [myPct, setMyPct] = useState(() => {
     if (initial?.shared && initial.amountCents > 0)
       return String(Math.round((initial.myAmountCents / initial.amountCents) * 100 * 100) / 100)
@@ -306,7 +307,7 @@ export function EntryForm(props: EntryFormProps) {
                           type="checkbox"
                           checked={participants.includes(p.id)}
                           onChange={(e) =>
-                            setParticipants(
+                            setParticipantsOverride(
                               e.target.checked
                                 ? [...participants, p.id]
                                 : participants.filter((x) => x !== p.id),
