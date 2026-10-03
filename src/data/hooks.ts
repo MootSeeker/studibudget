@@ -26,3 +26,27 @@ export function useAreas() {
     [],
   )
 }
+
+export function useGoals() {
+  return useLiveQuery(
+    async () => (await db.goals.toArray()).filter((g) => !g.deleted && !g.archived),
+    [],
+    [],
+  )
+}
+
+export function useTemplates() {
+  return useLiveQuery(async () => (await db.templates.toArray()).filter((t) => !t.deleted), [], [])
+}
+
+/** Buchungen eines Monats, plus solche, die aus einer Vorlage dieses Monats stammen (auch wenn das Datum verschoben wurde). */
+export function useMonthTransactions(month: string) {
+  return useLiveQuery(
+    async () =>
+      (await db.transactions.toArray()).filter(
+        (t) => !t.deleted && (t.date.slice(0, 7) === month || t.templateMonth === month),
+      ),
+    [month],
+    [],
+  )
+}

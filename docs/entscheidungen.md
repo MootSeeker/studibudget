@@ -71,3 +71,16 @@ Der Server speichert nur: E-Mail, verpackte Schlüssel, Datensatz-ID, `hlc`, Lö
   wird nur, wenn der Name noch dem Standardnamen entspricht. Beträge werden beim Landeswechsel nicht umgerechnet.
 - **Darstellung** liegt in den (synchronisierten) Einstellungen; der Browser merkt sich sie zusätzlich lokal,
   damit beim Laden nichts aufblitzt.
+
+## Eingabe
+
+- **Buchung bauen:** `src/domain/entry.ts` prüft die Formulareingaben und rechnet den Eigenanteil; die Seite
+  zeigt nur an. Beträge werden als Cent gespeichert, `23,5` und `1'234.50` werden erkannt.
+- **Teilen:** WG gleichmässig auf die gewählten Beteiligten (Rundungsrest geht auf), Partner/in mit Prozentanteil
+  pro Buchung (Vorgabe aus den Einstellungen). Nur Ausgaben lassen sich teilen. «Bezahlt von» speist den Ausgleich.
+- **Fixkosten-Vorlagen:** Entstehen über das Häkchen «Jeden Monat wiederholen». Pro Monat erscheint ein Hinweis
+  mit Dialog (Betrag und Notiz änderbar, bei geteilten Kosten wird die Aufteilung mitgerechnet). Doppelbuchungen
+  verhindert `templateId + templateMonth`, vor dem Buchen wird frisch gegen die Datenbank geprüft. Eine
+  gelöschte Buchung macht die Vorlage für den Monat wieder offen. Die Verwaltung (Betrag, Monate, pausieren,
+  löschen) liegt vorerst auf der Eingabe-Seite.
+- **Anzeige:** Die Liste zeigt immer den Eigenanteil; bei geteilten Buchungen steht dahinter der Gesamtbetrag.
