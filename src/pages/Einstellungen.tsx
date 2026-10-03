@@ -2,6 +2,8 @@ import { useState } from 'react'
 import { useAuth } from '../auth/AuthProvider'
 import { Field, Form, buttonClass } from '../auth/ui'
 import { useSettings } from '../data/hooks'
+import { BackupSection } from './einstellungen/BackupSection'
+import { InstallSection } from './einstellungen/InstallSection'
 import {
   DisplaySection,
   HousingSection,
@@ -115,6 +117,8 @@ export function Einstellungen() {
           <PersonsSection settings={settings} />
           <SemesterSection settings={settings} />
           <DisplaySection settings={settings} />
+          <BackupSection settings={settings} />
+          <InstallSection />
         </>
       )}
 

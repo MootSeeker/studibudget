@@ -1,4 +1,5 @@
 import { NavLink, Outlet } from 'react-router'
+import { BackupReminder } from './BackupReminder'
 import { useSettings } from '../data/hooks'
 import { PAGES } from '../pages'
 import { describeStatus, useSync } from '../sync/SyncProvider'
@@ -43,6 +44,7 @@ export function Layout() {
         </button>
       </nav>
       <main className="min-w-0 flex-1 p-4 md:p-8">
+        <BackupReminder />
         <Outlet />
       </main>
     </div>

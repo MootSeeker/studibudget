@@ -4,6 +4,7 @@ import { db } from '../data/db'
 import { useSettings } from '../data/hooks'
 import { completeOnboarding } from '../data/onboarding'
 import { useSync } from '../sync/SyncProvider'
+import { requestPersistentStorage } from '../lib/storage'
 import { applyTheme } from '../theme'
 import { Wizard } from './Wizard'
 
@@ -15,10 +16,16 @@ export function OnboardingGate({ children }: { children: ReactNode }) {
   const settings = useSettings()
   const sync = useSync()
   const theme = settings?.theme
+  const done = settings?.onboardingDone === true
 
   useEffect(() => {
     if (theme) applyTheme(theme)
   }, [theme])
+
+  // Der Browser soll die Daten nicht bei Platzmangel löschen dürfen.
+  useEffect(() => {
+    if (done) void requestPersistentStorage()
+  }, [done])
 
   if (settings === undefined) return <p className="p-8 text-muted">Lädt …</p>
   if (settings?.onboardingDone) return <>{children}</>
