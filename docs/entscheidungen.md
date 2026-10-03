@@ -96,3 +96,15 @@ Der Server speichert nur: E-Mail, verpackte Schlüssel, Datensatz-ID, `hlc`, Lö
 - **Übertrag** (nur Ausgaben) startet im gewählten Monat; der Rest früherer Monate wird addiert, Überschreitungen
   abgezogen (siehe `rolloverCents`).
 - **Fixkosten-Vorlagen** werden auf dieser Seite verwaltet (zuvor auf der Eingabe-Seite).
+
+## Monatsseite
+
+- **Ampel** nur für Ausgaben: Anteil von (Budget + Übertrag), grün unter der Gelb-Schwelle, gelb ab Gelb, rot ab Rot
+  (Standard 80 % / 100 %). Der Status steht immer auch als Text («Im Rahmen», «Knapp», «Ausgeschöpft»,
+  «Überschritten», «Ohne Budget»), nie nur als Farbe. Einnahmen und Sparen zeigen einen Fortschritt in Prozent.
+- **Prognose** (nur laufender Monat): gebuchte Fixkosten + noch offene Vorlagen + übrige Ausgaben bisher, linear auf
+  den ganzen Monat hochgerechnet. Zu Monatsbeginn ist sie ungenau (wenige Tage, einzelne grosse Käufe), die Seite
+  weist darauf hin. Vergangene Monate zeigen das Ergebnis, künftige keine Prognose.
+- **Vergleich:** Vormonat (leer = «keine Daten») und Durchschnitt der letzten 3 Monate, in denen es Buchungen gab.
+- **Statusfarben** sind Tokens (`--ok`, `--warn`, `--bad`) mit eigenen Werten für hell und dunkel.
+- Bearbeiten und Löschen bleiben auf der Eingabe-Seite; die Monatsseite ist eine reine Auswertung.
