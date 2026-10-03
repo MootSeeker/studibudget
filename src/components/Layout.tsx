@@ -1,21 +1,19 @@
-import { useState } from 'react'
 import { NavLink, Outlet } from 'react-router'
+import { useSettings } from '../data/hooks'
 import { PAGES } from '../pages'
 import { describeStatus, useSync } from '../sync/SyncProvider'
-import { applyTheme, loadTheme, type ThemeChoice } from '../theme'
-
-const NEXT: Record<ThemeChoice, ThemeChoice> = { system: 'light', light: 'dark', dark: 'system' }
-const LABEL: Record<ThemeChoice, string> = { system: 'System', light: 'Hell', dark: 'Dunkel' }
 
 export function Layout() {
   const sync = useSync()
-  const [theme, setTheme] = useState<ThemeChoice>(loadTheme)
-
-  function cycleTheme() {
-    const next = NEXT[theme]
-    applyTheme(next)
-    setTheme(next)
-  }
+  const settings = useSettings()
+  // «Ausgleich» gibt es nur, wenn Kosten geteilt werden.
+  const pages = PAGES.filter(
+    (p) =>
+      p.path !== '/ausgleich' ||
+      !settings ||
+      settings.living === 'wg' ||
+      settings.living === 'partner',
+  )
 
   return (
     <div className="mx-auto flex min-h-screen max-w-6xl flex-col md:flex-row">
@@ -24,7 +22,7 @@ export function Layout() {
         className="flex flex-wrap items-center gap-1 border-b border-border p-3 md:w-56 md:shrink-0 md:flex-col md:items-stretch md:border-r md:border-b-0"
       >
         <span className="px-3 py-2 text-lg font-bold md:mb-2">StudiBudget</span>
-        {PAGES.map((p) => (
+        {pages.map((p) => (
           <NavLink
             key={p.path}
             to={p.path}
@@ -42,13 +40,6 @@ export function Layout() {
           className="mt-auto rounded-md px-3 py-2 text-left text-xs text-muted hover:bg-surface"
         >
           {describeStatus(sync.status, sync.pending)}
-        </button>
-        <button
-          type="button"
-          onClick={cycleTheme}
-          className="rounded-md border border-border px-3 py-2 text-left text-sm text-muted"
-        >
-          Darstellung: {LABEL[theme]}
         </button>
       </nav>
       <main className="flex-1 p-4 md:p-8">

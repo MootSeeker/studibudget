@@ -10,6 +10,8 @@ interface SyncApi {
   status: SyncStatus
   pending: number
   syncNow(): void
+  /** Mindestens ein Abgleich mit dem Server ist durchgelaufen. */
+  hasSynced: boolean
 }
 
 const Ctx = createContext<SyncApi | null>(null)
@@ -40,7 +42,14 @@ export function SyncProvider({ children }: { children: ReactNode }) {
   }, [])
 
   return (
-    <Ctx.Provider value={{ status, pending, syncNow: () => void engine?.syncNow() }}>
+    <Ctx.Provider
+      value={{
+        status,
+        pending,
+        syncNow: () => void engine?.syncNow(),
+        hasSynced: status.lastSyncAt !== undefined,
+      }}
+    >
       {children}
     </Ctx.Provider>
   )

@@ -15,6 +15,11 @@ function key(y: number, mo: number): MonthKey {
   return `${y}-${String(mo).padStart(2, '0')}`
 }
 
+/** Aktueller Monat (lokale Zeit) als YYYY-MM. */
+export function currentMonth(d: Date = new Date()): MonthKey {
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`
+}
+
 export function addMonths(m: MonthKey, n: number): MonthKey {
   const [y, mo] = parse(m)
   const idx = y * 12 + (mo - 1) + n

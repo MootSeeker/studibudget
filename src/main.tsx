@@ -4,6 +4,7 @@ import App from './App'
 import { AuthGate } from './auth/AuthGate'
 import { AuthProvider } from './auth/AuthProvider'
 import './index.css'
+import { OnboardingGate } from './onboarding/OnboardingGate'
 import { SyncProvider } from './sync/SyncProvider'
 import { applyTheme, loadTheme } from './theme'
 
@@ -14,7 +15,9 @@ createRoot(document.getElementById('root')!).render(
     <AuthProvider>
       <AuthGate>
         <SyncProvider>
-          <App />
+          <OnboardingGate>
+            <App />
+          </OnboardingGate>
         </SyncProvider>
       </AuthGate>
     </AuthProvider>
