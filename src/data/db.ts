@@ -20,6 +20,13 @@ export interface OutboxEntry {
   recordId: string
 }
 
+/** Lokal gespeicherter Datenschlüssel (angemeldet bleiben). Wird beim Abmelden gelöscht. */
+export interface KeystoreEntry {
+  id: 'dek'
+  email: string
+  key: CryptoKey
+}
+
 export class StudiBudgetDB extends Dexie {
   settings!: Table<Settings, string>
   persons!: Table<Person, string>
@@ -33,6 +40,7 @@ export class StudiBudgetDB extends Dexie {
   accountBalances!: Table<AccountBalance, string>
   goals!: Table<Goal, string>
   outbox!: Table<OutboxEntry, number>
+  keystore!: Table<KeystoreEntry, string>
 
   constructor(name = 'studibudget') {
     super(name)
@@ -50,6 +58,12 @@ export class StudiBudgetDB extends Dexie {
       goals: 'id',
       outbox: '++seq, table',
     })
+    this.version(2).stores({ keystore: 'id' })
+  }
+
+  /** Alle lokalen Daten und Schlüssel löschen (Abmelden, Kontowechsel). */
+  async wipe(): Promise<void> {
+    await Promise.all(this.tables.map((t) => t.clear()))
   }
 }
 

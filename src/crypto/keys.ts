@@ -142,3 +142,8 @@ export async function newRecoveryFor(dek: CryptoKey) {
     wrappedDekRecovery: await wrap(dek, await recoveryKek(raw), 'dek-recovery'),
   }
 }
+
+/** Datenschlüssel mit einem bereits abgeleiteten KEK entpacken (vermeidet doppeltes PBKDF2). */
+export function openDek(wrappedDek: string, kek: CryptoKey): Promise<CryptoKey> {
+  return unwrap(wrappedDek, kek, 'dek')
+}
