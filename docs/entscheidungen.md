@@ -124,3 +124,17 @@ Der Server speichert nur: E-Mail, verpackte Schlüssel, Datensatz-ID, `hlc`, Lö
 - **Zeiträume:** Semester, Studienjahr, Kalenderhalbjahr, Kalenderjahr, letzte 6/12 Monate, frei (höchstens 36 Monate).
   Der Plan eines Zeitraums ist die Summe der Monatsbudgets (inkl. Budgetwechsel mittendrin); ausgeblendete Kategorien
   zählen nicht zum Plan.
+
+## Konten und Sparziele
+
+- **Leer heisst unbekannt, nicht 0** (wie in der Excel-Vorlage). Ein Stand von 0 ist eine Angabe; ein leeres Feld löscht sie.
+  Das Gesamtvermögen eines Monats ist nur «vollständig», wenn alle einbezogenen Konten einen Stand haben; sonst zeigt die
+  Tabelle die Teilsumme mit «unvollständig», und das Diagramm lässt den Monat als Lücke stehen, statt eine falsche Zahl zu
+  behaupten. Für den Verlauf braucht es mindestens zwei vollständige Monate.
+- **Schulden** (z. B. Kreditkarte) werden als geschuldeter Betrag eingegeben und negativ gespeichert; sie senken das
+  Gesamtvermögen automatisch. Andere Konten dürfen negativ sein (überzogen).
+- **Konten und Stände sind unabhängig von den Buchungen** (kein Abgleich «gerechnet gegen echt»): man trägt am Monatsende
+  den echten Stand ein.
+- **Sparziele:** Stand = Anfangsbestand + Einzahlungen − Entnahmen aus Spar-Buchungen mit diesem Ziel. Die nötige Rate
+  rechnet vom aktuellen Monat bis einschliesslich Zielmonat. Ziele werden archiviert, nicht gelöscht; ein archiviertes
+  Ziel blockiert seinen Namen nicht mehr.
