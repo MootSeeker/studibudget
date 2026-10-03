@@ -212,3 +212,18 @@ gespeicherte Wert zwischendurch ändert (Speichern kommt zurück, ein anderes Ge
 - **Seitentitel** folgen der Seite («Statistik – StudiBudget»).
 - **Kontraste** werden bei jedem Testlauf aus den Farb-Tokens berechnet (`src/test/contrast.test.ts`): Text mindestens 4.5:1,
   Ränder von Eingabefeldern mindestens 3:1 (eigenes Token `--control`), in Hell und Dunkel.
+
+## Zeitfehler vermeiden
+
+Die Seiten lesen aus IndexedDB; auf einem langsamen Rechner kommen die Daten erst einen Moment nach dem ersten Anzeigen.
+Zwei Arten von Fehlern ergeben sich daraus, beide wurden durch eine rote CI gefunden:
+
+- **Tests, die zu früh lesen** (z. B. eine Auswahl treffen, bevor die Optionen geladen sind). Tests warten auf die Daten
+  (`findBy…`, `waitFor`), nicht auf die Zeit.
+- **Speichern auf einem veralteten Bildschirmzustand.** Änderungen laufen über `store.patch(tabelle, id, felder)`: Der
+  aktuelle Datensatz wird innerhalb der Transaktion gelesen und nur die geänderten Felder werden angewendet, so überschreibt
+  eine Änderung keine, die kurz davor gespeichert wurde. Die Budget-Seite sucht den vorhandenen Monatseintrag frisch in der
+  Datenbank, damit zwei rasche Änderungen keinen zweiten Eintrag erzeugen.
+
+`npm run test:slow` verzögert jeden Lesezugriff (150 ms) und lässt alle Tests laufen; er ist Teil der CI. `test.testTimeout`
+beträgt 15 s, `asyncUtilTimeout` 4 s.

@@ -13,8 +13,8 @@ import { applyTheme } from '../../theme'
 
 /** Speichert Änderungen an den Einstellungen (wird synchronisiert). */
 export function saveSettings(settings: Settings, patch: Partial<Settings>): Promise<void> {
-  const { updatedAt: _u, ...rest } = settings
-  return store.put('settings', { ...rest, ...patch })
+  // Nur die geänderten Felder, angewendet auf den aktuellen Stand (nicht auf den Bildschirmzustand `settings`).
+  return store.patch('settings', settings.id, patch)
 }
 
 export function Section({ title, children }: { title: string; children: ReactNode }) {
@@ -236,20 +236,16 @@ export function PersonsSection({ settings }: { settings: Settings }) {
                   return
                 }
                 setNameError(null)
-                if (v && v !== p.name) {
-                  const { updatedAt: _u, ...rest } = p
-                  void store.put('persons', { ...rest, name: v })
-                }
+                if (v && v !== p.name) void store.patch('persons', p.id, { name: v })
               }}
             />
             <label className="flex items-center gap-1 whitespace-nowrap text-sm">
               <input
                 type="checkbox"
                 checked={p.active}
-                onChange={() => {
-                  const { updatedAt: _u, ...rest } = p
-                  void store.put('persons', { ...rest, active: !p.active })
-                }}
+                onChange={() =>
+                  void store.patch('persons', p.id, (cur) => ({ active: !cur.active }))
+                }
               />
               aktiv
             </label>

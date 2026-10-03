@@ -242,7 +242,10 @@ export function Budget() {
   async function setBudget(cat: Category, value: string) {
     const cents = value.trim() === '' ? 0 : parseAmount(value)
     if (cents === null || cents < 0) throw new Error('Bitte gib einen gültigen Betrag ein.')
-    await store.put('budgets', budgetDraftFor(budgets, cat.id, month, cents, newId))
+    // Den vorhandenen Eintrag des Monats frisch aus der Datenbank suchen: Der Bildschirmzustand kann hinterherhinken, und
+    // dann entstünde bei zwei raschen Änderungen ein zweiter Eintrag für denselben Monat.
+    const fresh = (await db.budgets.toArray()).filter((b) => !b.deleted)
+    await store.put('budgets', budgetDraftFor(fresh, cat.id, month, cents, newId))
   }
 
   const label = `${MONTH_NAMES[Number(month.slice(5, 7)) - 1]} ${month.slice(0, 4)}`

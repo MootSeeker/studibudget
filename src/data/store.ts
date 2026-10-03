@@ -87,6 +87,29 @@ export function createStore(db: StudiBudgetDB = defaultDb, now: () => number = D
     listeners.forEach((l) => l())
   }
 
+  /**
+   * Einzelne Felder ändern: Der aktuelle Datensatz wird innerhalb der Transaktion gelesen und nur die geänderten Felder werden
+   * darauf angewendet. So überschreibt eine Änderung auf Basis eines veralteten Bildschirmzustands keine Änderung, die kurz
+   * davor gespeichert wurde. `changes` darf eine Funktion des aktuellen Datensatzes sein.
+   */
+  async function patch<N extends SyncedTable>(
+    name: N,
+    id: string,
+    changes: Partial<Draft<N>> | ((current: TableTypes[N]) => Partial<Draft<N>>),
+  ): Promise<void> {
+    await db.transaction('rw', [db.table(name), db.syncState, db.outbox], async () => {
+      const current = (await db.table(name).get(id)) as TableTypes[N] | undefined
+      if (!current || current.deleted) throw new Error('Dieser Eintrag existiert nicht mehr.')
+      const state = await loadSyncState(db)
+      const clock = tick({ wall: state.wall, counter: state.counter }, now())
+      const delta = typeof changes === 'function' ? changes(current) : changes
+      await db.table(name).put({ ...current, ...delta, updatedAt: format(clock, state.deviceId) })
+      await db.outbox.add({ table: name, recordId: id })
+      await db.syncState.put({ ...state, ...clock })
+    })
+    listeners.forEach((l) => l())
+  }
+
   /** Mehrere Tabellen in EINER Transaktion schreiben: entweder alles oder nichts (für den Backup-Import). */
   async function writeBatch(entries: { name: SyncedTable; drafts: object[] }[]): Promise<void> {
     const total = entries.reduce((n, e) => n + e.drafts.length, 0)
@@ -112,6 +135,7 @@ export function createStore(db: StudiBudgetDB = defaultDb, now: () => number = D
 
   return {
     writeBatch,
+    patch,
     put: <N extends SyncedTable>(name: N, draft: Draft<N>) => write(name, [draft]),
     putMany: write,
     async remove(name: SyncedTable, id: string): Promise<void> {

@@ -128,6 +128,8 @@ describe('Budget-Seite', () => {
     await waitFor(async () => expect((await db.categories.get(strom.id))!.fix).toBe(true))
     await user.click(within(row).getByLabelText(/Rest übertragen/))
     await waitFor(async () => expect((await db.categories.get(strom.id))!.rolloverFrom).toBe(NOW))
+    // Das Häkchen folgt dem gespeicherten Stand; erst wenn die Seite ihn zeigt, ist ein zweiter Klick ein «Ausschalten».
+    await waitFor(() => expect(within(row).getByLabelText(/Rest übertragen/)).toBeChecked())
     await user.click(within(row).getByLabelText(/Rest übertragen/))
     await waitFor(async () => expect((await db.categories.get(strom.id))!.rolloverFrom).toBeNull())
   })
@@ -185,6 +187,7 @@ describe('Budget-Seite', () => {
       ),
     )
     const freizeit = (await db.areas.toArray()).find((a) => a.name === 'Freizeit')!
+    await within(screen.getByLabelText('Bereich Strom')).findByRole('option', { name: 'Freizeit' })
     await user.selectOptions(screen.getByLabelText('Bereich Strom'), 'Freizeit')
     await waitFor(async () => expect((await db.categories.get(strom.id))!.areaId).toBe(freizeit.id))
   })

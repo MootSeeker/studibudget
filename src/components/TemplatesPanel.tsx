@@ -11,13 +11,12 @@ export interface TemplatesPanelProps {
   country: Country
 }
 
-const strip = ({ updatedAt: _u, ...rest }: Template) => rest
-
 /** Fixkosten-Vorlagen: Betrag, Notiz und Monate anpassen, pausieren oder löschen. */
 export function TemplatesPanel({ templates, categories, country }: TemplatesPanelProps) {
   const catName = (id: string) => categories.find((c) => c.id === id)?.name ?? 'Unbekannt'
-  const save = (t: Template, patch: Partial<Template>) =>
-    store.put('templates', { ...strip(t), ...patch })
+  type Change = Partial<Omit<Template, 'updatedAt'>>
+  const save = (t: Template, changes: Change | ((current: Template) => Change)) =>
+    store.patch('templates', t.id, changes)
 
   return (
     <details className="rounded-xl border border-border bg-surface p-4">
@@ -47,10 +46,10 @@ export function TemplatesPanel({ templates, categories, country }: TemplatesPane
                   onBlur={(e) => {
                     const cents = parseAmount(e.target.value)
                     if (cents && cents > 0 && cents !== t.amountCents)
-                      void save(t, {
+                      void save(t, (cur) => ({
                         amountCents: cents,
-                        ...(t.shared ? { shared: rescaleShared(t.shared, cents) } : {}),
-                      })
+                        ...(cur.shared ? { shared: rescaleShared(cur.shared, cents) } : {}),
+                      }))
                   }}
                 />
                 <input
@@ -76,10 +75,13 @@ export function TemplatesPanel({ templates, categories, country }: TemplatesPane
                       aria-pressed={on}
                       className={`rounded border px-2 py-1 text-xs ${on ? 'border-accent bg-accent/10' : 'border-border text-muted'}`}
                       onClick={() => {
-                        const months = on
-                          ? t.months.filter((m) => m !== i + 1)
-                          : [...t.months, i + 1].sort((a, b) => a - b)
-                        if (months.length > 0) void save(t, { months })
+                        // Auf dem aktuellen Stand umschalten, nicht auf dem Bildschirmzustand.
+                        void save(t, (cur) => {
+                          const months = cur.months.includes(i + 1)
+                            ? cur.months.filter((m) => m !== i + 1)
+                            : [...cur.months, i + 1].sort((a, b) => a - b)
+                          return months.length > 0 ? { months } : {}
+                        })
                       }}
                     >
                       {name.slice(0, 3)}

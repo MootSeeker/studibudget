@@ -4,8 +4,6 @@ import { createStore, type Store } from './store'
 import { storedBalance } from '../domain/wealth'
 import type { Account, AccountKind, Goal } from '../domain/types'
 
-const strip = <T extends { updatedAt: string }>({ updatedAt: _u, ...rest }: T) => rest
-
 /** Konten, Monatsendstände und Sparziele. Alles läuft über den Store, wird also synchronisiert. */
 export function createAccountOps(db: StudiBudgetDB, store: Store = createStore(db)) {
   const live = async <T extends { deleted: boolean }>(rows: Promise<T[]>) =>
@@ -50,7 +48,7 @@ export function createAccountOps(db: StudiBudgetDB, store: Store = createStore(d
         patch = { ...patch, name: patch.name.trim() }
         if (!patch.name) throw new Error('Der Name darf nicht leer sein.')
       }
-      await store.put('accounts', { ...strip(a), ...patch })
+      await store.patch('accounts', a.id, patch)
     },
     async removeAccount(id: string): Promise<void> {
       await store.remove('accounts', id)
@@ -108,8 +106,7 @@ export function createAccountOps(db: StudiBudgetDB, store: Store = createStore(d
         throw new Error('Der Name darf nicht leer sein.')
       if (patch.targetCents !== undefined && !(patch.targetCents > 0))
         throw new Error('Der Zielbetrag muss grösser als 0 sein.')
-      await store.put('goals', {
-        ...strip(g),
+      await store.patch('goals', g.id, {
         ...patch,
         ...(patch.name !== undefined ? { name: patch.name.trim() } : {}),
       })

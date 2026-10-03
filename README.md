@@ -50,12 +50,13 @@ cp .env.example .env.local  # dann API_URL und ANON_KEY aus `npx supabase status
 npm run dev
 ```
 
-| Befehl                 | Zweck                                                                                                 |
-| ---------------------- | ----------------------------------------------------------------------------------------------------- |
-| `npm run verify`       | Lint, Typen, Tests, Build und Build-Prüfung (Definition von «fertig»)                                 |
-| `npm run test:db`      | Tests gegen das lokale Supabase (Zugriffsregeln, Konto, Sync)                                         |
-| `npm run check:launch` | Ist die App bereit für die öffentliche Freigabe? (schlägt absichtlich fehl, solange Texte offen sind) |
-| `npx supabase db push` | Datenbank-Struktur auf das verknüpfte Projekt spielen                                                 |
+| Befehl                 | Zweck                                                                                                                    |
+| ---------------------- | ------------------------------------------------------------------------------------------------------------------------ |
+| `npm run verify`       | Lint, Typen, Tests, Build und Build-Prüfung (Definition von «fertig»)                                                    |
+| `npm run test:slow`    | Alle Tests mit künstlich verlangsamter Datenbank: findet Zeitfehler, die sonst nur auf langsamen Rechnern (CI) auftreten |
+| `npm run test:db`      | Tests gegen das lokale Supabase (Zugriffsregeln, Konto, Sync)                                                            |
+| `npm run check:launch` | Ist die App bereit für die öffentliche Freigabe? (schlägt absichtlich fehl, solange Texte offen sind)                    |
+| `npx supabase db push` | Datenbank-Struktur auf das verknüpfte Projekt spielen                                                                    |
 
 Mails (Bestätigung, Passwort zurücksetzen) landen lokal im Mail-Fänger unter http://127.0.0.1:54324.
 

@@ -89,6 +89,8 @@ export default defineConfig(({ mode }) => {
       environment: 'jsdom',
       setupFiles: ['./src/test/setup.ts'],
       globals: true,
+      // Auf langsamen Rechnern (CI) brauchen die Seitentests, die aus IndexedDB lesen, deutlich länger als lokal.
+      testTimeout: 15_000,
       exclude: [...configDefaults.exclude, '**/*.db.test.ts'],
     },
   }

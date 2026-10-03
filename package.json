@@ -15,7 +15,8 @@
     "verify": "npm run lint && npm run typecheck && npm run test && npm run build && npm run check:build",
     "test:db": "vitest run --config vitest.db.config.ts",
     "check:build": "node scripts/check-build.mjs",
-    "check:launch": "node scripts/check-launch.mjs"
+    "check:launch": "node scripts/check-launch.mjs",
+    "test:slow": "vitest run --config vitest.slow.config.ts"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.117.2",
