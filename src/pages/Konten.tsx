@@ -279,7 +279,7 @@ export function Konten() {
               />
               <select
                 aria-label={`Art ${a.name}`}
-                className="rounded-md border border-border bg-surface px-2 py-2"
+                className="rounded-md border border-control bg-surface px-2 py-2"
                 value={a.kind}
                 onChange={(e) =>
                   run(() => ops.updateAccount(a, { kind: e.target.value as AccountKind }))
@@ -330,7 +330,7 @@ export function Konten() {
           />
           <select
             aria-label="Art des neuen Kontos"
-            className="rounded-md border border-border bg-surface px-2 py-2"
+            className="rounded-md border border-control bg-surface px-2 py-2"
             value={accKind}
             onChange={(e) => setAccKind(e.target.value as AccountKind)}
           >

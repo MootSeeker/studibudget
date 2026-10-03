@@ -37,6 +37,8 @@ function mapError(e: SbAuthError | { message: string; status?: number }): AuthEr
     return new AuthError('unconfirmed', 'Bitte bestätige zuerst deine E-Mail-Adresse.')
   if (/fetch|network|failed to/i.test(msg) || e.status === 0)
     return new AuthError('network', 'Keine Verbindung zum Server.')
+  if (/signups? (are )?(not allowed|disabled)|signup.?disabled/i.test(msg))
+    return new AuthError('other', 'Die Registrierung ist im Moment geschlossen.')
   if (/rate limit|too many/i.test(msg))
     return new AuthError('other', 'Zu viele Versuche. Bitte warte kurz.')
   return new AuthError('other', msg || 'Unbekannter Fehler.')

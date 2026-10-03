@@ -295,7 +295,7 @@ export function Ausgleich() {
             Person
             <select
               aria-label="Gemeinsame Buchungen filtern"
-              className="rounded-md border border-border bg-surface px-2 py-1"
+              className="rounded-md border border-control bg-surface px-2 py-1"
               value={filter}
               onChange={(e) => setFilter(e.target.value)}
             >

@@ -1,7 +1,7 @@
 import { useState, type FormEvent, type ReactNode } from 'react'
 
 export const inputClass =
-  'w-full rounded-md border border-border bg-surface px-3 py-2 text-text outline-none focus:border-accent focus:ring-2 focus:ring-accent/30'
+  'w-full rounded-md border border-control bg-surface px-3 py-2 text-text outline-none focus:border-accent focus:ring-2 focus:ring-accent/30'
 export const buttonClass =
   'rounded-md bg-accent px-4 py-2 font-medium text-accent-text disabled:opacity-50'
 export const linkButtonClass = 'text-sm text-accent underline underline-offset-2'

@@ -37,9 +37,9 @@ export function MonthList({ groups, country, persons, onEdit, onDelete }: MonthL
                 </div>
                 <ul className="mt-1 space-y-1">
                   {c.txs.map((t) => (
-                    <li key={t.id} className="flex items-center gap-3 text-sm">
+                    <li key={t.id} className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm">
                       <span className="w-12 shrink-0 text-muted">{day(t.date)}</span>
-                      <span className="min-w-0 flex-1 truncate">
+                      <span className="min-w-0 flex-1 basis-32 break-words">
                         {t.note || <span className="text-muted">–</span>}
                         {t.shared && (
                           <span className="ml-2 text-xs text-muted">
@@ -50,23 +50,27 @@ export function MonthList({ groups, country, persons, onEdit, onDelete }: MonthL
                           <span className="ml-2 text-xs text-muted">Entnahme</span>
                         )}
                       </span>
-                      <span className="tabular-nums">
-                        {money(t.goalDirection === 'entnahme' ? -t.myAmountCents : t.myAmountCents)}
+                      <span className="ml-auto flex items-center gap-1">
+                        <span className="mr-2 tabular-nums">
+                          {money(
+                            t.goalDirection === 'entnahme' ? -t.myAmountCents : t.myAmountCents,
+                          )}
+                        </span>
+                        <button
+                          className="px-2 py-2 text-accent underline"
+                          onClick={() => onEdit(t)}
+                          aria-label={`Bearbeiten ${t.note || c.category.name}`}
+                        >
+                          Bearbeiten
+                        </button>
+                        <button
+                          className="px-2 py-2 text-bad underline"
+                          onClick={() => onDelete(t)}
+                          aria-label={`Löschen ${t.note || c.category.name}`}
+                        >
+                          Löschen
+                        </button>
                       </span>
-                      <button
-                        className="text-accent underline"
-                        onClick={() => onEdit(t)}
-                        aria-label={`Bearbeiten ${t.note || c.category.name}`}
-                      >
-                        Bearbeiten
-                      </button>
-                      <button
-                        className="text-red-600 underline dark:text-red-400"
-                        onClick={() => onDelete(t)}
-                        aria-label={`Löschen ${t.note || c.category.name}`}
-                      >
-                        Löschen
-                      </button>
                     </li>
                   ))}
                 </ul>

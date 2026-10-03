@@ -108,7 +108,7 @@ function CategoryRow({ cat, areas, amount, month, canUp, canDown, run, setBudget
           Bereich
           <select
             aria-label={`Bereich ${cat.name}`}
-            className="rounded-md border border-border bg-surface px-2 py-1"
+            className="rounded-md border border-control bg-surface px-2 py-1"
             value={cat.areaId}
             onChange={(e) => run(() => ops.updateCategory(cat, { areaId: e.target.value }))}
           >
@@ -169,7 +169,7 @@ function AddCategory({ area, run }: { area: Area; run: (fn: () => Promise<void>)
       />
       <select
         aria-label={`Art der neuen Kategorie in ${area.name}`}
-        className="rounded-md border border-border bg-surface px-2 py-2"
+        className="rounded-md border border-control bg-surface px-2 py-2"
         value={type}
         onChange={(e) => setType(e.target.value as CategoryType)}
       >
