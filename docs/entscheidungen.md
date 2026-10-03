@@ -108,3 +108,19 @@ Der Server speichert nur: E-Mail, verpackte Schlüssel, Datensatz-ID, `hlc`, Lö
 - **Vergleich:** Vormonat (leer = «keine Daten») und Durchschnitt der letzten 3 Monate, in denen es Buchungen gab.
 - **Statusfarben** sind Tokens (`--ok`, `--warn`, `--bad`) mit eigenen Werten für hell und dunkel.
 - Bearbeiten und Löschen bleiben auf der Eingabe-Seite; die Monatsseite ist eine reine Auswertung.
+
+## Statistik und Diagramme
+
+- **Diagramme ohne Bibliothek:** Die Diagramme sind handgeschriebenes SVG/HTML (`src/components/charts/`). Im Plan stand
+  `recharts`; verzichtet wurde darauf, weil zwei einfache Diagramme die App-Grösse mehr als verdoppelt hätten, das Theming
+  über CSS-Variablen (hell/dunkel) so direkt geht und eine Abhängigkeit weniger zu pflegen ist.
+- **Regeln:** Balken höchstens 24 px mit 4 px runden Enden an der Datenseite, Linie 2 px, Punkte mit 2 px Ring in der
+  Flächenfarbe, Gitter als dünne durchgezogene Linien. Eine Serie = eine Farbe, ab zwei Serien immer eine Legende.
+- **Farben:** `--series-1` (Blau, Einnahmen) und `--series-2` (Orange, Ausgaben) in hell/dunkel; geprüft mit dem
+  Palette-Validator (Abstand auch bei Farbfehlsichtigkeit bestanden). Der Saldo ist eine neutrale Linie in Textfarbe.
+- **Nie nur Farbe/Tooltip:** Jeder Monat ist per Tastatur fokussierbar und hat ein vollständiges `aria-label`; jedes
+  Diagramm hat eine Tabellenansicht; Abweichungen im Plan-Ist-Vergleich stehen mit Vorzeichen **und** Wort («drüber»,
+  «darunter», «mehr», «weniger»).
+- **Zeiträume:** Semester, Studienjahr, Kalenderhalbjahr, Kalenderjahr, letzte 6/12 Monate, frei (höchstens 36 Monate).
+  Der Plan eines Zeitraums ist die Summe der Monatsbudgets (inkl. Budgetwechsel mittendrin); ausgeblendete Kategorien
+  zählen nicht zum Plan.
