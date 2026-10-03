@@ -44,8 +44,7 @@ export function createCategoryOps(db: StudiBudgetDB, store: Store = createStore(
         if (!patch.name) throw new Error('Der Name darf nicht leer sein.')
       }
       const moving = patch.areaId !== undefined && patch.areaId !== cat.areaId
-      await store.put('categories', {
-        ...strip(cat),
+      await store.patch('categories', cat.id, {
         ...patch,
         ...(moving ? { order: await nextCategoryOrder() } : {}),
       })
@@ -72,7 +71,7 @@ export function createCategoryOps(db: StudiBudgetDB, store: Store = createStore(
     async renameArea(area: Area, name: string): Promise<void> {
       const clean = name.trim()
       if (!clean) throw new Error('Der Name darf nicht leer sein.')
-      await store.put('areas', { ...strip(area), name: clean })
+      await store.patch('areas', area.id, { name: clean })
     },
   }
 }

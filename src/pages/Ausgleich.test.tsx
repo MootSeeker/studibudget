@@ -60,6 +60,8 @@ async function setup() {
     </MemoryRouter>,
   )
   await screen.findByRole('heading', { level: 1, name: 'Ausgleich' })
+  // Die Personen werden asynchron aus der Datenbank gelesen; erst wenn sie da sind, gibt es etwas auszuwählen.
+  await screen.findAllByRole('option', { name: /^(Anna|Ben|Mia)$/ })
   return user
 }
 const card = (name: string) => screen.getByText(name, { selector: 'p.font-medium' }).closest('li')!

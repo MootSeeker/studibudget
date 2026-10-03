@@ -29,6 +29,8 @@ jobs:
         env:
           VITE_SUPABASE_URL: ${{ vars.VITE_SUPABASE_URL }}
           VITE_SUPABASE_ANON_KEY: ${{ vars.VITE_SUPABASE_ANON_KEY }}
+      # Findet Zeitfehler, die nur auf langsamen Rechnern auftreten (Datenbank künstlich verlangsamt).
+      - run: npm run test:slow
       - uses: actions/upload-pages-artifact@v3
         with:
           path: dist

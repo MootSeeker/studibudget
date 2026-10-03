@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, within } from '@testing-library/react'
+import { fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it } from 'vitest'
 import { db } from '../data/db'
@@ -64,6 +64,8 @@ async function setup() {
   render(<Statistik />)
   await screen.findByRole('heading', { level: 1, name: 'Statistik' })
   await user.selectOptions(screen.getByLabelText('Zeitraum'), 'Letzte 6 Monate')
+  // Die Buchungen werden asynchron aus der Datenbank gelesen; erst wenn sie da sind, stimmen die Zahlen.
+  await waitFor(() => expect(tile('Einnahmen')).toMatch(/CHF 4'000\.00/))
   return user
 }
 const tile = (label: string) =>

@@ -1,4 +1,4 @@
-import { render, screen, within } from '@testing-library/react'
+import { render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it } from 'vitest'
 import { db } from '../data/db'
@@ -66,8 +66,8 @@ describe('Monat-Seite', () => {
     await book('lohn', 100000)
     await book('notgroschen', 5000)
     await setup()
-    expect(within(rowOf('Nettolohn / Nebenjob')).getByText('50 %')).toBeInTheDocument()
-    expect(within(rowOf('Notgroschen')).getByText('25 %')).toBeInTheDocument()
+    expect(await within(rowOf('Nettolohn / Nebenjob')).findByText('50 %')).toBeInTheDocument()
+    expect(await within(rowOf('Notgroschen')).findByText('25 %')).toBeInTheDocument()
     expect(within(rowOf('Nettolohn / Nebenjob')).queryByText('Knapp')).not.toBeInTheDocument()
   })
 
@@ -103,11 +103,13 @@ describe('Monat-Seite', () => {
     await book('einkauf', 50000, '05', NOW, 'Grosseinkauf')
     await book('mensa', 1000, '06', NOW, 'Kaffee')
     await setup()
+    // Buchungen werden asynchron gelesen: erst auf sie warten, dann alles Weitere prüfen.
+    const top = screen.getByText('Grösste Ausgaben').closest('div')!
+    await waitFor(() => expect(within(top).getAllByRole('listitem')).toHaveLength(2))
     const card = screen.getByText('Ausgaben im Vergleich').closest('div')!
     expect(norm(card.textContent)).toMatch(/CHF 510\.00/)
     expect(norm(card.textContent)).toMatch(/Vormonat: CHF 300\.00 \(\+CHF 210\.00\)/)
     expect(norm(card.textContent)).toMatch(/Ø letzte 3 Monate: CHF 300\.00/)
-    const top = screen.getByText('Grösste Ausgaben').closest('div')!
     const items = within(top)
       .getAllByRole('listitem')
       .map((li) => norm(li.textContent))

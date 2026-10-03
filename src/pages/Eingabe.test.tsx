@@ -26,6 +26,8 @@ async function setup() {
   const user = userEvent.setup()
   render(<Eingabe />)
   await screen.findByRole('form', { name: 'Neue Buchung' })
+  // Die Kategorien werden asynchron gelesen; erst dann lässt sich eine auswählen.
+  await screen.findByRole('option', { name: 'Einkauf zuhause' })
   const pick = async (label: string, option: string) =>
     user.selectOptions(screen.getByLabelText(label), option)
   const form = () => within(screen.getByRole('form'))
