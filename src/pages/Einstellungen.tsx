@@ -1,6 +1,13 @@
 import { useState } from 'react'
 import { useAuth } from '../auth/AuthProvider'
 import { Field, Form, buttonClass } from '../auth/ui'
+import { useSettings } from '../data/hooks'
+import {
+  DisplaySection,
+  HousingSection,
+  PersonsSection,
+  SemesterSection,
+} from './einstellungen/Sections'
 
 function ChangePassword() {
   const auth = useAuth()
@@ -98,10 +105,18 @@ function DeleteAccount() {
 
 export function Einstellungen() {
   const auth = useAuth()
+  const settings = useSettings()
   return (
     <section className="max-w-xl space-y-8">
       <h1 className="text-2xl font-semibold">Einstellungen</h1>
-      <p className="text-muted">Weitere Einstellungen (Land, Wohnsituation, Semester …) folgen.</p>
+      {settings && (
+        <>
+          <HousingSection settings={settings} />
+          <PersonsSection settings={settings} />
+          <SemesterSection settings={settings} />
+          <DisplaySection settings={settings} />
+        </>
+      )}
 
       <div className="space-y-6">
         <h2 className="text-xl font-semibold">Konto</h2>

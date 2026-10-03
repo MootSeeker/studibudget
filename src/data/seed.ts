@@ -30,14 +30,8 @@ export function defaultSettings(
   }
 }
 
-/** Legt Einstellungen sowie Bereiche und Kategorien aus dem Katalog an (Erststart). */
-export async function seedFromCatalog(
-  db: StudiBudgetDB,
-  country: Country,
-  living: Living,
-  hasCar: boolean,
-): Promise<void> {
-  const store = createStore(db)
+/** Bereiche und Kategorien aus dem Katalog als Entwürfe (noch nicht gespeichert). */
+export function buildCatalogDrafts(country: Country, living: Living, hasCar: boolean) {
   const areas = new Map<string, Draft<'areas'>>()
   const categories: Draft<'categories'>[] = []
   for (const it of catalogFor(country, living, hasCar)) {
@@ -63,7 +57,19 @@ export async function seedFromCatalog(
       catalogKey: it.key,
     })
   }
+  return { areas: [...areas.values()], categories }
+}
+
+/** Legt Einstellungen sowie Bereiche und Kategorien aus dem Katalog an. */
+export async function seedFromCatalog(
+  db: StudiBudgetDB,
+  country: Country,
+  living: Living,
+  hasCar: boolean,
+): Promise<void> {
+  const store = createStore(db)
+  const { areas, categories } = buildCatalogDrafts(country, living, hasCar)
   await store.put('settings', defaultSettings(country, living, hasCar))
-  await store.putMany('areas', [...areas.values()])
+  await store.putMany('areas', areas)
   await store.putMany('categories', categories)
 }

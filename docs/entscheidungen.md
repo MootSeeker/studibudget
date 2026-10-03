@@ -59,3 +59,15 @@ Der Server speichert nur: E-Mail, verpackte Schlüssel, Datensatz-ID, `hlc`, Lö
 - **Fehlerverhalten:** Netzwerkfehler → «Offline», Änderungen bleiben vorgemerkt. Nicht entschlüsselbare
   Datensätze werden übersprungen und gezählt, der Rest wird übernommen.
 - **Einstellungen** haben eine feste UUID, weil es pro Konto genau eine Zeile gibt und der Server UUIDs verlangt.
+
+## Einrichtung und Einstellungen
+
+- **Assistent:** erscheint erst nach dem ersten Abgleich mit dem Server. Wer sich auf einem neuen Gerät anmeldet,
+  hat seine Einstellungen bereits im Konto und soll nicht ein zweites Mal einrichten. Ohne Verbindung gibt es
+  deshalb «Nochmals versuchen» statt Assistent. Gespeichert wird erst am Ende; `settings` kommt zuletzt, erst dann
+  gilt die Einrichtung als abgeschlossen.
+- **Wechsel von Land, Wohnsituation oder Auto:** zeigt vorab, welche Standardkategorien hinzukommen, wieder
+  eingeblendet, ausgeblendet oder umbenannt werden. Kategorien werden nie gelöscht, nur ausgeblendet; umbenannt
+  wird nur, wenn der Name noch dem Standardnamen entspricht. Beträge werden beim Landeswechsel nicht umgerechnet.
+- **Darstellung** liegt in den (synchronisierten) Einstellungen; der Browser merkt sich sie zusätzlich lokal,
+  damit beim Laden nichts aufblitzt.
