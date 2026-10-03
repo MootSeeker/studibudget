@@ -44,3 +44,18 @@ Der Server speichert nur: E-Mail, verpackte Schlüssel, Datensatz-ID, `hlc`, Lö
 - **Passwort ändern:** Zuerst wird das Auth-Passwort gesetzt, dann der Datenschlüssel neu verpackt (3 Versuche).
   Bleibt der zweite Schritt trotzdem aus, rettet der Wiederherstellungsschlüssel.
 - **Abmelden** löscht Sitzung, lokale Daten und lokalen Schlüssel.
+
+## Sync
+
+- **Offline-first:** Die App liest und schreibt nur lokal (Dexie). Geschrieben wird ausschliesslich über
+  `src/data/store.ts`: Es stempelt jeden Datensatz mit der Uhr und merkt ihn in der Outbox vor.
+- **Uhr (HLC):** `updatedAt` ist ein Zeitstempel `Wanduhr-Zähler-Gerät` fester Länge, also als Text sortierbar.
+  Sie läuft nie rückwärts, auch wenn die Systemzeit springt, und nimmt fremde Stempel zur Kenntnis.
+- **Konflikte:** Last-Writer-Wins pro Datensatz (grössere `updatedAt` gewinnt), clientseitig und im Server
+  (`push_records`). Löschen ist ein Grabstein (`deleted: true`).
+- **Ablauf:** Hochladen (Outbox, höchstens 500 pro Aufruf, wiederholbar ohne Schaden), dann Holen (`seq`
+  grösser als der letzte Stand, seitenweise). Auslöser: Start, 2 s nach einer Änderung, wieder online,
+  App wieder sichtbar, alle 60 s.
+- **Fehlerverhalten:** Netzwerkfehler → «Offline», Änderungen bleiben vorgemerkt. Nicht entschlüsselbare
+  Datensätze werden übersprungen und gezählt, der Rest wird übernommen.
+- **Einstellungen** haben eine feste UUID, weil es pro Konto genau eine Zeile gibt und der Server UUIDs verlangt.

@@ -2,7 +2,7 @@ import 'fake-indexeddb/auto'
 import { describe, expect, it } from 'vitest'
 import { catalogFor } from './catalog'
 import { StudiBudgetDB } from './db'
-import { seedFromCatalog } from './seed'
+import { SETTINGS_ID, seedFromCatalog } from './seed'
 
 const names = (c: ReturnType<typeof catalogFor>) => c.map((i) => i.name)
 
@@ -37,7 +37,7 @@ describe('db seed', () => {
   it('legt Einstellungen, Bereiche und Kategorien an', async () => {
     const db = new StudiBudgetDB('test-seed')
     await seedFromCatalog(db, 'CH', 'wg', false)
-    const s = await db.settings.get('settings')
+    const s = await db.settings.get(SETTINGS_ID)
     expect(s).toMatchObject({ country: 'CH', living: 'wg', onboardingDone: false })
     expect(s!.semesters[0].name).toBe('Herbstsemester')
     const areas = await db.areas.toArray()

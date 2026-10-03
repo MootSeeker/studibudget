@@ -27,6 +27,15 @@ export interface KeystoreEntry {
   key: CryptoKey
 }
 
+/** Lokaler Sync-Zustand (pro Gerät, nicht synchronisiert). */
+export interface SyncStateRow {
+  id: 'state'
+  deviceId: string
+  lastSeq: number
+  wall: number
+  counter: number
+}
+
 export class StudiBudgetDB extends Dexie {
   settings!: Table<Settings, string>
   persons!: Table<Person, string>
@@ -41,6 +50,7 @@ export class StudiBudgetDB extends Dexie {
   goals!: Table<Goal, string>
   outbox!: Table<OutboxEntry, number>
   keystore!: Table<KeystoreEntry, string>
+  syncState!: Table<SyncStateRow, string>
 
   constructor(name = 'studibudget') {
     super(name)
@@ -59,6 +69,7 @@ export class StudiBudgetDB extends Dexie {
       outbox: '++seq, table',
     })
     this.version(2).stores({ keystore: 'id' })
+    this.version(3).stores({ syncState: 'id' })
   }
 
   /** Alle lokalen Daten und Schlüssel löschen (Abmelden, Kontowechsel). */
