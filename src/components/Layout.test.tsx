@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react'
+import { cleanup, render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it } from 'vitest'
 import App from '../App'
@@ -87,5 +87,32 @@ describe('Layout', () => {
     const nav = screen.getByRole('navigation', { name: 'Hauptnavigation' })
     expect(nav).toHaveTextContent('Einstellungen')
     expect(screen.getByRole('link', { name: 'Eingabe' })).toHaveAttribute('aria-current', 'page')
+  })
+
+  it('Esc schliesst das Menü und setzt den Fokus auf den Knopf', async () => {
+    const user = await setup()
+    await user.click(screen.getByRole('button', { name: 'Menü' }))
+    await user.keyboard('{Escape}')
+    const toggle = screen.getByRole('button', { name: 'Menü' })
+    expect(toggle).toHaveAttribute('aria-expanded', 'false')
+    expect(toggle).toHaveFocus()
+  })
+
+  it('Seitenleiste lässt sich einklappen und einblenden; die Wahl bleibt erhalten', async () => {
+    localStorage.removeItem('studibudget:nav-collapsed')
+    const user = await setup()
+    expect(screen.getByRole('navigation', { name: 'Hauptnavigation' }).className).toContain(
+      'md:flex',
+    )
+    await user.click(screen.getByRole('button', { name: 'Menü einklappen' }))
+    expect(screen.getByRole('navigation', { name: 'Hauptnavigation' }).className).toContain(
+      'md:hidden',
+    )
+    expect(localStorage.getItem('studibudget:nav-collapsed')).toBe('1')
+    cleanup()
+    await setup()
+    expect(screen.getByRole('button', { name: 'Menü einblenden' })).toBeInTheDocument()
+    await userEvent.click(screen.getByRole('button', { name: 'Menü einblenden' }))
+    expect(localStorage.getItem('studibudget:nav-collapsed')).toBe('0')
   })
 })

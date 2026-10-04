@@ -84,99 +84,105 @@ export function Eingabe() {
   }
 
   return (
-    <section className="max-w-3xl space-y-6">
+    <section className="max-w-3xl space-y-6 xl:max-w-6xl">
       <h1 className="text-2xl font-semibold">Eingabe</h1>
 
-      <EntryForm
-        key={editing?.id ?? 'neu'}
-        settings={settings}
-        categories={categories}
-        areas={areas}
-        persons={persons}
-        goals={goals}
-        cars={cars}
-        initial={editing}
-        defaultDate={defaultDate}
-        onSubmit={submit}
-        onCancel={editing ? () => setEditing(null) : undefined}
-      />
+      <div className="space-y-6 xl:grid xl:grid-cols-[minmax(0,26rem)_minmax(0,1fr)] xl:items-start xl:gap-8 xl:space-y-0">
+        <div className="xl:sticky xl:top-4">
+          <EntryForm
+            key={editing?.id ?? 'neu'}
+            settings={settings}
+            categories={categories}
+            areas={areas}
+            persons={persons}
+            goals={goals}
+            cars={cars}
+            initial={editing}
+            defaultDate={defaultDate}
+            onSubmit={submit}
+            onCancel={editing ? () => setEditing(null) : undefined}
+          />
+        </div>
+        <div className="space-y-6">
+          <div className="flex items-center justify-between">
+            <button
+              className="min-h-11 min-w-11 rounded-md border border-border px-3 py-2"
+              aria-label="Vorheriger Monat"
+              onClick={() => setMonth(addMonths(month, -1))}
+            >
+              ◀
+            </button>
+            <h2 className="text-lg font-semibold" aria-live="polite">
+              {label}
+            </h2>
+            <button
+              className="min-h-11 min-w-11 rounded-md border border-border px-3 py-2"
+              aria-label="Nächster Monat"
+              onClick={() => setMonth(addMonths(month, 1))}
+            >
+              ▶
+            </button>
+          </div>
 
-      <div className="flex items-center justify-between">
-        <button
-          className="rounded-md border border-border px-3 py-2"
-          aria-label="Vorheriger Monat"
-          onClick={() => setMonth(addMonths(month, -1))}
-        >
-          ◀
-        </button>
-        <h2 className="text-lg font-semibold" aria-live="polite">
-          {label}
-        </h2>
-        <button
-          className="rounded-md border border-border px-3 py-2"
-          aria-label="Nächster Monat"
-          onClick={() => setMonth(addMonths(month, 1))}
-        >
-          ▶
-        </button>
+          <dl className="grid grid-cols-3 gap-3 text-center text-sm">
+            <div className="rounded-md border border-border bg-surface p-2">
+              <dt className="text-muted">Einnahmen</dt>
+              <dd className="font-semibold">{money(totals.einnahmen)}</dd>
+            </div>
+            <div className="rounded-md border border-border bg-surface p-2">
+              <dt className="text-muted">Ausgaben</dt>
+              <dd className="font-semibold">{money(totals.ausgaben)}</dd>
+            </div>
+            <div className="rounded-md border border-border bg-surface p-2">
+              <dt className="text-muted">Gespart</dt>
+              <dd className="font-semibold">{money(totals.sparen)}</dd>
+            </div>
+          </dl>
+
+          {open.length > 0 && (
+            <div
+              role="status"
+              className="flex items-center justify-between gap-3 rounded-md border border-accent/40 bg-accent/10 px-4 py-3 text-sm"
+            >
+              <span>
+                Fixkosten für {MONTH_NAMES[Number(month.slice(5, 7)) - 1]} buchen? ({open.length}{' '}
+                offen)
+              </span>
+              <button
+                className="rounded-md bg-accent px-3 py-1 text-accent-text"
+                onClick={() => setBooking(true)}
+              >
+                Prüfen und buchen
+              </button>
+            </div>
+          )}
+
+          <MonthList
+            groups={groups}
+            country={country}
+            persons={persons}
+            cars={cars}
+            onEdit={(t) => {
+              setEditing(t)
+              window.scrollTo({ top: 0, behavior: 'smooth' })
+            }}
+            onDelete={(t) =>
+              window.confirm('Buchung löschen?') && void store.remove('transactions', t.id)
+            }
+          />
+
+          {booking && (
+            <BookTemplatesDialog
+              month={month}
+              country={country}
+              templates={open}
+              categories={categories}
+              onBook={bookTemplates}
+              onClose={() => setBooking(false)}
+            />
+          )}
+        </div>
       </div>
-
-      <dl className="grid grid-cols-3 gap-3 text-center text-sm">
-        <div className="rounded-md border border-border bg-surface p-2">
-          <dt className="text-muted">Einnahmen</dt>
-          <dd className="font-semibold">{money(totals.einnahmen)}</dd>
-        </div>
-        <div className="rounded-md border border-border bg-surface p-2">
-          <dt className="text-muted">Ausgaben</dt>
-          <dd className="font-semibold">{money(totals.ausgaben)}</dd>
-        </div>
-        <div className="rounded-md border border-border bg-surface p-2">
-          <dt className="text-muted">Gespart</dt>
-          <dd className="font-semibold">{money(totals.sparen)}</dd>
-        </div>
-      </dl>
-
-      {open.length > 0 && (
-        <div
-          role="status"
-          className="flex items-center justify-between gap-3 rounded-md border border-accent/40 bg-accent/10 px-4 py-3 text-sm"
-        >
-          <span>
-            Fixkosten für {MONTH_NAMES[Number(month.slice(5, 7)) - 1]} buchen? ({open.length} offen)
-          </span>
-          <button
-            className="rounded-md bg-accent px-3 py-1 text-accent-text"
-            onClick={() => setBooking(true)}
-          >
-            Prüfen und buchen
-          </button>
-        </div>
-      )}
-
-      <MonthList
-        groups={groups}
-        country={country}
-        persons={persons}
-        cars={cars}
-        onEdit={(t) => {
-          setEditing(t)
-          window.scrollTo({ top: 0, behavior: 'smooth' })
-        }}
-        onDelete={(t) =>
-          window.confirm('Buchung löschen?') && void store.remove('transactions', t.id)
-        }
-      />
-
-      {booking && (
-        <BookTemplatesDialog
-          month={month}
-          country={country}
-          templates={open}
-          categories={categories}
-          onBook={bookTemplates}
-          onClose={() => setBooking(false)}
-        />
-      )}
     </section>
   )
 }

@@ -168,7 +168,7 @@ export function Statistik() {
     v === null ? '–' : `${v.toLocaleString('de-CH', { maximumFractionDigits: 1 })} %`
 
   return (
-    <section className="max-w-4xl space-y-6">
+    <section className="max-w-4xl space-y-6 xl:max-w-6xl 2xl:max-w-7xl">
       <h1 className="text-2xl font-semibold">Statistik</h1>
 
       <div className="flex flex-wrap items-end gap-3" role="group" aria-label="Zeitraum wählen">

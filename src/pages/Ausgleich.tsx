@@ -46,7 +46,7 @@ export function Ausgleich() {
   if (!settings) return null
   if (settings.living !== 'wg' && settings.living !== 'partner') {
     return (
-      <section className="max-w-2xl space-y-4">
+      <section className="max-w-2xl space-y-4 xl:max-w-4xl">
         <h1 className="text-2xl font-semibold">Ausgleich</h1>
         <p className="rounded-md border border-border bg-surface p-4 text-muted">
           Den Ausgleich brauchst du nur, wenn du in einer WG oder mit Partner/in wohnst und Kosten
