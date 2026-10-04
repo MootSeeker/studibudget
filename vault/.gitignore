@@ -1,0 +1,14 @@
+# Per-device Obsidian UI state — open tabs, pane layout, sidebar widths. Committing
+# this causes a merge conflict or a silent layout reset every time a second device
+# opens the vault. The shared config (app.json, appearance.json, core-plugins.json,
+# daily-notes.json, templates.json, graph.json) stays tracked.
+.obsidian/workspace.json
+.obsidian/workspace-mobile.json
+
+# Local caches and per-install state some plugins keep in .obsidian/.
+.obsidian/plugins/*/data.json
+.obsidian/.trash/
+
+# OS cruft
+.DS_Store
+Thumbs.db
