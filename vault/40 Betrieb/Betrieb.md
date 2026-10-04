@@ -12,8 +12,7 @@ tags:
 
 # Betrieb
 
-- **Hosting:** GitHub Pages, Basis `/studibudget/`. Der Workflow `deploy.yml` führt auf PRs und `main` `verify` und
-  `test:slow` aus; das Deployment passiert nur auf `main`.
+- **Hosting:** GitHub Pages, Basis `/studibudget/`. Der Workflow `deploy.yml` führt auf PRs und `main` parallele Jobs aus (statisch, unit mit Coverage, langsam, datenbank mit lokalem Supabase, build, bericht); das Deployment passiert nur auf `main` und erst nach allen Jobs.
 - **Backend:** Supabase-Projekt (Auth + Tabellen `user_keys`, `records`, RPC `push_records`, `delete_account`). Die
   Projekt-URL steht ohnehin öffentlich in der Content-Security-Policy; den Anon-Key liefern GitHub-Variablen
   (`VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`) beim Build.
