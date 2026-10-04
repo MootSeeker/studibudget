@@ -89,6 +89,7 @@ const schemas = {
     shared,
     months: z.array(z.number().int().min(1).max(12)).min(1).max(12),
     active: z.boolean(),
+    noReserve: z.boolean().optional(),
   }),
   settlements: z.object({
     ...common,

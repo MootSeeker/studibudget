@@ -227,3 +227,9 @@ Zwei Arten von Fehlern ergeben sich daraus, beide wurden durch eine rote CI gefu
 
 `npm run test:slow` verzögert jeden Lesezugriff (150 ms) und lässt alle Tests laufen; er ist Teil der CI. `test.testTimeout`
 beträgt 15 s, `asyncUtilTimeout` 4 s.
+
+## Intervalle und Rückstellung (Issue #18)
+
+- Das Intervall ist nur eine Eingabehilfe: Gespeichert werden weiterhin die Fälligkeitsmonate (`Template.months`). Alte Daten und Backups bleiben gültig.
+- «Wiederholen» im Eingabeformular legt eine Vorlage mit dem gewählten Rhythmus ab dem Monat der Buchung an. Fällig wird sie über das bestehende Banner «Fixkosten buchen?».
+- Die Rückstellung (Jahresbetrag ÷ 12 für alle Ausgaben-Vorlagen, die nicht jeden Monat fällig sind) ist nur ein Hinweis auf Monats- und Budgetseite. Saldo und Ampel bleiben unverändert. Pro Vorlage abschaltbar (`noReserve`). Bei geteilten Ausgaben zählt der Eigenanteil.
