@@ -77,11 +77,13 @@ describe('Monat-Seite', () => {
     await setup()
     const table = screen.getByRole('table')
     const saldo = within(table).getByRole('row', { name: /Saldo/ })
-    const cells = within(saldo)
-      .getAllByRole('cell')
-      .map((c) => norm(c.textContent))
-    expect(cells[0]).toBe('CHF 500.00') // Plan: 2000 − 800 − 400 − 100 − 200
-    expect(cells[1]).toBe("CHF 1'200.00") // Ist: 2000 − 800
+    const cells = () =>
+      within(saldo)
+        .getAllByRole('cell')
+        .map((c) => norm(c.textContent))
+    // Die Buchungen werden asynchron gelesen: erst warten, bis der Ist-Wert da ist.
+    await waitFor(() => expect(cells()[1]).toBe("CHF 1'200.00")) // Ist: 2000 − 800
+    expect(cells()[0]).toBe('CHF 500.00') // Plan: 2000 − 800 − 400 − 100 − 200
     expect(within(table).getByRole('row', { name: /Einnahmen/ })).toHaveTextContent(/2'?000\.00/)
   })
 
