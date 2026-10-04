@@ -1,0 +1,71 @@
+{
+  "_hinweis": "Einzige Quelle für die Coverage-Bereiche. `schwelle` = Untergrenze (CI wird rot), `ziel` = Ziel in Prozent. Untergrenzen nur mit `npm run coverage:ratchet` anheben.",
+  "bereiche": [
+    {
+      "name": "Domain",
+      "glob": "src/domain/**",
+      "ziel": 95,
+      "schwelle": {
+        "lines": 99,
+        "statements": 98,
+        "functions": 99,
+        "branches": 92
+      }
+    },
+    {
+      "name": "Krypto",
+      "glob": "src/crypto/**",
+      "ziel": 95,
+      "schwelle": {
+        "lines": 97,
+        "statements": 96,
+        "functions": 94,
+        "branches": 86
+      }
+    },
+    {
+      "name": "Sync",
+      "glob": "src/sync/**",
+      "ziel": 95,
+      "schwelle": {
+        "lines": 70,
+        "statements": 66,
+        "functions": 59,
+        "branches": 51
+      }
+    },
+    {
+      "name": "Daten",
+      "glob": "src/data/**",
+      "ziel": 90,
+      "schwelle": {
+        "lines": 97,
+        "statements": 95,
+        "functions": 93,
+        "branches": 92
+      }
+    },
+    {
+      "name": "Konto",
+      "glob": "src/auth/**",
+      "ziel": 90,
+      "schwelle": {
+        "lines": 23,
+        "statements": 22,
+        "functions": 19,
+        "branches": 28
+      }
+    },
+    {
+      "name": "Oberfläche",
+      "glob": "src/{components,pages,onboarding,legal,lib}/**",
+      "ziel": 80,
+      "schwelle": {
+        "lines": 81,
+        "statements": 80,
+        "functions": 75,
+        "branches": 72
+      }
+    }
+  ]
+}
