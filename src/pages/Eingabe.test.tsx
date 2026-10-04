@@ -282,7 +282,7 @@ describe('Eingabe-Seite', () => {
     vi.spyOn(window, 'confirm').mockReturnValue(true)
     const id = await makeTemplate('miete', 80000)
     const { user } = await setup()
-    await user.click(screen.getByRole('button', { name: 'Alle überspringen' }))
+    await user.click(await screen.findByRole('button', { name: 'Alle überspringen' }))
     await waitFor(async () => expect((await db.templates.get(id))!.skipMonths).toHaveLength(1))
     await waitFor(() => expect(screen.queryByText(/buchen\?/)).not.toBeInTheDocument())
 
