@@ -3,6 +3,8 @@ import userEvent from '@testing-library/user-event'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { db } from '../data/db'
 import { completeOnboarding } from '../data/onboarding'
+import { newId } from '../data/seed'
+import { store } from '../data/store'
 import { defaultSemesters } from '../domain/period'
 import { Eingabe } from './Eingabe'
 
@@ -174,5 +176,56 @@ describe('Eingabe-Seite', () => {
     await user.click(screen.getByRole('button', { name: 'Vorheriger Monat' }))
     await screen.findByText(/noch keine Buchungen/)
     expect(screen.queryByText(/buchen\?/)).not.toBeInTheDocument()
+  })
+
+  it('Auto: Auswahl nur bei Auto-Kategorien, mit einem Auto vorgewählt', async () => {
+    await db.wipe()
+    await completeOnboarding(db, {
+      country: 'CH',
+      living: 'allein',
+      hasCar: true,
+      partnerSharePct: 50,
+      persons: [],
+      semesters: defaultSemesters('CH'),
+      budgets: {},
+    })
+    const golf = newId()
+    await store.put('cars', { id: golf, deleted: false, name: 'Golf', archived: false, order: 0 })
+    const { user, pick } = await setup()
+    await screen.findByRole('option', { name: 'Parkplatz' })
+    await pick('Kategorie', 'Miete')
+    expect(screen.queryByLabelText('Auto')).not.toBeInTheDocument()
+    await pick('Kategorie', 'Parkplatz')
+    await waitFor(() => expect(screen.getByLabelText('Auto')).toHaveValue(golf))
+    await user.type(screen.getByLabelText(/Betrag/), '80')
+    await user.click(screen.getByRole('button', { name: 'Speichern' }))
+    await screen.findByText('Gespeichert.')
+    expect((await db.transactions.toArray())[0].carId).toBe(golf)
+  })
+
+  it('Auto: mit zwei Autos ist nichts vorgewählt, «kein bestimmtes» ist möglich', async () => {
+    await db.wipe()
+    await completeOnboarding(db, {
+      country: 'CH',
+      living: 'allein',
+      hasCar: true,
+      partnerSharePct: 50,
+      persons: [],
+      semesters: defaultSemesters('CH'),
+      budgets: {},
+    })
+    for (const [i, name] of ['Golf', 'Vespa'].entries())
+      await store.put('cars', { id: newId(), deleted: false, name, archived: false, order: i })
+    const { user, pick } = await setup()
+    await screen.findByRole('option', { name: 'Parkplatz' })
+    await pick('Kategorie', 'Parkplatz')
+    const auto = await screen.findByLabelText('Auto')
+    await waitFor(() => expect(auto).toHaveValue(''))
+    await user.selectOptions(auto, 'Vespa')
+    await user.type(screen.getByLabelText(/Betrag/), '20')
+    await user.click(screen.getByRole('button', { name: 'Speichern' }))
+    await screen.findByText('Gespeichert.')
+    const vespa = (await db.cars.toArray()).find((c) => c.name === 'Vespa')!
+    expect((await db.transactions.toArray())[0].carId).toBe(vespa.id)
   })
 })

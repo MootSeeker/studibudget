@@ -233,3 +233,10 @@ beträgt 15 s, `asyncUtilTimeout` 4 s.
 - Das Intervall ist nur eine Eingabehilfe: Gespeichert werden weiterhin die Fälligkeitsmonate (`Template.months`). Alte Daten und Backups bleiben gültig.
 - «Wiederholen» im Eingabeformular legt eine Vorlage mit dem gewählten Rhythmus ab dem Monat der Buchung an. Fällig wird sie über das bestehende Banner «Fixkosten buchen?».
 - Die Rückstellung (Jahresbetrag ÷ 12 für alle Ausgaben-Vorlagen, die nicht jeden Monat fällig sind) ist nur ein Hinweis auf Monats- und Budgetseite. Saldo und Ampel bleiben unverändert. Pro Vorlage abschaltbar (`noReserve`). Bei geteilten Ausgaben zählt der Eigenanteil.
+
+## Mehrere Autos (Issue #16)
+
+- Es bleibt ein Bereich «Mobilität Auto». Das Auto wird pro Buchung gewählt (`Transaction.carId`) und pro Fixkosten-Vorlage festgelegt (`Template.carId`). Budget und Statistik bleiben pro Kategorie, nicht pro Auto.
+- Autos sind eine eigene synchronisierte Tabelle `cars` (Name, archiviert, Reihenfolge). Verwaltet werden sie in den Einstellungen, sichtbar bei eingeschaltetem «Auto vorhanden».
+- Die Auswahl erscheint bei allen Kategorien des Auto-Bereichs, auch bei selbst angelegten (`isCarCategory`). Mit genau einem aktiven Auto ist es vorgewählt. Archivierte Autos bleiben an alten Buchungen sichtbar.
+- Backups ohne `cars` (ältere Versionen) bleiben importierbar.

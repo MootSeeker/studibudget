@@ -3,7 +3,7 @@ import { buttonClass, Field, inputClass } from '../../auth/ui'
 import { MonthSelect } from '../../components/MonthSelect'
 import { applyCatalogPlan, planCatalogChange, type CatalogPlan } from '../../data/catalogSync'
 import { db } from '../../data/db'
-import { usePersons } from '../../data/hooks'
+import { useAllCars, usePersons } from '../../data/hooks'
 import { newId } from '../../data/seed'
 import { store } from '../../data/store'
 import { defaultSemesters } from '../../domain/period'
@@ -292,6 +292,86 @@ export function PersonsSection({ settings }: { settings: Settings }) {
       {pctError && (
         <p role="alert" className="text-sm text-red-600">
           {pctError}
+        </p>
+      )}
+    </Section>
+  )
+}
+
+export function CarsSection({ settings }: { settings: Settings }) {
+  const cars = useAllCars()
+  const [name, setName] = useState('')
+  const [error, setError] = useState<string | null>(null)
+
+  if (!settings.hasCar) return null
+  const taken = (except?: string) => cars.filter((c) => c.id !== except).map((c) => c.name)
+
+  async function add() {
+    const n = name.trim()
+    if (!n) return
+    if (isDuplicateName(n, taken()))
+      return setError(`«${n}» gibt es schon. Bitte wähle einen anderen Namen.`)
+    setError(null)
+    const order = cars.reduce((m, c) => Math.max(m, c.order), -1) + 1
+    await store.put('cars', { id: newId(), deleted: false, name: n, archived: false, order })
+    setName('')
+  }
+
+  return (
+    <Section title="Autos">
+      <ul className="space-y-2">
+        {cars.map((c) => (
+          <li key={c.id} className="flex items-center gap-2">
+            <input
+              aria-label={`Name ${c.name}`}
+              className={inputClass}
+              defaultValue={c.name}
+              key={c.name}
+              onBlur={(e) => {
+                const v = e.target.value.trim()
+                if (!v || v === c.name) return
+                if (isDuplicateName(v, taken(c.id))) {
+                  setError(`«${v}» gibt es schon. Bitte wähle einen anderen Namen.`)
+                  e.target.value = c.name
+                  return
+                }
+                setError(null)
+                void store.patch('cars', c.id, { name: v })
+              }}
+            />
+            <label className="flex items-center gap-1 whitespace-nowrap text-sm">
+              <input
+                type="checkbox"
+                checked={c.archived}
+                onChange={() =>
+                  void store.patch('cars', c.id, (cur) => ({ archived: !cur.archived }))
+                }
+              />
+              archiviert
+            </label>
+          </li>
+        ))}
+        {cars.length === 0 && <li className="text-sm text-muted">Noch kein Auto eingetragen.</li>}
+      </ul>
+      <div className="flex gap-2">
+        <input
+          aria-label="Neues Auto"
+          className={inputClass}
+          placeholder="Name, z. B. Golf"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+        />
+        <button className={buttonClass} onClick={add}>
+          Hinzufügen
+        </button>
+      </div>
+      <p className="text-xs text-muted">
+        Bei Buchungen im Bereich «Mobilität Auto» kannst du das Auto wählen. Archivierte Autos
+        erscheinen nicht mehr bei neuen Buchungen; alte Buchungen behalten ihr Auto.
+      </p>
+      {error && (
+        <p role="alert" className="text-sm text-red-600">
+          {error}
         </p>
       )}
     </Section>

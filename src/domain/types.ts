@@ -77,6 +77,7 @@ export interface Transaction extends Synced {
   templateMonth?: string
   goalId?: string
   goalDirection?: 'einzahlung' | 'entnahme'
+  carId?: string
 }
 
 export interface Template extends Synced {
@@ -88,6 +89,7 @@ export interface Template extends Synced {
   active: boolean
   /** true = nicht in die Rückstellung für seltene Kosten einrechnen. */
   noReserve?: boolean
+  carId?: string
 }
 
 export interface Settlement extends Synced {
@@ -111,6 +113,12 @@ export interface AccountBalance extends Synced {
   accountId: string
   month: string
   amountCents: number
+}
+
+export interface Car extends Synced {
+  name: string
+  archived: boolean
+  order: number
 }
 
 export interface Goal extends Synced {

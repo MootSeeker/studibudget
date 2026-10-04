@@ -5,6 +5,7 @@ import { useSettings } from '../data/hooks'
 import { BackupSection } from './einstellungen/BackupSection'
 import { InstallSection } from './einstellungen/InstallSection'
 import {
+  CarsSection,
   DisplaySection,
   HousingSection,
   PersonsSection,
@@ -115,6 +116,7 @@ export function Einstellungen() {
         <>
           <HousingSection settings={settings} />
           <PersonsSection settings={settings} />
+          <CarsSection settings={settings} />
           <SemesterSection settings={settings} />
           <DisplaySection settings={settings} />
           <BackupSection settings={settings} />
