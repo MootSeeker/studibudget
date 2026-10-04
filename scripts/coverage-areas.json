@@ -18,9 +18,9 @@
       "ziel": 95,
       "schwelle": {
         "lines": 97,
-        "statements": 96,
+        "statements": 97,
         "functions": 94,
-        "branches": 86
+        "branches": 99
       }
     },
     {
@@ -42,7 +42,7 @@
         "lines": 97,
         "statements": 95,
         "functions": 93,
-        "branches": 92
+        "branches": 93
       }
     },
     {

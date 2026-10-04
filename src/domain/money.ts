@@ -35,6 +35,8 @@ export function parseAmount(input: string): number | null {
       frac = s.slice(decimalAt + 1)
     }
   }
+  // Tausendergruppen bestehen aus genau drei Ziffern («1.234.567»); «1.2.3» ist ein Tippfehler, kein Betrag.
+  if (!/^-?(\d*|\d{1,3}([.,]\d{3})+)$/.test(intPart)) return null
   intPart = intPart.replace(/[.,]/g, '')
   if (intPart === '' || intPart === '-') intPart = intPart + '0'
   const cents =

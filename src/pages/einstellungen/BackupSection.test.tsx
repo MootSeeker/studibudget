@@ -3,7 +3,7 @@ import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { BackupReminder } from '../../components/BackupReminder'
-import { exportBackup } from '../../data/backup'
+import { MAX_BACKUP_BYTES, exportBackup } from '../../data/backup'
 import { db } from '../../data/db'
 import { useSettings } from '../../data/hooks'
 import { completeOnboarding } from '../../data/onboarding'
@@ -236,5 +236,20 @@ describe('Erinnerung ans Backup', () => {
     })
     renderReminder()
     expect(await screen.findByText(/Dein letztes Backup ist 12 Tage alt/)).toBeInTheDocument()
+  })
+})
+
+describe('Backup einspielen: zu grosse Datei', { tags: ['negativ'] }, () => {
+  it('wird abgelehnt, ohne sie zu lesen (Regression #42)', { tags: ['regression'] }, async () => {
+    await seed()
+    const huge = new File([new Uint8Array(MAX_BACKUP_BYTES + 1)], 'gross.json', {
+      type: 'application/json',
+    })
+    const read = vi.spyOn(huge, 'text')
+    const user = userEvent.setup()
+    render(<Harness />)
+    await user.upload(await screen.findByLabelText('Backup einspielen'), huge)
+    expect(await screen.findByRole('alert')).toHaveTextContent(/zu gross/)
+    expect(read).not.toHaveBeenCalled()
   })
 })

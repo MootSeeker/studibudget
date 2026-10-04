@@ -86,7 +86,10 @@ export function BackupSection({ settings }: { settings: Settings }) {
     setMessage(null)
     setPending(null)
     if (!file) return
-    const { parseBackup } = await backupModule()
+    const { parseBackup, MAX_BACKUP_BYTES } = await backupModule()
+    // Die Grösse ist schon vor dem Lesen bekannt: eine riesige Datei soll gar nicht erst in den Speicher geladen werden.
+    if (file.size > MAX_BACKUP_BYTES)
+      return setError('Die Datei ist zu gross für ein StudiBudget-Backup.')
     const result = parseBackup(await file.text())
     if (!result.ok) return setError(result.error)
     setPending({ backup: result.backup, counts: result.counts, fileName: file.name })
