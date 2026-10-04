@@ -80,41 +80,48 @@ describe('store.patch', () => {
   })
 })
 
-describe('veralteter Bildschirmzustand überschreibt nichts mehr (Regression)', () => {
-  it('Kategorie: Umbenennen, dann Häkchen auf einer alten Kopie behält den neuen Namen', async () => {
-    const { db, store } = await setup()
-    const ops = createCategoryOps(db, store)
-    const stale = await byKey(db, 'strom') // Kopie, wie sie die Seite noch anzeigt
-    await ops.updateCategory(stale, { name: 'Strom & Gas' })
-    await ops.updateCategory(stale, { fix: true }) // die Seite hat den neuen Namen noch nicht bekommen
-    expect(await db.categories.get(stale.id)).toMatchObject({ name: 'Strom & Gas', fix: true })
-  })
-
-  it('Konto und Sparziel: gleiche Absicherung', async () => {
-    const { db, store } = await setup()
-    const ops = createAccountOps(db, store)
-    await ops.addAccount('Privat', 'bank')
-    const staleAccount = (await db.accounts.toArray())[0]
-    await ops.updateAccount(staleAccount, { name: 'Lohnkonto' })
-    await ops.updateAccount(staleAccount, { include: false })
-    expect(await db.accounts.get(staleAccount.id)).toMatchObject({
-      name: 'Lohnkonto',
-      include: false,
+describe(
+  'veralteter Bildschirmzustand überschreibt nichts mehr (Regression)',
+  { tags: ['regression'] },
+  () => {
+    it('Kategorie: Umbenennen, dann Häkchen auf einer alten Kopie behält den neuen Namen', async () => {
+      const { db, store } = await setup()
+      const ops = createCategoryOps(db, store)
+      const stale = await byKey(db, 'strom') // Kopie, wie sie die Seite noch anzeigt
+      await ops.updateCategory(stale, { name: 'Strom & Gas' })
+      await ops.updateCategory(stale, { fix: true }) // die Seite hat den neuen Namen noch nicht bekommen
+      expect(await db.categories.get(stale.id)).toMatchObject({ name: 'Strom & Gas', fix: true })
     })
 
-    await ops.addGoal({ name: 'Ferien', targetCents: 100000, targetDate: null, startCents: 0 })
-    const staleGoal = (await db.goals.toArray())[0]
-    await ops.updateGoal(staleGoal, { targetCents: 200000 })
-    await ops.updateGoal(staleGoal, { archived: true })
-    expect(await db.goals.get(staleGoal.id)).toMatchObject({ targetCents: 200000, archived: true })
-  })
+    it('Konto und Sparziel: gleiche Absicherung', async () => {
+      const { db, store } = await setup()
+      const ops = createAccountOps(db, store)
+      await ops.addAccount('Privat', 'bank')
+      const staleAccount = (await db.accounts.toArray())[0]
+      await ops.updateAccount(staleAccount, { name: 'Lohnkonto' })
+      await ops.updateAccount(staleAccount, { include: false })
+      expect(await db.accounts.get(staleAccount.id)).toMatchObject({
+        name: 'Lohnkonto',
+        include: false,
+      })
 
-  it('Bereich umbenennen und Verschieben mit alter Kopie', async () => {
-    const { db, store } = await setup()
-    const ops = createCategoryOps(db, store)
-    const staleArea = (await db.areas.toArray())[0]
-    await ops.renameArea(staleArea, 'Neu A')
-    await ops.renameArea(staleArea, 'Neu B')
-    expect((await db.areas.get(staleArea.id))!.name).toBe('Neu B')
-  })
-})
+      await ops.addGoal({ name: 'Ferien', targetCents: 100000, targetDate: null, startCents: 0 })
+      const staleGoal = (await db.goals.toArray())[0]
+      await ops.updateGoal(staleGoal, { targetCents: 200000 })
+      await ops.updateGoal(staleGoal, { archived: true })
+      expect(await db.goals.get(staleGoal.id)).toMatchObject({
+        targetCents: 200000,
+        archived: true,
+      })
+    })
+
+    it('Bereich umbenennen und Verschieben mit alter Kopie', async () => {
+      const { db, store } = await setup()
+      const ops = createCategoryOps(db, store)
+      const staleArea = (await db.areas.toArray())[0]
+      await ops.renameArea(staleArea, 'Neu A')
+      await ops.renameArea(staleArea, 'Neu B')
+      expect((await db.areas.get(staleArea.id))!.name).toBe('Neu B')
+    })
+  },
+)

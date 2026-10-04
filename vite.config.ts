@@ -1,8 +1,7 @@
 import tailwindcss from '@tailwindcss/vite'
 import react from '@vitejs/plugin-react'
 import { VitePWA } from 'vite-plugin-pwa'
-import { loadEnv, type Plugin } from 'vite'
-import { configDefaults, defineConfig } from 'vitest/config'
+import { defineConfig, loadEnv, type Plugin } from 'vite'
 
 const BASE = '/studibudget/'
 
@@ -85,13 +84,5 @@ export default defineConfig(({ mode }) => {
         },
       }),
     ],
-    test: {
-      environment: 'jsdom',
-      setupFiles: ['./src/test/setup.ts'],
-      globals: true,
-      // Auf langsamen Rechnern (CI) brauchen die Seitentests, die aus IndexedDB lesen, deutlich länger als lokal.
-      testTimeout: 15_000,
-      exclude: [...configDefaults.exclude, '**/*.db.test.ts'],
-    },
   }
 })

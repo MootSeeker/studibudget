@@ -14,40 +14,8 @@ import {
 import { balances } from './settlement'
 import { buildSharedEqual, buildSharedPartner, myShare, splitByPercent, splitEqual } from './split'
 import { keyFigures, totalsByMonth } from './stats'
-import type { Budget, Category, Goal, Settlement, Transaction } from './types'
-
-const base = { updatedAt: '2026-01-01T00:00:00Z', deleted: false }
-const tx = (
-  p: Partial<Transaction> & { id: string; date: string; categoryId: string; myAmountCents: number },
-): Transaction => ({
-  ...base,
-  amountCents: p.myAmountCents,
-  note: '',
-  ...p,
-})
-const cat = (
-  id: string,
-  type: Category['type'],
-  fix = false,
-  rolloverFrom: string | null = null,
-): Category => ({
-  ...base,
-  id,
-  areaId: 'a',
-  name: id,
-  type,
-  fix,
-  rolloverFrom,
-  hidden: false,
-  order: 0,
-})
-const bud = (id: string, categoryId: string, validFrom: string, amountCents: number): Budget => ({
-  ...base,
-  id,
-  categoryId,
-  validFrom,
-  amountCents,
-})
+import { base, bud, cat, tx } from '../test/factories'
+import type { Goal, Settlement } from './types'
 
 describe('money', () => {
   it('formatiert nach Land', () => {

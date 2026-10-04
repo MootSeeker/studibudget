@@ -71,18 +71,22 @@ describe('EntryForm: Beteiligte bei gemeinsamen Ausgaben', () => {
     expect(lastDraft(p.onSubmit).myAmountCents).toBe(4500)
   })
 
-  it('Personen, die erst nach dem Öffnen geladen werden, sind trotzdem beteiligt (Regression)', async () => {
-    const p = props({ persons: [] })
-    const { rerender } = render(<EntryForm {...p} />)
-    rerender(<EntryForm {...p} persons={[person('anna', 'Anna')]} />) // Personen kommen nachträglich
-    await fillAndSubmit(userEvent.setup())
-    expect(
-      lastDraft(p.onSubmit)
-        .shared!.parts.map((x) => x.who)
-        .sort(),
-    ).toEqual(['anna', 'me'])
-    expect(lastDraft(p.onSubmit).myAmountCents).toBe(4500)
-  })
+  it(
+    'Personen, die erst nach dem Öffnen geladen werden, sind trotzdem beteiligt (Regression)',
+    { tags: ['regression'] },
+    async () => {
+      const p = props({ persons: [] })
+      const { rerender } = render(<EntryForm {...p} />)
+      rerender(<EntryForm {...p} persons={[person('anna', 'Anna')]} />) // Personen kommen nachträglich
+      await fillAndSubmit(userEvent.setup())
+      expect(
+        lastDraft(p.onSubmit)
+          .shared!.parts.map((x) => x.who)
+          .sort(),
+      ).toEqual(['anna', 'me'])
+      expect(lastDraft(p.onSubmit).myAmountCents).toBe(4500)
+    },
+  )
 
   it('eine später hinzugekommene Person ist ebenfalls beteiligt, solange man die Auswahl nicht selbst geändert hat', async () => {
     const p = props()

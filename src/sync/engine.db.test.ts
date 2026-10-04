@@ -1,5 +1,4 @@
 import 'fake-indexeddb/auto'
-import { execSync } from 'node:child_process'
 import { createClient, type SupabaseClient } from '@supabase/supabase-js'
 import { beforeAll, describe, expect, it } from 'vitest'
 import { generateDek } from '../crypto/keys'
@@ -8,11 +7,7 @@ import { createStore } from '../data/store'
 import type { Transaction } from '../domain/types'
 import { SyncEngine } from './engine'
 import { supabaseTransport } from './transport'
-
-function status(): Record<string, string> {
-  const out = execSync('npx supabase status -o env', { encoding: 'utf8' })
-  return Object.fromEntries([...out.matchAll(/^(\w+)="(.*)"$/gm)].map((m) => [m[1], m[2]]))
-}
+import { supabaseStatus } from '../test/supabaseStatus'
 
 const run = Date.now()
 let url: string
@@ -56,7 +51,7 @@ const tx = (id: string, note: string): Omit<Transaction, 'updatedAt'> => ({
 })
 
 beforeAll(() => {
-  const s = status()
+  const s = supabaseStatus()
   url = s.API_URL
   anonKey = s.ANON_KEY
   admin = createClient(url, s.SERVICE_ROLE_KEY, { auth: { persistSession: false } })

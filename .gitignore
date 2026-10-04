@@ -22,3 +22,9 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Testberichte und Zwischenstände
+reports
+dist-e2e
+.stryker-tmp
+test-results
