@@ -1,6 +1,7 @@
 import 'fake-indexeddb/auto'
 import '@testing-library/jest-dom/vitest'
 import { configure } from '@testing-library/react'
+import fc from 'fast-check'
 import { afterEach, beforeAll } from 'vitest'
 import { db } from '../data/db'
 
@@ -50,3 +51,6 @@ afterEach(() => {
   const found = unexpectedOutput.splice(0)
   if (found.length > 0) throw new Error(`Unerwartete Konsolenausgabe im Test:\n${found.join('\n')}`)
 })
+
+// Eigenschaftstests: Anzahl Zufallsfälle über FC_NUM_RUNS einstellbar (Tiefenlauf in der CI: 2000).
+fc.configureGlobal({ numRuns: Number(process.env.FC_NUM_RUNS ?? 100) })
