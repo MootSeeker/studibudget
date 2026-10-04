@@ -47,7 +47,7 @@ export function Eingabe() {
   const open = month <= currentMonth() ? openTemplates(templates, txs, month) : []
   const label = `${MONTH_NAMES[Number(month.slice(5, 7)) - 1]} ${month.slice(0, 4)}`
 
-  async function submit(draft: EntryDraft, opts: { repeat: boolean }) {
+  async function submit(draft: EntryDraft, opts: { repeat: number[] | null }) {
     if (opts.repeat) {
       const templateId = newId()
       await store.put('templates', {
@@ -57,7 +57,7 @@ export function Eingabe() {
         amountCents: draft.amountCents,
         note: draft.note,
         ...(draft.shared ? { shared: draft.shared } : {}),
-        months: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
+        months: opts.repeat,
         active: true,
       })
       draft = { ...draft, templateId, templateMonth: monthOf(draft.date) }

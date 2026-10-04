@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { buttonClass, inputClass } from '../auth/ui'
 import { DraftInput } from '../components/DraftInput'
 import { MONTH_NAMES } from '../components/MonthSelect'
+import { ReserveHint } from '../components/ReserveHint'
 import { TemplatesPanel } from '../components/TemplatesPanel'
 import { createCategoryOps } from '../data/categoryOps'
 import { db } from '../data/db'
@@ -359,6 +360,13 @@ export function Budget() {
           Bereich anlegen
         </button>
       </form>
+
+      <ReserveHint
+        templates={templates}
+        categories={categories}
+        country={settings.country}
+        month={month}
+      />
 
       <TemplatesPanel templates={templates} categories={categories} country={settings.country} />
     </section>

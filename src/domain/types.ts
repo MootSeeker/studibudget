@@ -86,6 +86,8 @@ export interface Template extends Synced {
   shared?: SharedInfo
   months: number[]
   active: boolean
+  /** true = nicht in die Rückstellung für seltene Kosten einrechnen. */
+  noReserve?: boolean
 }
 
 export interface Settlement extends Synced {

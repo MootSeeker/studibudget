@@ -1,6 +1,7 @@
 import { useMemo, useState, type FormEvent } from 'react'
 import { buttonClass, inputClass } from '../auth/ui'
 import { buildEntry, type EntryDraft } from '../domain/entry'
+import { INTERVALS, monthsForInterval, type IntervalEvery } from '../domain/templates'
 import { newId } from '../data/seed'
 import type {
   Area,
@@ -28,7 +29,8 @@ export interface EntryFormProps {
   /** Zum Bearbeiten; ohne Wert wird neu erfasst. */
   initial?: Transaction | null
   defaultDate: string
-  onSubmit(draft: EntryDraft, opts: { repeat: boolean }): Promise<void>
+  /** `repeat`: Fälligkeitsmonate (1–12) der neuen Vorlage, sonst `null`. */
+  onSubmit(draft: EntryDraft, opts: { repeat: number[] | null }): Promise<void>
   onCancel?(): void
 }
 
@@ -65,6 +67,7 @@ export function EntryForm(props: EntryFormProps) {
     initial?.goalDirection ?? 'einzahlung',
   )
   const [repeat, setRepeat] = useState(false)
+  const [every, setEvery] = useState<IntervalEvery>(1)
   const [error, setError] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
   const [savedNote, setSavedNote] = useState(false)
@@ -125,11 +128,14 @@ export function EntryForm(props: EntryFormProps) {
     if (!result.ok) return setError(result.error)
     setBusy(true)
     try {
-      await props.onSubmit(result.draft, { repeat: repeat && !initial })
+      await props.onSubmit(result.draft, {
+        repeat: repeat && !initial ? monthsForInterval(every, Number(date.slice(5, 7))) : null,
+      })
       if (!initial) {
         setAmount('')
         setNote('')
         setRepeat(false)
+        setEvery(1)
         setId(newId())
         setSavedNote(true)
       }
@@ -326,10 +332,33 @@ export function EntryForm(props: EntryFormProps) {
       )}
 
       {!initial && (
-        <label className="flex items-center gap-2 text-sm">
-          <input type="checkbox" checked={repeat} onChange={(e) => setRepeat(e.target.checked)} />
-          Jeden Monat wiederholen (als Fixkosten-Vorlage speichern)
-        </label>
+        <div className="space-y-2">
+          <label className="flex items-center gap-2 text-sm">
+            <input type="checkbox" checked={repeat} onChange={(e) => setRepeat(e.target.checked)} />
+            Wiederholen (als Fixkosten-Vorlage speichern)
+          </label>
+          {repeat && (
+            <label className="block space-y-1">
+              <span className="text-sm font-medium">Intervall</span>
+              <select
+                className={inputClass}
+                value={every}
+                onChange={(e) => setEvery(Number(e.target.value) as IntervalEvery)}
+              >
+                {INTERVALS.map((i) => (
+                  <option key={i.every} value={i.every}>
+                    {i.label}
+                  </option>
+                ))}
+              </select>
+              {every > 1 && (
+                <span className="block text-xs text-muted">
+                  Fällig ab dem Monat des Datums, danach im Rhythmus.
+                </span>
+              )}
+            </label>
+          )}
+        </div>
       )}
 
       {error && (
