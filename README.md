@@ -68,6 +68,9 @@ Verschlüsselung in `src/crypto/`, Seiten in `src/pages/`. Entscheidungen und Be
 Supabase-Adresse und öffentlicher Schlüssel kommen als GitHub-Actions-Variablen `VITE_SUPABASE_URL` und
 `VITE_SUPABASE_ANON_KEY`.
 
+**Projekt-Wissen:** Der Ordner [vault/](vault/Start.md) ist ein Obsidian-Vault mit Entscheiden, Betriebswissen und dem
+Verlauf. Er ist öffentlich: keine Geheimnisse hineinschreiben.
+
 ## Lizenz
 
 GPL-3.0-or-later, siehe [LICENSE](LICENSE).
