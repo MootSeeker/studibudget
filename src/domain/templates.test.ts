@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'vitest'
-import { detectInterval, monthsForInterval, reservePlan } from './templates'
+import {
+  detectInterval,
+  monthsForInterval,
+  openTemplates,
+  reservePlan,
+  withSkipped,
+} from './templates'
 import type { Category, Template } from './types'
 
 const cat = (id: string, type: Category['type'] = 'ausgabe'): Category => ({
@@ -78,5 +84,18 @@ describe('reservePlan', () => {
       },
     }
     expect(reservePlan([t], cats, '2026-10').totalCents).toBe(2500)
+  })
+})
+
+describe('übersprungene Monate', () => {
+  const t = { ...tpl('t1', 'miete', 80000, [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]) }
+  it('openTemplates lässt übersprungene Monate aus, andere bleiben offen', () => {
+    const skipped = { ...t, skipMonths: ['2026-11'] }
+    expect(openTemplates([skipped], [], '2026-11')).toHaveLength(0)
+    expect(openTemplates([skipped], [], '2026-12')).toHaveLength(1)
+  })
+  it('withSkipped sortiert und vermeidet Doppelte', () => {
+    expect(withSkipped(['2026-12'], ['2026-11', '2026-12'])).toEqual(['2026-11', '2026-12'])
+    expect(withSkipped(undefined, ['2027-01'])).toEqual(['2027-01'])
   })
 })

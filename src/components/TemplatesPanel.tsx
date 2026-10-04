@@ -163,6 +163,26 @@ export function TemplatesPanel({ templates, categories, country, cars = [] }: Te
                   )
                 })}
               </div>
+              {t.skipMonths && t.skipMonths.length > 0 && (
+                <div className="flex flex-wrap items-center gap-1 text-xs text-muted">
+                  <span>Übersprungen:</span>
+                  {t.skipMonths.map((m) => (
+                    <button
+                      key={m}
+                      type="button"
+                      className="rounded border border-border px-2 py-1"
+                      aria-label={`Überspringen aufheben ${m} ${catName(t.categoryId)}`}
+                      onClick={() =>
+                        void save(t, (cur) => ({
+                          skipMonths: (cur.skipMonths ?? []).filter((x) => x !== m),
+                        }))
+                      }
+                    >
+                      {MONTH_NAMES[Number(m.slice(5, 7)) - 1].slice(0, 3)} {m.slice(0, 4)} ×
+                    </button>
+                  ))}
+                </div>
+              )}
               <div className="flex gap-3 text-sm">
                 <button
                   className="text-accent underline"
