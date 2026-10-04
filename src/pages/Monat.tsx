@@ -1,3 +1,4 @@
+import { ReserveHint } from '../components/ReserveHint'
 import { useState } from 'react'
 import { MONTH_NAMES } from '../components/MonthSelect'
 import {
@@ -190,6 +191,14 @@ export function Monat() {
           ▶
         </button>
       </div>
+
+      <ReserveHint
+        compact
+        templates={templates}
+        categories={categories}
+        country={country}
+        month={month}
+      />
 
       <div className="overflow-x-auto rounded-xl border border-border bg-surface">
         <table className="w-full text-sm">
