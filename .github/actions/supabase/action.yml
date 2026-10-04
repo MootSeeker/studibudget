@@ -1,0 +1,13 @@
+name: Supabase
+description: Lokales Supabase in Docker starten (ohne Dienste, die die App nicht braucht)
+runs:
+  using: composite
+  steps:
+    - shell: bash
+      run: |
+        # Ein zweiter Versuch fängt gelegentliche Fehler beim Laden der Docker-Images ab.
+        start() {
+          npx supabase start -x studio,imgproxy,realtime,storage-api,edge-runtime,logflare,vector,postgres-meta,supavisor
+        }
+        start || { echo "Erster Start gescheitert, zweiter Versuch"; npx supabase stop --no-backup || true; start; }
+        npx supabase status
