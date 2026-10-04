@@ -22,6 +22,12 @@ Keine offenen GitHub-Issues (Stand 2026-10-04). Offen ist der **öffentliche Sta
 - [ ] Region des Supabase-Projekts und Auftragsverarbeitungsvertrag (DPA) prüfen.
 - [ ] «Allow new users to sign up» bewusst steuern, bis alles erledigt ist.
 
+## Test-Suite v1.1.0 (läuft)
+
+- [x] Baustein 1 bis 7 (Infrastruktur, Berichte, Supabase-CI, Fehlerpfade, Oberfläche, Eigenschaftstests)
+- [ ] 8 Mutationstests (Stryker, Spike zuerst) · 9/10 Playwright-E2E · 11 axe · 12 visuelle Regression · 13 Doku, CHANGELOG, Release v1.1.0
+- Plan: `~/.claude/plans/cozy-sparking-perlis.md`; Hintergrund: [[Tests und Zeitfehler]]
+
 ## Tests auf echten Geräten
 
 - [ ] Offline-Start und Installation (der Service Worker liess sich in der Entwicklungsumgebung nicht ausführen).

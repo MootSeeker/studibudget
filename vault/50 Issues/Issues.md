@@ -20,4 +20,21 @@ Alle Issues sind umgesetzt und geschlossen (Stand 2026-10-04). Repo: github.com/
 | 24 | Offene Buchungen | Offene Fixkosten pro Monat überspringen; Löschen fragt nach dem Überspringen | #26 |
 | 25 | Ausgleichsseite | Monatsansicht, erhalten/bezahlt/neu offen, echtes Defizit | #27 |
 
+## Von den Tests gefunden (Label `gefunden-durch-tests`)
+
+| # | Fehler | PR |
+| --- | --- | --- |
+| 38 | `1.2.3` wurde als 123.00 gelesen | #44 |
+| 39 | Backup: Vorlage mit unbekannter Person | #44 |
+| 40 | Backup: Verweise auf gelöschte Zeilen | #44 |
+| 41 | Backup: doppelte IDs | #44 |
+| 42 | Backup-Datei vor der Grössenprüfung gelesen | #44 |
+| 43 | Verwaister Kontostand blockiert Backups | #44 |
+| 46 | Pull-Schleife ohne Fortschrittsprüfung | #49 |
+| 47 | Passwort ändern nicht atomar | #49 |
+| 51 | Doppelte Feld-IDs in den Einstellungen | #53 |
+| 55 | HLC-Zähler läuft über | #56 |
+
+Offen: #48 (Analyse: Lücken in `records_seq` bei gleichzeitigen Pushes), #30 (Budget zurücksetzen, älter).
+
 Entscheide dazu: [[Entscheid - Vorlagen statt Budget im Intervall]], [[Entscheid - Kassensicht beim Ausgleich]].
