@@ -124,7 +124,8 @@ describe('Eingabe-Seite', () => {
     await user.click(screen.getByRole('button', { name: 'Speichern' }))
     await screen.findByText('Miete WG')
     expect(await db.templates.count()).toBe(1)
-    expect(screen.queryByText(/buchen\?/)).not.toBeInTheDocument() // diesen Monat bereits gebucht
+    // diesen Monat bereits gebucht
+    await waitFor(() => expect(screen.queryByText(/buchen\?/)).not.toBeInTheDocument())
 
     await user.click(screen.getByRole('button', { name: 'Vorheriger Monat' }))
     const banner = (await screen.findByText(/Fixkosten für .* buchen\?/)).closest('div')!
@@ -175,7 +176,7 @@ describe('Eingabe-Seite', () => {
     // Im Vormonat ist die jährliche Vorlage nicht fällig.
     await user.click(screen.getByRole('button', { name: 'Vorheriger Monat' }))
     await screen.findByText(/noch keine Buchungen/)
-    expect(screen.queryByText(/buchen\?/)).not.toBeInTheDocument()
+    await waitFor(() => expect(screen.queryByText(/buchen\?/)).not.toBeInTheDocument())
   })
 
   it('Auto: Auswahl nur bei Auto-Kategorien, mit einem Auto vorgewählt', async () => {
@@ -292,6 +293,7 @@ describe('Eingabe-Seite', () => {
     await user.click(within(screen.getByRole('dialog')).getByRole('button', { name: 'Buchen' }))
     await user.click(await screen.findByRole('button', { name: /Löschen/ }))
     await waitFor(async () => expect((await db.templates.get(id))!.skipMonths).toHaveLength(1))
-    expect(screen.queryByText(/buchen\?/)).not.toBeInTheDocument()
+    // Die Anzeige folgt der Datenbank erst einen Moment später.
+    await waitFor(() => expect(screen.queryByText(/buchen\?/)).not.toBeInTheDocument())
   })
 })
