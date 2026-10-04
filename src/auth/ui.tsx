@@ -1,4 +1,4 @@
-import { useState, type FormEvent, type ReactNode } from 'react'
+import { useId, useState, type FormEvent, type ReactNode } from 'react'
 
 export const inputClass =
   'w-full rounded-md border border-control bg-surface px-3 py-2 text-text outline-none focus:border-accent focus:ring-2 focus:ring-accent/30'
@@ -14,7 +14,8 @@ export function Field(props: {
   autoComplete?: string
   hint?: string
 }) {
-  const id = props.label.replace(/\W+/g, '-').toLowerCase()
+  // Eigene ID pro Feld: dieselbe Beschriftung kann auf einer Seite mehrmals vorkommen.
+  const id = useId()
   return (
     <div className="space-y-1">
       <label htmlFor={id} className="text-sm font-medium">

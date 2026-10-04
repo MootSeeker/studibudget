@@ -50,10 +50,10 @@
       "glob": "src/auth/**",
       "ziel": 90,
       "schwelle": {
-        "lines": 69,
-        "statements": 67,
-        "functions": 57,
-        "branches": 64
+        "lines": 72,
+        "statements": 69,
+        "functions": 59,
+        "branches": 67
       }
     },
     {
@@ -61,10 +61,10 @@
       "glob": "src/{components,pages,onboarding,legal,lib}/**",
       "ziel": 80,
       "schwelle": {
-        "lines": 81,
-        "statements": 80,
-        "functions": 75,
-        "branches": 72
+        "lines": 91,
+        "statements": 90,
+        "functions": 86,
+        "branches": 82
       }
     }
   ]
