@@ -16,8 +16,18 @@ export function openTemplates(
       .map((t) => t.templateId),
   )
   return templates.filter(
-    (t) => !t.deleted && t.active && t.months.includes(monthNumber(month)) && !booked.has(t.id),
+    (t) =>
+      !t.deleted &&
+      t.active &&
+      t.months.includes(monthNumber(month)) &&
+      !t.skipMonths?.includes(month) &&
+      !booked.has(t.id),
   )
+}
+
+/** `skipMonths` mit zusätzlichen Monaten (ohne Doppelte, sortiert). */
+export function withSkipped(current: string[] | undefined, months: string[]): string[] {
+  return [...new Set([...(current ?? []), ...months])].sort()
 }
 
 /** Buchung aus einer Vorlage; `amountCents` überschreibt den Betrag (die Aufteilung wird mitgerechnet). */

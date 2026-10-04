@@ -228,4 +228,70 @@ describe('Eingabe-Seite', () => {
     const vespa = (await db.cars.toArray()).find((c) => c.name === 'Vespa')!
     expect((await db.transactions.toArray())[0].carId).toBe(vespa.id)
   })
+
+  async function makeTemplate(key: string, cents: number) {
+    const cat = (await db.categories.toArray()).find((c) => c.catalogKey === key)!
+    const id = newId()
+    await store.put('templates', {
+      id,
+      deleted: false,
+      categoryId: cat.id,
+      amountCents: cents,
+      note: '',
+      months: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
+      active: true,
+    })
+    return id
+  }
+
+  it('Fixkosten lassen sich auch für einen künftigen Monat buchen', async () => {
+    await makeTemplate('miete', 80000)
+    const { user } = await setup()
+    await user.click(screen.getByRole('button', { name: 'Nächster Monat' }))
+    const banner = (await screen.findByText(/Fixkosten für .* buchen\?/)).closest('div')!
+    await user.click(within(banner).getByRole('button', { name: 'Prüfen und buchen' }))
+    await user.click(within(screen.getByRole('dialog')).getByRole('button', { name: 'Buchen' }))
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument())
+    const [tx] = await db.transactions.toArray()
+    expect(tx.templateMonth).toBe(tx.date.slice(0, 7))
+    expect(tx.templateMonth! > new Date().toISOString().slice(0, 7)).toBe(true)
+  })
+
+  it('«Überspringen» blendet eine Fixkost nur für diesen Monat aus; Aufheben in den Vorlagen', async () => {
+    const id = await makeTemplate('miete', 80000)
+    await makeTemplate('handy', 5000)
+    const { user } = await setup()
+    await user.click(screen.getByRole('button', { name: 'Nächster Monat' }))
+    await user.click(await screen.findByRole('button', { name: 'Prüfen und buchen' }))
+    await user.click(
+      within(screen.getByRole('dialog')).getByRole('button', {
+        name: 'Miete diesen Monat überspringen',
+      }),
+    )
+    await waitFor(async () => expect((await db.templates.get(id))!.skipMonths).toHaveLength(1))
+    expect(await screen.findByText(/\(1 offen\)/)).toBeInTheDocument()
+    const skipped = (await db.templates.get(id))!.skipMonths![0]
+    // Im übernächsten Monat ist die Vorlage weiter fällig.
+    await user.click(within(screen.getByRole('dialog')).getByRole('button', { name: 'Abbrechen' }))
+    await user.click(screen.getByRole('button', { name: 'Nächster Monat' }))
+    expect(await screen.findByText(/\(2 offen\)/)).toBeInTheDocument()
+    expect(skipped).toMatch(/^\d{4}-\d{2}$/)
+  })
+
+  it('«Alle überspringen» und Löschen einer Vorlagenbuchung mit Nachfrage', async () => {
+    vi.spyOn(window, 'confirm').mockReturnValue(true)
+    const id = await makeTemplate('miete', 80000)
+    const { user } = await setup()
+    await user.click(screen.getByRole('button', { name: 'Alle überspringen' }))
+    await waitFor(async () => expect((await db.templates.get(id))!.skipMonths).toHaveLength(1))
+    await waitFor(() => expect(screen.queryByText(/buchen\?/)).not.toBeInTheDocument())
+
+    // Gebuchte Vorlagen-Buchung löschen und «auch überspringen» bestätigen.
+    await db.templates.update(id, { skipMonths: [] })
+    await user.click(await screen.findByRole('button', { name: 'Prüfen und buchen' }))
+    await user.click(within(screen.getByRole('dialog')).getByRole('button', { name: 'Buchen' }))
+    await user.click(await screen.findByRole('button', { name: /Löschen/ }))
+    await waitFor(async () => expect((await db.templates.get(id))!.skipMonths).toHaveLength(1))
+    expect(screen.queryByText(/buchen\?/)).not.toBeInTheDocument()
+  })
 })
