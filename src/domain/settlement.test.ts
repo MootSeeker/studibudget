@@ -3,6 +3,7 @@ import {
   balances,
   buildSettlement,
   effectsOf,
+  monthSettlement,
   settlementEffect,
   suggestSettlement,
 } from './settlement'
@@ -142,5 +143,66 @@ describe('suggestSettlement', () => {
     expect(suggestSettlement(3000)).toEqual({ direction: 'ich_erhalte', cents: 3000 })
     expect(suggestSettlement(-1250)).toEqual({ direction: 'ich_zahle', cents: 1250 })
     expect(suggestSettlement(0)).toBeNull()
+  })
+})
+
+describe('monthSettlement (Kassensicht)', () => {
+  const cats = [
+    { id: 'miete', type: 'ausgabe' as const },
+    { id: 'lohn', type: 'einnahme' as const },
+    { id: 'spar', type: 'sparen' as const },
+  ]
+  const miete = (date: string, paidBy: string) =>
+    tx(buildSharedEqual(120000, paidBy, ['me', 'anna']), {
+      categoryId: 'miete',
+      date,
+      amountCents: 120000,
+      myAmountCents: 60000,
+    })
+
+  it('Miete 1200 von mir bezahlt, geteilt: bar 1200 raus, Anna schuldet 600; Defizit 1200 bis sie zahlt', () => {
+    const txs = [
+      miete('2026-11-01', 'me'),
+      tx(undefined, {
+        categoryId: 'spar',
+        date: '2026-11-02',
+        amountCents: 50000,
+        myAmountCents: 50000,
+      }),
+    ]
+    const nov = monthSettlement(txs, [], cats, '2026-11')
+    expect(nov).toMatchObject({
+      outOfPocket: 120000,
+      sharedNet: 60000,
+      received: 0,
+      deficit: 120000,
+    })
+    // Annas Zahlung im Dezember entlastet den Dezember, nicht den November.
+    const settlements = [settle('anna', 'ich_erhalte', 60000, { date: '2026-12-05' })]
+    expect(monthSettlement(txs, settlements, cats, '2026-11').deficit).toBe(120000)
+    expect(monthSettlement(txs, settlements, cats, '2026-12')).toMatchObject({
+      received: 60000,
+      deficit: -60000,
+    })
+  })
+
+  it('Einnahmen mindern das Defizit; was andere bezahlt haben, geht nicht aus meiner Tasche', () => {
+    const txs = [
+      tx(undefined, { categoryId: 'lohn', date: '2026-10-25', amountCents: 200000 }),
+      miete('2026-10-01', 'anna'),
+    ]
+    const okt = monthSettlement(
+      txs,
+      [settle('anna', 'ich_zahle', 60000, { date: '2026-10-10' })],
+      cats,
+      '2026-10',
+    )
+    expect(okt).toMatchObject({ outOfPocket: 0, income: 200000, paid: 60000, sharedNet: -60000 })
+    expect(okt.deficit).toBe(-140000) // 0 + 600 gezahlt − 2000 Lohn
+  })
+
+  it('gelöschte Einträge und andere Monate zählen nicht', () => {
+    const txs = [{ ...miete('2026-10-01', 'me'), deleted: true }, miete('2026-09-01', 'me')]
+    expect(monthSettlement(txs, [], cats, '2026-10').deficit).toBe(0)
   })
 })

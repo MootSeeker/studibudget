@@ -10,11 +10,14 @@ import {
 } from '../data/hooks'
 import { newId } from '../data/seed'
 import { store } from '../data/store'
+import { MONTH_NAMES } from '../components/MonthSelect'
 import { formatMoney } from '../domain/money'
+import { addMonths, currentMonth, monthOf } from '../domain/period'
 import {
   balances,
   buildSettlement,
   effectsOf,
+  monthSettlement,
   settlementEffect,
   suggestSettlement,
 } from '../domain/settlement'
@@ -42,6 +45,8 @@ export function Ausgleich() {
   const [saved, setSaved] = useState(false)
   const [filter, setFilter] = useState('')
   const [all, setAll] = useState(false)
+  const [month, setMonth] = useState(currentMonth())
+  const [allMonths, setAllMonths] = useState(false)
 
   if (!settings) return null
   if (settings.living !== 'wg' && settings.living !== 'partner') {
@@ -107,21 +112,91 @@ export function Ausgleich() {
     return statement(personId, after)
   })()
 
+  const inMonth = (date: string) => allMonths || monthOf(date) === month
+  const monthLabel = `${MONTH_NAMES[Number(month.slice(5, 7)) - 1]} ${month.slice(0, 4)}`
+  const sum = monthSettlement(txs, settlements, categories, month)
+
+  function changeMonth(next: string) {
+    setMonth(next)
+    setAll(false)
+    // Zahlungen werden meist im betrachteten Monat erfasst.
+    setDate(next === currentMonth() ? todayIso() : `${next}-01`)
+  }
+
   const shared = txs
     .filter(
       (t) =>
-        effectsOf(t).length > 0 && (!filter || effectsOf(t).some((e) => e.personId === filter)),
+        inMonth(t.date) &&
+        effectsOf(t).length > 0 &&
+        (!filter || effectsOf(t).some((e) => e.personId === filter)),
     )
     .sort((a, b) => (a.date === b.date ? 0 : a.date < b.date ? 1 : -1))
   const shownShared = all ? shared : shared.slice(0, PAGE)
   const catName = (id: string) => categories.find((c) => c.id === id)?.name ?? 'Unbekannt'
-  const history = [...settlements].sort((a, b) =>
-    a.date === b.date ? 0 : a.date < b.date ? 1 : -1,
-  )
+  const history = settlements
+    .filter((s) => inMonth(s.date))
+    .sort((a, b) => (a.date === b.date ? 0 : a.date < b.date ? 1 : -1))
 
   return (
     <section className="max-w-3xl space-y-8">
       <h1 className="text-2xl font-semibold">Ausgleich</h1>
+
+      <div className="space-y-3">
+        <div className="flex items-center justify-between">
+          <button
+            className="min-h-11 min-w-11 rounded-md border border-border px-3 py-2"
+            aria-label="Vorheriger Monat"
+            onClick={() => changeMonth(addMonths(month, -1))}
+          >
+            ◀
+          </button>
+          <h2 className="text-lg font-semibold" aria-live="polite">
+            {monthLabel}
+          </h2>
+          <button
+            className="min-h-11 min-w-11 rounded-md border border-border px-3 py-2"
+            aria-label="Nächster Monat"
+            onClick={() => changeMonth(addMonths(month, 1))}
+          >
+            ▶
+          </button>
+        </div>
+        <dl className="grid grid-cols-2 gap-3 text-center text-sm sm:grid-cols-4">
+          <div className="rounded-md border border-border bg-surface p-2">
+            <dt className="text-muted">Erhalten</dt>
+            <dd className="font-semibold">{money(sum.received)}</dd>
+          </div>
+          <div className="rounded-md border border-border bg-surface p-2">
+            <dt className="text-muted">Bezahlt</dt>
+            <dd className="font-semibold">{money(sum.paid)}</dd>
+          </div>
+          <div className="rounded-md border border-border bg-surface p-2">
+            <dt className="text-muted">Neu offen</dt>
+            <dd className="font-semibold">{money(sum.sharedNet)}</dd>
+          </div>
+          <div className="rounded-md border border-border bg-surface p-2">
+            <dt className="text-muted">
+              {sum.deficit > 0 ? 'Echtes Defizit' : 'Echter Überschuss'}
+            </dt>
+            <dd className="font-semibold">{money(Math.abs(sum.deficit))}</dd>
+          </div>
+        </dl>
+        <p className="text-sm text-muted">
+          «Neu offen»: was dir aus den gemeinsamen Buchungen dieses Monats geschuldet wird (minus,
+          was du schuldest). «Echtes Defizit»: was du in {monthLabel} tatsächlich bezahlt hast (bei
+          gemeinsamen Ausgaben der ganze Betrag, den du vorgestreckt hast) plus Ausgleichszahlungen,
+          die du geleistet hast, minus Einnahmen und erhaltene Ausgleichszahlungen. Sparen zählt
+          nicht mit. Das ist nur eine Anzeige und ändert dein Budget nicht.
+        </p>
+        <label className="flex items-center gap-2 text-sm">
+          <input
+            type="checkbox"
+            checked={allMonths}
+            onChange={(e) => setAllMonths(e.target.checked)}
+          />
+          Listen für alle Monate zeigen
+        </label>
+      </div>
 
       <div className="space-y-3">
         <h2 className="text-lg font-semibold">Wer schuldet wem?</h2>
@@ -165,8 +240,8 @@ export function Ausgleich() {
           </ul>
         )}
         <p className="text-sm text-muted">
-          Berechnet aus allen gemeinsamen Buchungen und den erfassten Ausgleichszahlungen.
-          Ausgleichszahlungen zählen nicht ins Budget.
+          Berechnet aus allen gemeinsamen Buchungen und den erfassten Ausgleichszahlungen aller
+          Monate. Ausgleichszahlungen zählen nicht ins Budget.
         </p>
       </div>
 

@@ -6,7 +6,7 @@ import { db } from '../data/db'
 import { completeOnboarding, type OnboardingInput } from '../data/onboarding'
 import { newId } from '../data/seed'
 import { store } from '../data/store'
-import { defaultSemesters } from '../domain/period'
+import { addMonths, currentMonth, defaultSemesters } from '../domain/period'
 import { buildSharedEqual, buildSharedPartner } from '../domain/split'
 import { Ausgleich } from './Ausgleich'
 
@@ -273,5 +273,61 @@ describe('ohne geteilte Kosten', () => {
       '/einstellungen',
     )
     expect(screen.queryByRole('form')).not.toBeInTheDocument()
+  })
+})
+
+describe('Monatsansicht', () => {
+  it('zeigt pro Monat Erhalten, Bezahlt, Neu offen und das echte Defizit; Listen folgen dem Monat', async () => {
+    const anna = await personId('Anna')
+    const now = currentMonth()
+    const prev = addMonths(now, -1)
+    const einkauf = (await db.categories.toArray()).find((c) => c.catalogKey === 'einkauf')!
+    // Vormonat: 120.00 von mir bezahlt, mit Anna geteilt; im aktuellen Monat zahlt Anna 60.00 zurück.
+    const shared = buildSharedEqual(12000, 'me', ['me', anna])
+    await store.put('transactions', {
+      id: newId(),
+      deleted: false,
+      date: `${prev}-03`,
+      categoryId: einkauf.id,
+      amountCents: 12000,
+      myAmountCents: 6000,
+      note: 'Vormonat-Einkauf',
+      shared,
+    })
+    await store.put('settlements', {
+      id: newId(),
+      deleted: false,
+      date: `${now}-02`,
+      personId: anna,
+      direction: 'ich_erhalte',
+      amountCents: 6000,
+      note: 'Rückzahlung',
+    })
+    const user = await setup()
+    const stat = (label: string) =>
+      norm(screen.getByText(label, { selector: 'dt' }).parentElement!.textContent)
+
+    // Aktueller Monat: nichts bezahlt, 60 erhalten → Überschuss 60.
+    await waitFor(() => expect(stat('Erhalten')).toContain('CHF 60.00'))
+    expect(stat('Echter Überschuss')).toContain('CHF 60.00')
+    expect(screen.getByText(/Rückzahlung/)).toBeInTheDocument()
+    expect(screen.queryByText('Vormonat-Einkauf')).not.toBeInTheDocument()
+
+    await user.click(screen.getByRole('button', { name: 'Vorheriger Monat' }))
+    await waitFor(() => expect(stat('Neu offen')).toContain('CHF 60.00'))
+    expect(stat('Erhalten')).toContain('CHF 0.00')
+    expect(stat('Echtes Defizit')).toContain('CHF 120.00')
+    expect(await screen.findByText(/Vormonat-Einkauf/)).toBeInTheDocument()
+    expect(screen.queryByText(/Rückzahlung/)).not.toBeInTheDocument()
+
+    await user.click(screen.getByLabelText('Listen für alle Monate zeigen'))
+    expect(await screen.findByText(/Rückzahlung/)).toBeInTheDocument()
+  })
+
+  it('das Datum der Zahlung folgt dem gewählten Monat', async () => {
+    const user = await setup()
+    await user.click(screen.getByRole('button', { name: 'Vorheriger Monat' }))
+    const prev = addMonths(currentMonth(), -1)
+    await waitFor(() => expect(screen.getByLabelText('Datum')).toHaveValue(`${prev}-01`))
   })
 })
