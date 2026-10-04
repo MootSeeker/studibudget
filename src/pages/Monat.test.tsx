@@ -53,13 +53,19 @@ describe('Monat-Seite', () => {
     await book('einkauf', 33000) // 82.5 % → knapp
     await book('ausgang', 12000) // 120 % → überschritten
     await setup()
-    expect(within(rowOf('Einkauf zuhause')).getByText('Knapp')).toBeInTheDocument()
-    expect(norm(rowOf('Einkauf zuhause').textContent)).toMatch(/Noch CHF 70\.00/)
-    expect(within(rowOf('Ausgang / Kino')).getByText('Überschritten')).toBeInTheDocument()
-    expect(norm(rowOf('Ausgang / Kino').textContent)).toMatch(/CHF 20\.00 drüber/)
-    expect(within(rowOf('Miete')).getByText('Ausgeschöpft')).toBeInTheDocument() // genau 100 % = rot, aber nicht überschritten
-    expect(within(rowOf('Miete')).queryByText('Überschritten')).not.toBeInTheDocument()
-    expect(within(rowOf('Miete')).getByRole('progressbar')).toHaveAttribute('aria-valuenow', '100')
+    // Die Buchungen werden asynchron gelesen: alle Prüfungen zusammen abwarten.
+    await waitFor(() => {
+      expect(within(rowOf('Einkauf zuhause')).getByText('Knapp')).toBeInTheDocument()
+      expect(norm(rowOf('Einkauf zuhause').textContent)).toMatch(/Noch CHF 70\.00/)
+      expect(within(rowOf('Ausgang / Kino')).getByText('Überschritten')).toBeInTheDocument()
+      expect(norm(rowOf('Ausgang / Kino').textContent)).toMatch(/CHF 20\.00 drüber/)
+      expect(within(rowOf('Miete')).getByText('Ausgeschöpft')).toBeInTheDocument() // genau 100 % = rot, aber nicht überschritten
+      expect(within(rowOf('Miete')).queryByText('Überschritten')).not.toBeInTheDocument()
+      expect(within(rowOf('Miete')).getByRole('progressbar')).toHaveAttribute(
+        'aria-valuenow',
+        '100',
+      )
+    })
   })
 
   it('Einnahmen und Sparen zeigen den Fortschritt statt der Ampel', async () => {
