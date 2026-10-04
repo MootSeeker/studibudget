@@ -240,3 +240,10 @@ beträgt 15 s, `asyncUtilTimeout` 4 s.
 - Autos sind eine eigene synchronisierte Tabelle `cars` (Name, archiviert, Reihenfolge). Verwaltet werden sie in den Einstellungen, sichtbar bei eingeschaltetem «Auto vorhanden».
 - Die Auswahl erscheint bei allen Kategorien des Auto-Bereichs, auch bei selbst angelegten (`isCarCategory`). Mit genau einem aktiven Auto ist es vorgewählt. Archivierte Autos bleiben an alten Buchungen sichtbar.
 - Backups ohne `cars` (ältere Versionen) bleiben importierbar.
+
+## Responsives Layout (Issue #17)
+
+- Der Rahmen hat keine feste Höchstbreite mehr. Die Seiten wachsen gestaffelt (`xl`, `2xl`), Formulare bleiben schmal.
+- Die Seitenleiste lässt sich auf Laptop und grossen Bildschirmen einklappen; die Wahl steht in `localStorage` (ohne Speicher gilt sie bis zum Neuladen). Auf dem Handy bleibt das Menü hinter dem Knopf, Esc schliesst es.
+- Eingabe ist ab `xl` zweispaltig (Formular links, Monatsliste rechts). Die Diagramme skalieren über ihr `viewBox`.
+- Die Monatsspalte der Kontentabelle bleibt beim seitlichen Scrollen stehen; Monatspfeile sind mindestens 44 px gross.
