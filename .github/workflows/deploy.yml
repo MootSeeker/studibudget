@@ -8,37 +8,99 @@ on:
 
 permissions:
   contents: read
-  pages: write
-  id-token: write
 
+# PR-Läufe brechen ältere Läufe desselben PRs ab; auf main läuft jeder Commit zu Ende.
 concurrency:
-  group: pages
-  cancel-in-progress: false
+  group: ci-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
-  build:
+  statisch:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: ./.github/actions/setup
+      - run: npm run lint
+      - run: npm run typecheck
+
+  unit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      TEST_SUITE: unit
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup
+      # Tests mit Abdeckung; Untergrenzen pro Bereich stehen in scripts/coverage-areas.json
+      - run: npm run test:coverage
+      - uses: actions/upload-artifact@v4
+        if: ${{ !cancelled() }}
         with:
-          node-version: 24
-          cache: npm
-      - run: npm ci
-      - run: npm run verify
+          name: bericht-unit
+          path: reports
+          retention-days: ${{ github.ref == 'refs/heads/main' && 30 || 14 }}
+
+  # Findet Zeitfehler, die nur auf langsamen Rechnern auftreten (Datenbank künstlich verlangsamt).
+  langsam:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      TEST_SUITE: langsam
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup
+      - run: npm run test:slow
+      - uses: actions/upload-artifact@v4
+        if: ${{ !cancelled() }}
+        with:
+          name: bericht-langsam
+          path: reports
+          retention-days: ${{ github.ref == 'refs/heads/main' && 30 || 14 }}
+
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup
+      - run: npm run build
         env:
           VITE_SUPABASE_URL: ${{ vars.VITE_SUPABASE_URL }}
           VITE_SUPABASE_ANON_KEY: ${{ vars.VITE_SUPABASE_ANON_KEY }}
-      # Findet Zeitfehler, die nur auf langsamen Rechnern auftreten (Datenbank künstlich verlangsamt).
-      - run: npm run test:slow
+      - run: npm run check:build
+        env:
+          VITE_SUPABASE_URL: ${{ vars.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_ANON_KEY: ${{ vars.VITE_SUPABASE_ANON_KEY }}
       - uses: actions/upload-pages-artifact@v3
         with:
           path: dist
 
+  # Fasst alle Berichte als Zusammenfassung auf der Actions-Seite zusammen.
+  bericht:
+    if: ${{ !cancelled() }}
+    needs: [unit, langsam]
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: bericht-*
+          path: reports
+          merge-multiple: true
+      - run: node scripts/test-summary.mjs
+
   deploy:
     if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
-    needs: build
+    needs: [statisch, unit, langsam, build]
     runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    concurrency:
+      group: pages
+      cancel-in-progress: false
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
