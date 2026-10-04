@@ -185,6 +185,8 @@ export class SyncEngine {
         }
       }
       const lastSeq = rows[rows.length - 1].seq
+      // Der Server liefert nur Zeilen mit grösserer seq. Tut er das nicht, gäbe es eine Endlosschleife.
+      if (lastSeq <= state.lastSeq) throw new Error('Der Server hat keine neuen Daten geliefert.')
       await this.db.transaction(
         'rw',
         [...SYNCED_TABLES.map((t) => this.db.table(t)), this.db.syncState],
