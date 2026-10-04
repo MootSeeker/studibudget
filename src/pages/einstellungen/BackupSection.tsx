@@ -17,6 +17,7 @@ const COUNT_LABEL: [string, string][] = [
   ['accounts', 'Konten'],
   ['accountBalances', 'Kontostände'],
   ['goals', 'Sparziele'],
+  ['cars', 'Autos'],
 ]
 
 const REMINDERS: { value: Settings['backupReminderDays']; label: string }[] = [

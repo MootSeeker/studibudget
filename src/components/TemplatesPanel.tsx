@@ -1,4 +1,5 @@
 import { inputClass } from '../auth/ui'
+import { isCarCategory } from '../data/catalog'
 import { store } from '../data/store'
 import { formatMoney, parseAmount } from '../domain/money'
 import { rescaleShared } from '../domain/split'
@@ -8,19 +9,24 @@ import {
   monthsForInterval,
   type IntervalEvery,
 } from '../domain/templates'
-import type { Category, Country, Template } from '../domain/types'
+import type { Car, Category, Country, Template } from '../domain/types'
 import { MONTH_NAMES } from './MonthSelect'
 
 export interface TemplatesPanelProps {
   templates: Template[]
   categories: Category[]
   country: Country
+  cars?: Car[]
 }
 
 /** Fixkosten-Vorlagen: Betrag, Notiz und Monate anpassen, pausieren oder löschen. */
-export function TemplatesPanel({ templates, categories, country }: TemplatesPanelProps) {
+export function TemplatesPanel({ templates, categories, country, cars = [] }: TemplatesPanelProps) {
   const catName = (id: string) => categories.find((c) => c.id === id)?.name ?? 'Unbekannt'
   type Change = Partial<Omit<Template, 'updatedAt'>>
+  const isCarTemplate = (t: Template) => {
+    const cat = categories.find((c) => c.id === t.categoryId)
+    return cat ? isCarCategory(cat, categories) : false
+  }
   const save = (t: Template, changes: Change | ((current: Template) => Change)) =>
     store.patch('templates', t.id, changes)
 
@@ -66,6 +72,30 @@ export function TemplatesPanel({ templates, categories, country }: TemplatesPane
                   }
                 />
               </div>
+              {isCarTemplate(t) && cars.some((c) => !c.archived || c.id === t.carId) && (
+                <label className="block space-y-1">
+                  <span className="text-xs text-muted">Auto</span>
+                  <select
+                    aria-label={`Auto ${catName(t.categoryId)}`}
+                    className={inputClass}
+                    value={t.carId ?? ''}
+                    onChange={(e) =>
+                      void store.patch('templates', t.id, {
+                        carId: e.target.value === '' ? undefined : e.target.value,
+                      })
+                    }
+                  >
+                    <option value="">Kein bestimmtes Auto</option>
+                    {cars
+                      .filter((c) => !c.archived || c.id === t.carId)
+                      .map((c) => (
+                        <option key={c.id} value={c.id}>
+                          {c.name}
+                        </option>
+                      ))}
+                  </select>
+                </label>
+              )}
               <div className="grid gap-2 sm:grid-cols-2">
                 <label className="block space-y-1">
                   <span className="text-xs text-muted">Intervall</span>

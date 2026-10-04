@@ -77,6 +77,7 @@ const schemas = {
       templateMonth: month.optional(),
       goalId: id.optional(),
       goalDirection: z.enum(['einzahlung', 'entnahme']).optional(),
+      carId: id.optional(),
     })
     .refine((t) => !t.shared || t.shared.parts.reduce((s, p) => s + p.cents, 0) === t.amountCents, {
       message: 'Die Anteile ergeben nicht den Gesamtbetrag',
@@ -90,6 +91,7 @@ const schemas = {
     months: z.array(z.number().int().min(1).max(12)).min(1).max(12),
     active: z.boolean(),
     noReserve: z.boolean().optional(),
+    carId: id.optional(),
   }),
   settlements: z.object({
     ...common,
@@ -120,6 +122,7 @@ const schemas = {
     startCents: cents,
     archived: z.boolean(),
   }),
+  cars: z.object({ ...common, name: name(60), archived: z.boolean(), order: z.number().int() }),
 } satisfies Record<SyncedTable, z.ZodType>
 
 const fileSchema = z.object({
@@ -127,7 +130,15 @@ const fileSchema = z.object({
   schemaVersion: z.number().int(),
   exportedAt: z.string(),
   data: z.object(
-    Object.fromEntries(SYNCED_TABLES.map((t) => [t, z.array(schemas[t]).max(200_000)])) as {
+    Object.fromEntries(
+      SYNCED_TABLES.map((t) => [
+        t,
+        // Backups aus älteren Versionen kennen «cars» noch nicht.
+        t === 'cars'
+          ? z.array(schemas[t]).max(200_000).default([])
+          : z.array(schemas[t]).max(200_000),
+      ]),
+    ) as unknown as {
       [K in SyncedTable]: z.ZodArray<(typeof schemas)[K]>
     },
   ),
@@ -163,12 +174,13 @@ const fail = (error: string): ParseResult => ({ ok: false, error })
 /** Verweise zwischen den Tabellen müssen aufgehen, sonst ist die Datei beschädigt oder von Hand verändert. */
 function checkReferences(d: Backup['data']): string | null {
   const ids = (t: SyncedTable) => new Set(d[t].map((r) => r.id))
-  const [areas, cats, persons, accounts, goals] = [
+  const [areas, cats, persons, accounts, goals, cars] = [
     ids('areas'),
     ids('categories'),
     ids('persons'),
     ids('accounts'),
     ids('goals'),
+    ids('cars'),
   ]
   const person = (w: unknown) => w === 'me' || persons.has(w as string)
   for (const c of d.categories)
@@ -180,6 +192,8 @@ function checkReferences(d: Backup['data']): string | null {
   for (const t of d.transactions) {
     if (!cats.has(t.categoryId as string))
       return 'Eine Buchung verweist auf eine unbekannte Kategorie.'
+    if (t.carId && !cars.has(t.carId as string))
+      return 'Eine Buchung verweist auf ein unbekanntes Auto.'
     if (t.goalId && !goals.has(t.goalId as string))
       return 'Eine Buchung verweist auf ein unbekanntes Sparziel.'
     const sh = t.shared as { paidBy: string; parts: { who: string }[] } | undefined
@@ -189,6 +203,9 @@ function checkReferences(d: Backup['data']): string | null {
   for (const t of d.templates)
     if (!cats.has(t.categoryId as string))
       return 'Eine Vorlage verweist auf eine unbekannte Kategorie.'
+  for (const t of d.templates)
+    if (t.carId && !cars.has(t.carId as string))
+      return 'Eine Vorlage verweist auf ein unbekanntes Auto.'
   for (const s of d.settlements)
     if (!persons.has(s.personId as string))
       return 'Eine Ausgleichszahlung verweist auf eine unbekannte Person.'
