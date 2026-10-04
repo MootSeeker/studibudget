@@ -253,3 +253,10 @@ beträgt 15 s, `asyncUtilTimeout` 4 s.
 - Das Banner «Fixkosten buchen?» erscheint für jeden Monat, auch für künftige. Gebucht wird wie bisher auf den 1. des Monats.
 - Eine offene Fixkost lässt sich für einen Monat überspringen (`Template.skipMonths`, YYYY-MM). Die Vorlage bleibt aktiv, anders als bei «Pausieren». Aufheben geht in der Vorlagenliste.
 - Löscht man eine aus einer Vorlage gebuchte Buchung, fragt die App, ob der Monat auch übersprungen werden soll. Sonst würde die Vorlage sofort wieder als offen erscheinen.
+
+## Ausgleich pro Monat (Issue #25)
+
+- Die Ausgleichsseite hat eine Monatswahl. Karten: Erhalten, Bezahlt, Neu offen (aus den gemeinsamen Buchungen des Monats) und das echte Defizit bzw. der Überschuss. Die Listen zeigen den gewählten Monat, ein Häkchen zeigt alle.
+- Das «echte Defizit» ist eine Kassensicht, kein Budgetwert: bar bezahlte Ausgaben (bei gemeinsamen Ausgaben der ganze vorgestreckte Betrag) plus gezahlte Ausgleichszahlungen, minus Einnahmen und erhaltene Ausgleichszahlungen. Sparen zählt nicht. So wirkt eine Rückzahlung im Monat, in dem sie fliesst.
+- Bewusst nicht der Eigenanteil: Er enthält den Anteil der anderen schon nicht mehr, die erhaltene Rückzahlung würde doppelt abgezogen.
+- Ausgleichszahlungen zählen weiterhin nicht ins Budget und nicht in Monat oder Statistik.
