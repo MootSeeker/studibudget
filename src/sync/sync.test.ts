@@ -8,28 +8,8 @@ import { createStore } from '../data/store'
 import type { Transaction } from '../domain/types'
 import { SyncEngine } from './engine'
 import { format, receive, tick } from './hlc'
-import { TransportError, type PullRow, type PushRow, type Transport } from './transport'
-
-/** Server im Speicher mit derselben Last-Writer-Wins-Regel wie push_records(). */
-class FakeServer implements Transport {
-  rows = new Map<string, PullRow>()
-  seq = 0
-  online = true
-  async push(rows: PushRow[]) {
-    if (!this.online) throw new TransportError('network', 'Failed to fetch')
-    for (const r of rows) {
-      const cur = this.rows.get(r.id)
-      if (!cur || cur.hlc < r.hlc) this.rows.set(r.id, { ...r, seq: ++this.seq })
-    }
-  }
-  async pull(afterSeq: number, limit: number) {
-    if (!this.online) throw new TransportError('network', 'Failed to fetch')
-    return [...this.rows.values()]
-      .filter((r) => r.seq > afterSeq)
-      .sort((a, b) => a.seq - b.seq)
-      .slice(0, limit)
-  }
-}
+import { FakeServer } from '../test/fakeServer'
+import { TransportError, type Transport } from './transport'
 
 let n = 0
 async function device(server: Transport, dek: CryptoKey, now = () => 1_000_000, opts = {}) {
