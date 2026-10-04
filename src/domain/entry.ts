@@ -24,6 +24,7 @@ export interface EntryInput {
   }
   /** Nur für Sparen. */
   goal: null | { id: string; direction: 'einzahlung' | 'entnahme' }
+  carId?: string | null
   /** Beim Bearbeiten: Herkunft aus einer Vorlage bleibt erhalten. */
   existing?: Pick<Transaction, 'templateId' | 'templateMonth'>
 }
@@ -76,6 +77,7 @@ export function buildEntry(input: EntryInput): EntryResult {
     note: input.note.trim(),
   }
   if (shared) draft.shared = shared
+  if (input.carId) draft.carId = input.carId
   if (input.goal) {
     draft.goalId = input.goal.id
     draft.goalDirection = input.goal.direction

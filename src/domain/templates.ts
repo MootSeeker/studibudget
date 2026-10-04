@@ -39,6 +39,7 @@ export function templateToDraft(
     myAmountCents: mine,
     note,
     ...(shared ? { shared } : {}),
+    ...(template.carId ? { carId: template.carId } : {}),
     templateId: template.id,
     templateMonth: month,
   }

@@ -2,9 +2,11 @@ import { useMemo, useState, type FormEvent } from 'react'
 import { buttonClass, inputClass } from '../auth/ui'
 import { buildEntry, type EntryDraft } from '../domain/entry'
 import { INTERVALS, monthsForInterval, type IntervalEvery } from '../domain/templates'
+import { isCarCategory } from '../data/catalog'
 import { newId } from '../data/seed'
 import type {
   Area,
+  Car,
   Category,
   CategoryType,
   Goal,
@@ -26,6 +28,7 @@ export interface EntryFormProps {
   areas: Area[]
   persons: Person[]
   goals: Goal[]
+  cars?: Car[]
   /** Zum Bearbeiten; ohne Wert wird neu erfasst. */
   initial?: Transaction | null
   defaultDate: string
@@ -37,6 +40,7 @@ export interface EntryFormProps {
 /** Eingabeformular für eine Buchung (neu oder bearbeiten). */
 export function EntryForm(props: EntryFormProps) {
   const { settings, categories, areas, persons, goals, initial } = props
+  const cars = props.cars ?? []
   const typeOf = (id: string) => categories.find((c) => c.id === id)?.type
   const activePersons = persons.filter((p) => p.active)
   const canShare = settings.living === 'wg' || settings.living === 'partner'
@@ -62,6 +66,8 @@ export function EntryForm(props: EntryFormProps) {
       return String(Math.round((initial.myAmountCents / initial.amountCents) * 100 * 100) / 100)
     return String(settings.myPartnerSharePct)
   })
+  // null = noch nicht gewählt: Mit genau einem Auto ist es vorgewählt.
+  const [carPick, setCarPick] = useState<string | null>(initial ? (initial.carId ?? '') : null)
   const [goalId, setGoalId] = useState(initial?.goalId ?? '')
   const [direction, setDirection] = useState<'einzahlung' | 'entnahme'>(
     initial?.goalDirection ?? 'einzahlung',
@@ -92,6 +98,12 @@ export function EntryForm(props: EntryFormProps) {
     [areas, categories, type, initial?.categoryId],
   )
 
+  const chosenCat = categories.find((c) => c.id === categoryId)
+  const carChoices =
+    chosenCat && isCarCategory(chosenCat, categories)
+      ? cars.filter((c) => !c.archived || c.id === initial?.carId)
+      : []
+  const carId = carPick ?? (carChoices.length === 1 ? carChoices[0].id : '')
   const showShare = canShare && type === 'ausgabe'
   const people: { id: Who; name: string }[] = [
     { id: 'me', name: 'Ich' },
@@ -122,6 +134,7 @@ export function EntryForm(props: EntryFormProps) {
               }
             : { paidBy, mode: 'equal', participants }
           : null,
+      carId: carChoices.length > 0 ? carId || null : (initial?.carId ?? null),
       goal: type === 'sparen' && goalId ? { id: goalId, direction } : null,
       existing: initial ?? undefined,
     })
@@ -135,6 +148,7 @@ export function EntryForm(props: EntryFormProps) {
         setAmount('')
         setNote('')
         setRepeat(false)
+        setCarPick(null)
         setEvery(1)
         setId(newId())
         setSavedNote(true)
@@ -224,6 +238,20 @@ export function EntryForm(props: EntryFormProps) {
           />
         </label>
       </div>
+
+      {carChoices.length > 0 && (
+        <label className="block space-y-1">
+          <span className="text-sm font-medium">Auto</span>
+          <select className={inputClass} value={carId} onChange={(e) => setCarPick(e.target.value)}>
+            <option value="">Kein bestimmtes Auto</option>
+            {carChoices.map((c) => (
+              <option key={c.id} value={c.id}>
+                {c.name}
+              </option>
+            ))}
+          </select>
+        </label>
+      )}
 
       {type === 'sparen' && goals.length > 0 && (
         <div className="grid gap-3 sm:grid-cols-2">

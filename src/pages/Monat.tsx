@@ -2,6 +2,7 @@ import { ReserveHint } from '../components/ReserveHint'
 import { useState } from 'react'
 import { MONTH_NAMES } from '../components/MonthSelect'
 import {
+  useAllCars,
   useAllTransactions,
   useAreas,
   useBudgets,
@@ -137,6 +138,7 @@ export function Monat() {
   const areas = useAreas()
   const budgets = useBudgets()
   const templates = useTemplates()
+  const cars = useAllCars()
   const txs = useAllTransactions()
   const [month, setMonth] = useState(currentMonth())
 
@@ -296,6 +298,12 @@ export function Monat() {
               <li key={t.id} className="flex justify-between gap-3 py-1.5">
                 <span className="truncate">
                   {t.date.slice(8, 10)}.{t.date.slice(5, 7)}. · {catName(t.categoryId)}
+                  {t.carId && (
+                    <span className="text-muted">
+                      {' '}
+                      · {cars.find((c) => c.id === t.carId)?.name}
+                    </span>
+                  )}
                   {t.note && <span className="text-muted"> · {t.note}</span>}
                 </span>
                 <span className="tabular-nums">

@@ -14,6 +14,17 @@ interface Entry {
 
 const E = (e: Entry): Entry => e
 
+const isCarEntry = (key: string | undefined) => key !== undefined && key.startsWith('auto_')
+
+/** Gehört die Kategorie zum Auto-Bereich? Gilt auch für selbst angelegte Kategorien im selben Bereich. */
+export function isCarCategory(
+  cat: { areaId: string; catalogKey?: string },
+  categories: { areaId: string; catalogKey?: string }[],
+): boolean {
+  if (isCarEntry(cat.catalogKey)) return true
+  return categories.some((c) => c.areaId === cat.areaId && isCarEntry(c.catalogKey))
+}
+
 /** Standardkatalog: Bereich › Kategorie. Grundlage ist die Budgetplanung_Student_Schweiz-Vorlage. */
 const CATALOG: Entry[] = [
   E({ key: 'lohn', area: 'Einnahmen', names: 'Nettolohn / Nebenjob', type: 'einnahme' }),

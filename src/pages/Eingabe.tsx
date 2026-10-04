@@ -5,6 +5,7 @@ import { MonthList } from '../components/MonthList'
 import { MONTH_NAMES } from '../components/MonthSelect'
 import { db } from '../data/db'
 import {
+  useAllCars,
   useAreas,
   useCategories,
   useGoals,
@@ -29,6 +30,7 @@ export function Eingabe() {
   const areas = useAreas()
   const persons = usePersons()
   const goals = useGoals()
+  const cars = useAllCars()
   const templates = useTemplates()
   const [month, setMonth] = useState(currentMonth())
   const txs = useMonthTransactions(month)
@@ -57,6 +59,7 @@ export function Eingabe() {
         amountCents: draft.amountCents,
         note: draft.note,
         ...(draft.shared ? { shared: draft.shared } : {}),
+        ...(draft.carId ? { carId: draft.carId } : {}),
         months: opts.repeat,
         active: true,
       })
@@ -91,6 +94,7 @@ export function Eingabe() {
         areas={areas}
         persons={persons}
         goals={goals}
+        cars={cars}
         initial={editing}
         defaultDate={defaultDate}
         onSubmit={submit}
@@ -153,6 +157,7 @@ export function Eingabe() {
         groups={groups}
         country={country}
         persons={persons}
+        cars={cars}
         onEdit={(t) => {
           setEditing(t)
           window.scrollTo({ top: 0, behavior: 'smooth' })

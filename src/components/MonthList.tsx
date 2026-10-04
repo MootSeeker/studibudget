@@ -1,18 +1,26 @@
 import type { AreaGroup } from '../domain/ledger'
 import { formatMoney } from '../domain/money'
-import type { Country, Person, Transaction } from '../domain/types'
+import type { Car, Country, Person, Transaction } from '../domain/types'
 
 export interface MonthListProps {
   groups: AreaGroup[]
   country: Country
   persons: Person[]
+  cars?: Car[]
   onEdit(tx: Transaction): void
   onDelete(tx: Transaction): void
 }
 
 const day = (date: string) => `${date.slice(8, 10)}.${date.slice(5, 7)}.`
 
-export function MonthList({ groups, country, persons, onEdit, onDelete }: MonthListProps) {
+export function MonthList({
+  groups,
+  country,
+  persons,
+  cars = [],
+  onEdit,
+  onDelete,
+}: MonthListProps) {
   const money = (c: number) => formatMoney(c, country)
   const name = (who: string) =>
     who === 'me' ? 'mir' : (persons.find((p) => p.id === who)?.name ?? 'unbekannt')
@@ -44,6 +52,11 @@ export function MonthList({ groups, country, persons, onEdit, onDelete }: MonthL
                         {t.shared && (
                           <span className="ml-2 text-xs text-muted">
                             von {money(t.amountCents)}, bezahlt von {name(t.shared.paidBy)}
+                          </span>
+                        )}
+                        {t.carId && (
+                          <span className="ml-2 text-xs text-muted">
+                            {cars.find((x) => x.id === t.carId)?.name}
                           </span>
                         )}
                         {t.goalDirection === 'entnahme' && (

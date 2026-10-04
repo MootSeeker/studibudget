@@ -6,7 +6,14 @@ import { ReserveHint } from '../components/ReserveHint'
 import { TemplatesPanel } from '../components/TemplatesPanel'
 import { createCategoryOps } from '../data/categoryOps'
 import { db } from '../data/db'
-import { useAreas, useBudgets, useCategories, useSettings, useTemplates } from '../data/hooks'
+import {
+  useAllCars,
+  useAreas,
+  useBudgets,
+  useCategories,
+  useSettings,
+  useTemplates,
+} from '../data/hooks'
 import { newId } from '../data/seed'
 import { store } from '../data/store'
 import { budgetForMonth } from '../domain/budget'
@@ -228,6 +235,7 @@ export function Budget() {
   const areas = useAreas()
   const budgets = useBudgets()
   const templates = useTemplates()
+  const cars = useAllCars()
   const [month, setMonth] = useState(currentMonth())
   const [showHidden, setShowHidden] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -368,7 +376,12 @@ export function Budget() {
         month={month}
       />
 
-      <TemplatesPanel templates={templates} categories={categories} country={settings.country} />
+      <TemplatesPanel
+        cars={cars}
+        templates={templates}
+        categories={categories}
+        country={settings.country}
+      />
     </section>
   )
 }

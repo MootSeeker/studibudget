@@ -35,6 +35,27 @@ export function useGoals() {
   )
 }
 
+export function useCars() {
+  return useLiveQuery(
+    async () =>
+      (await db.cars.toArray())
+        .filter((c) => !c.deleted && !c.archived)
+        .sort((a, b) => a.order - b.order),
+    [],
+    [],
+  )
+}
+
+/** Alle Autos, auch archivierte (für Anzeige bestehender Buchungen). */
+export function useAllCars() {
+  return useLiveQuery(
+    async () =>
+      (await db.cars.toArray()).filter((c) => !c.deleted).sort((a, b) => a.order - b.order),
+    [],
+    [],
+  )
+}
+
 export function useTemplates() {
   return useLiveQuery(async () => (await db.templates.toArray()).filter((t) => !t.deleted), [], [])
 }
