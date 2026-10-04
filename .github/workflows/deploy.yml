@@ -58,6 +58,24 @@ jobs:
           path: reports
           retention-days: ${{ github.ref == 'refs/heads/main' && 30 || 14 }}
 
+  # Zugriffsregeln, Konto und Sync gegen ein lokales Supabase (Docker)
+  datenbank:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      TEST_SUITE: datenbank
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup
+      - uses: ./.github/actions/supabase
+      - run: npm run test:db
+      - uses: actions/upload-artifact@v4
+        if: ${{ !cancelled() }}
+        with:
+          name: bericht-datenbank
+          path: reports
+          retention-days: ${{ github.ref == 'refs/heads/main' && 30 || 14 }}
+
   build:
     runs-on: ubuntu-latest
     timeout-minutes: 10
@@ -79,7 +97,7 @@ jobs:
   # Fasst alle Berichte als Zusammenfassung auf der Actions-Seite zusammen.
   bericht:
     if: ${{ !cancelled() }}
-    needs: [unit, langsam]
+    needs: [unit, langsam, datenbank]
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
@@ -93,7 +111,7 @@ jobs:
 
   deploy:
     if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
-    needs: [statisch, unit, langsam, build]
+    needs: [statisch, unit, langsam, datenbank, build]
     runs-on: ubuntu-latest
     permissions:
       pages: write
