@@ -4,6 +4,9 @@ export interface ClockState {
   counter: number
 }
 
+/** Grösster Zählerstand, der in die 4 Hex-Stellen des Stempels passt. */
+const MAX_COUNTER = 0xffff
+
 export function format(s: ClockState, device: string): string {
   return `${String(s.wall).padStart(15, '0')}-${s.counter.toString(16).padStart(4, '0')}-${device}`
 }
@@ -19,7 +22,11 @@ function isAfter(a: ClockState, b: ClockState): boolean {
 
 /** Nächster eigener Zeitstempel; strikt grösser als alle bisherigen. */
 export function tick(s: ClockState, now: number): ClockState {
-  return now > s.wall ? { wall: now, counter: 0 } : { wall: s.wall, counter: s.counter + 1 }
+  if (now > s.wall) return { wall: now, counter: 0 }
+  // Läuft der Zähler über, würde der Text «10000» vor «ffff» sortieren: stattdessen rückt die Uhr um 1 vor.
+  return s.counter >= MAX_COUNTER
+    ? { wall: s.wall + 1, counter: 0 }
+    : { wall: s.wall, counter: s.counter + 1 }
 }
 
 /** Fremden Zeitstempel zur Kenntnis nehmen, damit der nächste eigene garantiert grösser ist. */
