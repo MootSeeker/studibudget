@@ -10,6 +10,7 @@ export interface BookTemplatesDialogProps {
   country: Country
   templates: Template[]
   categories: Category[]
+  onSkip(ids: string[]): Promise<void>
   onBook(items: { template: Template; amountCents: number; note: string }[]): Promise<void>
   onClose(): void
 }
@@ -21,6 +22,7 @@ export function BookTemplatesDialog({
   templates,
   categories,
   onBook,
+  onSkip,
   onClose,
 }: BookTemplatesDialogProps) {
   const [rows, setRows] = useState(() =>
@@ -55,6 +57,20 @@ export function BookTemplatesDialog({
     }
   }
 
+  async function skip(index: number) {
+    const id = rows[index].template.id
+    setBusy(true)
+    try {
+      await onSkip([id])
+      const rest = rows.filter((_, j) => j !== index)
+      if (rest.length === 0) return onClose()
+      setRows(rest)
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Das hat nicht geklappt.')
+    }
+    setBusy(false)
+  }
+
   const total = rows.filter((r) => r.on).reduce((s, r) => s + (parseAmount(r.amount) ?? 0), 0)
 
   return (
@@ -78,7 +94,18 @@ export function BookTemplatesDialog({
                 }
               />
               <div>
-                <p className="text-sm font-medium">{catName(r.template.categoryId)}</p>
+                <p className="flex items-center justify-between gap-2 text-sm font-medium">
+                  {catName(r.template.categoryId)}
+                  <button
+                    type="button"
+                    className="text-xs font-normal text-accent underline"
+                    aria-label={`${catName(r.template.categoryId)} diesen Monat überspringen`}
+                    disabled={busy}
+                    onClick={() => void skip(i)}
+                  >
+                    Überspringen
+                  </button>
+                </p>
                 <input
                   aria-label={`Notiz ${catName(r.template.categoryId)}`}
                   className={`${inputClass} mt-1 text-sm`}

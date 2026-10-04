@@ -91,6 +91,7 @@ const schemas = {
     months: z.array(z.number().int().min(1).max(12)).min(1).max(12),
     active: z.boolean(),
     noReserve: z.boolean().optional(),
+    skipMonths: z.array(month).max(600).optional(),
     carId: id.optional(),
   }),
   settlements: z.object({

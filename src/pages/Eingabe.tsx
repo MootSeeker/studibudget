@@ -21,7 +21,7 @@ import { groupMonth } from '../domain/ledger'
 import { formatMoney } from '../domain/money'
 import { addMonths, currentMonth, monthOf } from '../domain/period'
 import { totalsByMonth } from '../domain/stats'
-import { openTemplates, templateToDraft } from '../domain/templates'
+import { openTemplates, templateToDraft, withSkipped } from '../domain/templates'
 import type { Transaction } from '../domain/types'
 
 export function Eingabe() {
@@ -46,7 +46,8 @@ export function Eingabe() {
 
   const groups = groupMonth(txs, categories, areas, month)
   const totals = totalsByMonth(txs, categories, month, month)[0]
-  const open = month <= currentMonth() ? openTemplates(templates, txs, month) : []
+  // Auch künftige Monate: Fixkosten lassen sich im Voraus buchen.
+  const open = openTemplates(templates, txs, month)
   const label = `${MONTH_NAMES[Number(month.slice(5, 7)) - 1]} ${month.slice(0, 4)}`
 
   async function submit(draft: EntryDraft, opts: { repeat: number[] | null }) {
@@ -71,12 +72,35 @@ export function Eingabe() {
     if (monthOf(draft.date) !== month) setMonth(monthOf(draft.date))
   }
 
+  /** Vorlagen nur für diesen Monat überspringen; die Vorlage selbst bleibt aktiv. */
+  async function skipTemplates(ids: string[], skipMonth: string = month) {
+    for (const id of ids)
+      await store.patch('templates', id, (cur) => ({
+        skipMonths: withSkipped(cur.skipMonths, [skipMonth]),
+      }))
+  }
+
+  async function removeTransaction(t: Transaction) {
+    if (!window.confirm('Buchung löschen?')) return
+    await store.remove('transactions', t.id)
+    // Sonst würde die Vorlage in diesem Monat gleich wieder als offen erscheinen.
+    if (
+      t.templateId &&
+      t.templateMonth &&
+      window.confirm(
+        'Die Buchung stammt aus einer Fixkosten-Vorlage. Auch für diesen Monat überspringen?',
+      )
+    )
+      await skipTemplates([t.templateId], t.templateMonth).catch(() => undefined)
+  }
+
   async function bookTemplates(
     items: { template: (typeof templates)[number]; amountCents: number; note: string }[],
   ) {
     // Frisch prüfen, damit nichts doppelt gebucht wird (z. B. von einem anderen Gerät).
     const fresh = await db.transactions.toArray()
-    const stillOpen = new Set(openTemplates(templates, fresh, month).map((t) => t.id))
+    const freshTemplates = (await db.templates.toArray()).filter((t) => !t.deleted)
+    const stillOpen = new Set(openTemplates(freshTemplates, fresh, month).map((t) => t.id))
     const drafts = items
       .filter((i) => stillOpen.has(i.template.id))
       .map((i) => templateToDraft(i.template, month, newId(), i.amountCents, i.note))
@@ -154,6 +178,16 @@ export function Eingabe() {
               >
                 Prüfen und buchen
               </button>
+              <button
+                className="rounded-md border border-border px-3 py-1"
+                onClick={() =>
+                  window.confirm(
+                    `Alle ${open.length} offenen Fixkosten für diesen Monat überspringen? Die Vorlagen bleiben bestehen.`,
+                  ) && void skipTemplates(open.map((t) => t.id))
+                }
+              >
+                Alle überspringen
+              </button>
             </div>
           )}
 
@@ -166,9 +200,7 @@ export function Eingabe() {
               setEditing(t)
               window.scrollTo({ top: 0, behavior: 'smooth' })
             }}
-            onDelete={(t) =>
-              window.confirm('Buchung löschen?') && void store.remove('transactions', t.id)
-            }
+            onDelete={(t) => void removeTransaction(t)}
           />
 
           {booking && (
@@ -178,6 +210,7 @@ export function Eingabe() {
               templates={open}
               categories={categories}
               onBook={bookTemplates}
+              onSkip={skipTemplates}
               onClose={() => setBooking(false)}
             />
           )}

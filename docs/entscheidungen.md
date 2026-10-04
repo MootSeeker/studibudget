@@ -247,3 +247,9 @@ beträgt 15 s, `asyncUtilTimeout` 4 s.
 - Die Seitenleiste lässt sich auf Laptop und grossen Bildschirmen einklappen; die Wahl steht in `localStorage` (ohne Speicher gilt sie bis zum Neuladen). Auf dem Handy bleibt das Menü hinter dem Knopf, Esc schliesst es.
 - Eingabe ist ab `xl` zweispaltig (Formular links, Monatsliste rechts). Die Diagramme skalieren über ihr `viewBox`.
 - Die Monatsspalte der Kontentabelle bleibt beim seitlichen Scrollen stehen; Monatspfeile sind mindestens 44 px gross.
+
+## Fixkosten im Voraus und überspringen (Issues #23, #24)
+
+- Das Banner «Fixkosten buchen?» erscheint für jeden Monat, auch für künftige. Gebucht wird wie bisher auf den 1. des Monats.
+- Eine offene Fixkost lässt sich für einen Monat überspringen (`Template.skipMonths`, YYYY-MM). Die Vorlage bleibt aktiv, anders als bei «Pausieren». Aufheben geht in der Vorlagenliste.
+- Löscht man eine aus einer Vorlage gebuchte Buchung, fragt die App, ob der Monat auch übersprungen werden soll. Sonst würde die Vorlage sofort wieder als offen erscheinen.

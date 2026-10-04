@@ -90,6 +90,8 @@ export interface Template extends Synced {
   /** true = nicht in die Rückstellung für seltene Kosten einrechnen. */
   noReserve?: boolean
   carId?: string
+  /** Monate (YYYY-MM), in denen die Vorlage nicht fällig ist (übersprungen). */
+  skipMonths?: string[]
 }
 
 export interface Settlement extends Synced {
