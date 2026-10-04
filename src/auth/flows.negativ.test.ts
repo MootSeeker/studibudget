@@ -104,16 +104,13 @@ describe('Konto-Abläufe: Fehlerfälle', { tags: ['negativ'] }, () => {
   })
   it('Passwort-Reset: Serverfehler werden verständlich gemeldet', async () => {
     const f = fakeSupabase()
-    f.auth.resetPasswordForEmail.mockResolvedValueOnce({
-      data: {},
-      error: { message: 'email rate limit exceeded' },
-    })
+    f.state.resetError = { message: 'email rate limit exceeded' }
     const e = await requestPasswordReset(f.client, 'a@b.ch', 'http://x/').catch((x) => x)
     expect(e.message).toContain('Zu viele Versuche')
   })
   it('eine leere Fehlermeldung wird zu «Unbekannter Fehler.»', async () => {
     const f = fakeSupabase()
-    f.auth.resetPasswordForEmail.mockResolvedValueOnce({ data: {}, error: { message: '' } })
+    f.state.resetError = { message: '' }
     const e = await requestPasswordReset(f.client, 'a@b.ch', 'http://x/').catch((x) => x)
     expect(e.message).toBe('Unbekannter Fehler.')
   })

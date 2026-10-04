@@ -163,27 +163,44 @@ export async function resetWithRecovery(
   return dek
 }
 
+/**
+ * Zwei Schritte, die nicht gemeinsam gelingen müssen: erst das Auth-Passwort, dann die neu verpackten Schlüssel. Scheitert
+ * der zweite, passt der Server nicht mehr zu den Schlüsseln. Mit `previousAuthSecret` (Passwort ändern) wird der erste
+ * Schritt zurückgenommen; beim Zurücksetzen gibt es kein altes Passwort, dort bleibt nur der Hinweis auf «Passwort vergessen».
+ */
 async function applyNewPassword(
   sb: SupabaseClient,
   dek: CryptoKey,
   email: string,
   newPassword: string,
+  previousAuthSecret?: string,
 ): Promise<void> {
   const next = await rewrapForPassword(dek, newPassword, email)
   const { error } = await sb.auth.updateUser({ password: next.authSecret })
   if (error) throw mapError(error)
-  await storeKeys(sb, { wrapped_dek: next.wrappedDek, kdf: next.kdf })
+  try {
+    await storeKeys(sb, { wrapped_dek: next.wrappedDek, kdf: next.kdf })
+  } catch (e) {
+    if (previousAuthSecret) {
+      await sb.auth.updateUser({ password: previousAuthSecret }).catch(() => undefined)
+      throw e
+    }
+    throw new AuthError(
+      'keys',
+      'Das neue Passwort wurde gesetzt, aber die Schlüssel konnten nicht gespeichert werden. Bitte wähle auf der Anmeldeseite «Passwort vergessen» und gib deinen Wiederherstellungsschlüssel ein.',
+    )
+  }
 }
 
 async function verifyPassword(
   sb: SupabaseClient,
   email: string,
   password: string,
-): Promise<CryptoKey> {
+): Promise<{ dek: CryptoKey; authSecret: string }> {
   const keys = await fetchKeys(sb)
-  const { kek } = await deriveFromPassword(password, email, DEFAULT_KDF)
+  const { kek, authSecret } = await deriveFromPassword(password, email, DEFAULT_KDF)
   try {
-    return await openDek(keys.wrapped_dek, kek)
+    return { dek: await openDek(keys.wrapped_dek, kek), authSecret }
   } catch {
     throw new AuthError('invalid', 'Das Passwort stimmt nicht.')
   }
@@ -197,8 +214,8 @@ export async function changePassword(
 ): Promise<void> {
   const weak = checkPassword(newPassword)
   if (weak) throw new AuthError('weak', weak)
-  const dek = await verifyPassword(sb, email, oldPassword)
-  await applyNewPassword(sb, dek, email, newPassword)
+  const { dek, authSecret } = await verifyPassword(sb, email, oldPassword)
+  await applyNewPassword(sb, dek, email, newPassword, authSecret)
 }
 
 /** Erzeugt einen neuen Wiederherstellungsschlüssel; der alte wird ungültig. */
@@ -207,7 +224,7 @@ export async function renewRecoveryKey(
   email: string,
   password: string,
 ): Promise<string> {
-  const dek = await verifyPassword(sb, email, password)
+  const { dek } = await verifyPassword(sb, email, password)
   const next = await newRecoveryFor(dek)
   await storeKeys(sb, { wrapped_dek_recovery: next.wrappedDekRecovery })
   return next.recoveryCode

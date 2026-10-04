@@ -18,6 +18,7 @@ export function fakeSupabase(init: { keys?: unknown; session?: boolean } = {}) {
     keysUpdateError: null as FakeError,
     rpcError: null as FakeError,
     selectError: null as FakeError,
+    resetError: null as FakeError,
   }
   let authListener: ((event: string, session: unknown) => void) | null = null
   const unsubscribe = vi.fn()
@@ -33,7 +34,10 @@ export function fakeSupabase(init: { keys?: unknown; session?: boolean } = {}) {
       data: { session: state.session ? { user: USER } : null },
     })),
     updateUser: vi.fn(async () => ({ data: {}, error: state.updateUserError })),
-    resetPasswordForEmail: vi.fn(async () => ({ data: {}, error: null })),
+    resetPasswordForEmail: vi.fn(async (): Promise<{ data: object; error: FakeError }> => ({
+      data: {},
+      error: state.resetError,
+    })),
     onAuthStateChange: vi.fn((cb: (event: string, session: unknown) => void) => {
       authListener = cb
       return { data: { subscription: { unsubscribe } } }
