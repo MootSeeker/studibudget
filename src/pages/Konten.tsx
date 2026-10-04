@@ -230,7 +230,7 @@ export function Konten() {
   const visibleGoals = goals.filter((g) => showArchived || !g.archived)
 
   return (
-    <section className="max-w-4xl space-y-8">
+    <section className="max-w-4xl space-y-8 xl:max-w-6xl">
       <h1 className="text-2xl font-semibold">Konten &amp; Sparziele</h1>
 
       {error && (
@@ -376,7 +376,7 @@ export function Konten() {
               <caption className="sr-only">Kontostände pro Monatsende und Gesamtvermögen</caption>
               <thead>
                 <tr className="text-left text-muted">
-                  <th scope="col" className="px-2 py-2 font-normal">
+                  <th scope="col" className="sticky left-0 bg-bg px-2 py-2 font-normal">
                     Monat
                   </th>
                   {accounts.map((a) => (
@@ -395,7 +395,10 @@ export function Konten() {
                   const w = wealth[i]
                   return (
                     <tr key={m} className="border-t border-border">
-                      <th scope="row" className="whitespace-nowrap px-2 py-1 text-left font-normal">
+                      <th
+                        scope="row"
+                        className="sticky left-0 whitespace-nowrap bg-bg px-2 py-1 text-left font-normal"
+                      >
                         {monthName(m)}
                       </th>
                       {accounts.map((a) => {

@@ -260,7 +260,7 @@ export function Budget() {
   const label = `${MONTH_NAMES[Number(month.slice(5, 7)) - 1]} ${month.slice(0, 4)}`
 
   return (
-    <section className="max-w-3xl space-y-6">
+    <section className="max-w-3xl space-y-6 xl:max-w-5xl">
       <h1 className="text-2xl font-semibold">Budget</h1>
       <p className="text-sm text-muted">
         Lege pro Kategorie fest, wie viel du im Monat einnehmen, ausgeben oder sparen willst. Eine
@@ -269,7 +269,7 @@ export function Budget() {
 
       <div className="flex items-center justify-between">
         <button
-          className="rounded-md border border-border px-3 py-2"
+          className="min-h-11 min-w-11 rounded-md border border-border px-3 py-2"
           aria-label="Vorheriger Monat"
           onClick={() => setMonth(addMonths(month, -1))}
         >
@@ -279,7 +279,7 @@ export function Budget() {
           Gilt ab {label}
         </h2>
         <button
-          className="rounded-md border border-border px-3 py-2"
+          className="min-h-11 min-w-11 rounded-md border border-border px-3 py-2"
           aria-label="Nächster Monat"
           onClick={() => setMonth(addMonths(month, 1))}
         >
