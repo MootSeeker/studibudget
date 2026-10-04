@@ -1,0 +1,7 @@
+dist
+dist-e2e
+reports
+test-results
+package-lock.json
+vault
+**/__screenshots__

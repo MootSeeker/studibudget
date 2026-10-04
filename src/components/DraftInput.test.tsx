@@ -74,18 +74,22 @@ describe('DraftInput', () => {
     await vi.waitFor(() => expect(input).toHaveValue('800.00'))
   })
 
-  it('ein neuer Entwurf geht vom aktuell gespeicherten Wert aus, nicht von einem früheren (Regression)', async () => {
-    const onCommit = vi.fn()
-    render(<Harness initial="800.00" onCommit={onCommit} />)
-    const input = screen.getByLabelText('Betrag')
-    fireEvent.change(input, { target: { value: '850' } })
-    fireEvent.blur(input)
-    expect(onCommit).toHaveBeenLastCalledWith('850')
-    fireEvent.click(screen.getByText('Extern ändern')) // gespeichert: 999.00
-    expect(input).toHaveValue('999.00')
-    fireEvent.change(input, { target: { value: '' } })
-    fireEvent.blur(input)
-    expect(onCommit).toHaveBeenLastCalledWith('')
-    expect(onCommit).toHaveBeenCalledTimes(2)
-  })
+  it(
+    'ein neuer Entwurf geht vom aktuell gespeicherten Wert aus, nicht von einem früheren (Regression)',
+    { tags: ['regression'] },
+    async () => {
+      const onCommit = vi.fn()
+      render(<Harness initial="800.00" onCommit={onCommit} />)
+      const input = screen.getByLabelText('Betrag')
+      fireEvent.change(input, { target: { value: '850' } })
+      fireEvent.blur(input)
+      expect(onCommit).toHaveBeenLastCalledWith('850')
+      fireEvent.click(screen.getByText('Extern ändern')) // gespeichert: 999.00
+      expect(input).toHaveValue('999.00')
+      fireEvent.change(input, { target: { value: '' } })
+      fireEvent.blur(input)
+      expect(onCommit).toHaveBeenLastCalledWith('')
+      expect(onCommit).toHaveBeenCalledTimes(2)
+    },
+  )
 })
