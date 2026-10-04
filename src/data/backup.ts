@@ -161,6 +161,9 @@ export async function exportBackup(db: StudiBudgetDB, now: Date = new Date()): P
       .filter((r) => !r.deleted)
       .map(({ updatedAt: _u, deleted: _d, ...rest }) => rest as Rec)
   }
+  // Ein Gerät kann einen Stand für ein Konto erfasst haben, das ein anderes Gerät gelöscht hat: dieser Stand ist verwaist.
+  const accounts = new Set(data.accounts.map((a) => a.id))
+  data.accountBalances = data.accountBalances.filter((b) => accounts.has(b.accountId as string))
   return { app: BACKUP_APP, schemaVersion: BACKUP_VERSION, exportedAt: now.toISOString(), data }
 }
 
@@ -172,8 +175,20 @@ export type ParseResult =
 
 const fail = (error: string): ParseResult => ({ ok: false, error })
 
+/** Jede ID darf in ihrer Tabelle nur einmal vorkommen, sonst gewinnt beim Einspielen still die letzte Zeile. */
+function checkUniqueIds(d: Backup['data']): string | null {
+  for (const t of SYNCED_TABLES)
+    if (new Set(d[t].map((r) => r.id)).size !== d[t].length)
+      return `In der Tabelle «${t}» kommt eine ID doppelt vor.`
+  return null
+}
+
 /** Verweise zwischen den Tabellen müssen aufgehen, sonst ist die Datei beschädigt oder von Hand verändert. */
-function checkReferences(d: Backup['data']): string | null {
+function checkReferences(all: Backup['data']): string | null {
+  // Gelöschte Zeilen werden nicht eingespielt: Sie sind weder gültiges Verweisziel noch müssen ihre Verweise stimmen.
+  const d = Object.fromEntries(
+    SYNCED_TABLES.map((t) => [t, all[t].filter((r) => !r.deleted)]),
+  ) as Backup['data']
   const ids = (t: SyncedTable) => new Set(d[t].map((r) => r.id))
   const [areas, cats, persons, accounts, goals, cars] = [
     ids('areas'),
@@ -201,9 +216,13 @@ function checkReferences(d: Backup['data']): string | null {
     if (sh && !(person(sh.paidBy) && sh.parts.every((p) => person(p.who))))
       return 'Eine gemeinsame Buchung verweist auf eine unbekannte Person.'
   }
-  for (const t of d.templates)
+  for (const t of d.templates) {
     if (!cats.has(t.categoryId as string))
       return 'Eine Vorlage verweist auf eine unbekannte Kategorie.'
+    const sh = t.shared as { paidBy: string; parts: { who: string }[] } | undefined
+    if (sh && !(person(sh.paidBy) && sh.parts.every((p) => person(p.who))))
+      return 'Eine Vorlage verweist auf eine unbekannte Person.'
+  }
   for (const t of d.templates)
     if (t.carId && !cars.has(t.carId as string))
       return 'Eine Vorlage verweist auf ein unbekanntes Auto.'
@@ -244,6 +263,8 @@ export function parseBackup(raw: string): ParseResult {
   if (backup.data.settings.length !== 1) return fail('Das Backup enthält keine Einstellungen.')
   if (backup.data.settings[0].onboardingDone !== true)
     return fail('Dieses Backup stammt aus einer nicht abgeschlossenen Einrichtung.')
+  const dup = checkUniqueIds(backup.data)
+  if (dup) return fail(`Die Backup-Datei ist beschädigt: ${dup}`)
   const ref = checkReferences(backup.data)
   if (ref) return fail(`Die Backup-Datei ist beschädigt: ${ref}`)
   const counts = Object.fromEntries(SYNCED_TABLES.map((t) => [t, backup.data[t].length])) as Record<
