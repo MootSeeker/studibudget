@@ -157,6 +157,28 @@ test('zurücksetzen auf A löscht die Buchungen auch auf B', async ({
     await dialog.getByRole('checkbox', { name: /^Buchungen \(1\)/ }).check()
     await dialog.getByRole('button', { name: '1 Eintrag löschen' }).click()
     await expect(a.getByText('1 Eintrag gelöscht.')).toBeVisible()
+    // DIAGNOSE (vorübergehend)
+    for (let i = 0; i < 3; i++) {
+      const info = await a.evaluate(async () => {
+        const raf = await Promise.race([
+          new Promise((r) => requestAnimationFrame(() => r('raf ok'))),
+          new Promise((r) => setTimeout(() => r('raf HAENGT'), 1500)),
+        ])
+        return {
+          raf,
+          modal: document.querySelectorAll('[aria-modal]').length,
+          dialog: document.querySelectorAll('[role=dialog]').length,
+          inert: document.querySelectorAll('[inert],[aria-hidden=true]').length,
+          active: document.activeElement?.outerHTML.slice(0, 80),
+          knopf: [...document.querySelectorAll('nav button')].map((b) => b.textContent),
+        }
+      })
+      const rolle = await a
+        .getByRole('button', { name: /^(Synchronisiert|\d+ Änderungen? ausstehend)/ })
+        .count()
+      console.log('DIAG', i, JSON.stringify(info), 'rolle', rolle)
+      await a.waitForTimeout(1000)
+    }
     await abgleichen(a)
 
     await abgleichen(b)
