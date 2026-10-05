@@ -8,8 +8,9 @@ test('Passwort ändern: das alte gilt nicht mehr, das neue öffnet dieselben Dat
 }) => {
   await page.getByLabel(/Betrag/).fill('12.30')
   await page.getByLabel('Kategorie').selectOption({ label: 'Mensa / Mittagessen' })
+  await page.getByLabel(/Notiz/).fill('Mensa Dienstag')
   await page.getByRole('button', { name: 'Speichern' }).click()
-  await expect(page.getByText('Mensa / Mittagessen').first()).toBeVisible()
+  await expect(page.getByText('Mensa Dienstag')).toBeVisible()
 
   await page.getByRole('link', { name: 'Einstellungen' }).click()
   const bereich = page.locator('details', { hasText: 'Passwort ändern' }).first()
@@ -24,7 +25,7 @@ test('Passwort ändern: das alte gilt nicht mehr, das neue öffnet dieselben Dat
   await expect(page.getByRole('alert')).toHaveText('E-Mail oder Passwort stimmt nicht.')
   await anmelden(page, konto, NEU)
   await expect(page.getByRole('navigation', { name: 'Hauptnavigation' })).toBeVisible()
-  await expect(page.getByText('Mensa / Mittagessen').first()).toBeVisible()
+  await expect(page.getByText('Mensa Dienstag')).toBeVisible()
 })
 
 test('Konto löschen: Konto und Daten sind weg', async ({ eingerichtet: { page, konto } }) => {
@@ -42,8 +43,9 @@ test('Konto löschen: Konto und Daten sind weg', async ({ eingerichtet: { page, 
 test('Abmelden leert die Daten auf dem Gerät', async ({ eingerichtet: { page } }) => {
   await page.getByLabel(/Betrag/).fill('5')
   await page.getByLabel('Kategorie').selectOption({ label: 'Mensa / Mittagessen' })
+  await page.getByLabel(/Notiz/).fill('Mensa Dienstag')
   await page.getByRole('button', { name: 'Speichern' }).click()
-  await expect(page.getByText('Mensa / Mittagessen').first()).toBeVisible()
+  await expect(page.getByText('Mensa Dienstag')).toBeVisible()
   const zeilen = () =>
     page.evaluate(
       () =>

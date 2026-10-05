@@ -63,7 +63,7 @@ test('geteilte Ausgabe in der WG: Anna schuldet die Hälfte, Ausgleich stellt es
   )
 
   await page.getByRole('link', { name: 'Ausgleich' }).click()
-  await expect(page.getByText(/Anna schuldet dir CHF\s45\.00/)).toBeVisible()
+  await expect(page.getByText(/^Anna schuldet dir CHF\s45\.00\.$/)).toBeVisible()
   await page.getByRole('button', { name: 'Anna ausgleichen' }).click()
   const formular = page.getByRole('form', { name: 'Ausgleichszahlung erfassen' })
   await formular.getByRole('button', { name: 'Speichern' }).click()

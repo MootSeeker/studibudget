@@ -16,7 +16,7 @@ test('Backup exportieren, Daten löschen, Backup wieder einspielen', async ({
   const datei = testInfo.outputPath('backup.json')
   await (await download).saveAs(datei)
   await expect(page.getByText('Das Backup wurde heruntergeladen.')).toBeVisible()
-  expect(JSON.parse(readFileSync(datei, 'utf8')).transactions).toHaveLength(1)
+  expect(JSON.parse(readFileSync(datei, 'utf8')).data.transactions).toHaveLength(1)
 
   // Buchung löschen (die App fragt nach, der Dialog wird in der Fixture bestätigt)
   await page.getByRole('link', { name: 'Eingabe' }).click()
