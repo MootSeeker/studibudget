@@ -2,9 +2,19 @@ import { useState } from 'react'
 import { inputClass } from '../auth/ui'
 import { ExpenseBars } from '../components/charts/ExpenseBars'
 import { MonthlyChart } from '../components/charts/MonthlyChart'
+import { WealthChart } from '../components/charts/WealthChart'
 import { MONTH_NAMES } from '../components/MonthSelect'
-import { useAllTransactions, useAreas, useBudgets, useCategories, useSettings } from '../data/hooks'
+import {
+  useAccountBalances,
+  useAccounts,
+  useAllTransactions,
+  useAreas,
+  useBudgets,
+  useCategories,
+  useSettings,
+} from '../data/hooks'
 import { formatMoney } from '../domain/money'
+import { wealthByMonth } from '../domain/wealth'
 import {
   addMonths,
   currentMonth,
@@ -137,6 +147,8 @@ export function Statistik() {
   const areas = useAreas()
   const budgets = useBudgets()
   const txs = useAllTransactions()
+  const accounts = useAccounts()
+  const balances = useAccountBalances()
   const [kind, setKind] = useState<PeriodKind>('semester')
   const [ref, setRef] = useState(currentMonth())
   const [custom, setCustom] = useState({ from: addMonths(currentMonth(), -2), to: currentMonth() })
@@ -169,6 +181,12 @@ export function Statistik() {
   }
 
   const { totals, key } = stats
+  const wealth = wealthByMonth(accounts, balances, monthRange(range.from, range.to))
+  const wealthComplete = wealth.filter((w) => w.complete && w.total !== null)
+  const wealthChange =
+    wealthComplete.length >= 2
+      ? wealthComplete[wealthComplete.length - 1].total! - wealthComplete[0].total!
+      : null
   const pct = (v: number | null) =>
     v === null ? '–' : `${v.toLocaleString('de-CH', { maximumFractionDigits: 1 })} %`
 
@@ -306,6 +324,28 @@ export function Statistik() {
           </table>
         </details>
       </figure>
+
+      <section className="space-y-3 rounded-xl border border-border bg-surface p-4">
+        <h2 className="text-lg font-semibold">Vermögen</h2>
+        {wealthChange === null ? (
+          <p className="text-sm text-muted">
+            Für den Verlauf brauchst du in diesem Zeitraum mindestens zwei Monate, in denen alle
+            gezählten Konten einen Stand haben. Die Stände erfasst du unter «Konten &amp;
+            Sparziele».
+          </p>
+        ) : (
+          <>
+            <p className="text-sm text-muted">
+              Veränderung im Zeitraum:{' '}
+              <strong className={wealthChange < 0 ? 'text-bad' : 'text-ok'}>
+                {wealthChange > 0 ? '+' : ''}
+                {money(wealthChange)}
+              </strong>
+            </p>
+            <WealthChart points={wealth} money={money} />
+          </>
+        )}
+      </section>
 
       <figure className="space-y-3 rounded-xl border border-border bg-surface p-4">
         <figcaption>

@@ -3,6 +3,13 @@
 Alle nennenswerten Änderungen an StudiBudget. Das Format folgt [Keep a Changelog](https://keepachangelog.com/de/1.1.0/),
 die Versionen folgen [Semantic Versioning](https://semver.org/lang/de/).
 
+## [Unreleased]
+
+### Hinzugefügt
+
+- Statistik: Abschnitt «Vermögen» mit Verlauf und Veränderung im gewählten Zeitraum (#52).
+- Budget: das Budget lässt sich exportieren, aus einer Datei importieren und zurücksetzen (#30).
+
 ## [1.1.0] – 2026-10-05
 
 Dieses Release bringt eine umfassende Test-Suite. Die App selbst ändert sich kaum, aber elf Fehler, die die Tests
@@ -61,5 +68,6 @@ Erste Veröffentlichung.
 - Fixkosten-Vorlagen, Intervalle, Rückstellungs-Hinweis, mehrere Autos, responsives Layout.
 - Datenschutzerklärung und Impressum.
 
+[Unreleased]: https://github.com/MootSeeker/studibudget/compare/v1.1.0...HEAD
 [1.1.0]: https://github.com/MootSeeker/studibudget/compare/v1.0.0...v1.1.0
 [1.0.0]: https://github.com/MootSeeker/studibudget/releases/tag/v1.0.0

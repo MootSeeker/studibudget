@@ -168,4 +168,47 @@ describe('Statistik-Seite', () => {
     await screen.findByRole('heading', { level: 1, name: 'Statistik' })
     expect(await screen.findByText(/semester \d{4}/i)).toBeInTheDocument()
   })
+
+  describe('Vermögen (Issue #52)', () => {
+    async function konto(monate: [string, number][]) {
+      const accountId = newId()
+      await store.put('accounts', {
+        id: accountId,
+        deleted: false,
+        name: 'Sparkonto',
+        kind: 'bank',
+        include: true,
+        order: 0,
+      })
+      for (const [month, amountCents] of monate)
+        await store.put('accountBalances', {
+          id: newId(),
+          deleted: false,
+          accountId,
+          month,
+          amountCents,
+        })
+    }
+
+    it('ohne Kontostände steht ein Hinweis statt der Grafik', async () => {
+      const user = await setup()
+      await user.selectOptions(screen.getByLabelText('Zeitraum'), 'Letzte 6 Monate')
+      expect(
+        await screen.findByText(/mindestens zwei Monate, in denen alle gezählten Konten/),
+      ).toBeInTheDocument()
+    })
+
+    it('zeigt die Veränderung zwischen erstem und letztem vollständigen Monat', async () => {
+      await konto([
+        [prev(3), 100000],
+        [prev(1), 130000],
+      ])
+      const user = await setup()
+      await user.selectOptions(screen.getByLabelText('Zeitraum'), 'Letzte 6 Monate')
+      const abschnitt = (await screen.findByRole('heading', { name: 'Vermögen' })).closest(
+        'section',
+      )!
+      await waitFor(() => expect(norm(abschnitt.textContent)).toMatch(/\+CHF 300\.00/))
+    })
+  })
 })
