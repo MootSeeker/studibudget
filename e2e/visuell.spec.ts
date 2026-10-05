@@ -6,7 +6,13 @@ import { anmelden, expect, test } from './support/fixtures'
 // nicht auf dem eigenen Rechner (Schrift und Rasterung weichen sonst ab).
 const BREITEN = [375, 768, 1280] as const
 const SCHEMEN = ['hell', 'dunkel'] as const
-const SEITEN = [...PAGES.map((p) => p.path), '/datenschutz']
+const SEITEN = [
+  ...PAGES.map((p) => p.path),
+  '/datenschutz',
+  '/budget?ansicht=kategorien',
+  '/einstellungen?bereich=daten',
+  '/einstellungen?bereich=konto',
+]
 
 /** Wie `assistentDurchlaufen`, aber ohne Hauptnavigation zu verlangen: auf dem Handy ist sie eingeklappt. */
 async function einrichten(page: Page) {
@@ -76,7 +82,7 @@ for (const schema of SCHEMEN) {
         for (const seite of SEITEN) {
           await page.goto(`./#${seite}`)
           await expect(page.getByRole('heading', { level: 1 })).toBeVisible()
-          await aufnehmen(seite.slice(1))
+          await aufnehmen(seite.slice(1).replace(/\?[a-z]+=/, '-'))
         }
       })
     })

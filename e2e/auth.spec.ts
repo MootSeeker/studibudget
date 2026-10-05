@@ -1,4 +1,11 @@
-import { test, expect, anmelden, assistentDurchlaufen, syncAbwarten } from './support/fixtures'
+import {
+  test,
+  expect,
+  anmelden,
+  assistentDurchlaufen,
+  syncAbwarten,
+  einstellungen,
+} from './support/fixtures'
 import { kontoExistiert, kontoLoeschen, neueAdresse, PASSWORT } from './support/konto'
 import { linkAusMail, mailAbwarten } from './support/mail'
 
@@ -67,7 +74,7 @@ test('Passwort vergessen: Link aus der Mail, Wiederherstellungsschlüssel, neues
 
   // Abmelden, mit dem alten Passwort geht nichts mehr, mit dem neuen schon
   await syncAbwarten(page)
-  await page.getByRole('link', { name: 'Einstellungen' }).click()
+  await einstellungen(page, 'Konto')
   await page.getByRole('button', { name: 'Abmelden' }).click()
   await anmelden(page, konto)
   await expect(page.getByRole('alert')).toHaveText('E-Mail oder Passwort stimmt nicht.')

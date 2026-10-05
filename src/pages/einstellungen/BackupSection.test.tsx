@@ -204,7 +204,7 @@ describe('Erinnerung ans Backup', () => {
     expect(await screen.findByText(/noch kein Backup erstellt/)).toBeInTheDocument()
     expect(screen.getByRole('link', { name: 'Zum Backup' })).toHaveAttribute(
       'href',
-      '/einstellungen',
+      '/einstellungen?bereich=daten',
     )
     await user.click(screen.getByRole('button', { name: 'Später' }))
     expect(screen.queryByText(/noch kein Backup/)).not.toBeInTheDocument()

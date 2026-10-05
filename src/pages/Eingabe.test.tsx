@@ -44,8 +44,8 @@ describe('Eingabe-Seite', () => {
     await user.type(screen.getByLabelText(/Notiz/), 'Migros')
     await user.click(screen.getByRole('button', { name: 'Speichern' }))
     expect(await screen.findByText('Migros')).toBeInTheDocument()
-    const lebensmittel = screen.getByText('Lebensmittel').closest('details')!
-    expect(norm(lebensmittel.textContent)).toMatch(/Lebensmittel\s*CHF 23\.50/)
+    const lebensmittel = screen.getByRole('button', { name: /Lebensmittel/ })
+    expect(norm(lebensmittel.textContent)).toMatch(/Lebensmittel\s*1 Buchung · CHF 23\.50/)
     expect(screen.getByLabelText(/Betrag/)).toHaveValue('')
     expect(await db.outbox.count()).toBeGreaterThan(0)
     expect(await db.transactions.count()).toBe(1)
@@ -83,7 +83,7 @@ describe('Eingabe-Seite', () => {
     await pick('Kategorie', 'Nettolohn / Nebenjob')
     expect(within(screen.getByLabelText('Kategorie')).queryByText('Miete')).not.toBeInTheDocument()
     await user.click(screen.getByRole('button', { name: 'Speichern' }))
-    await screen.findByText('Einnahmen', { selector: 'summary span' })
+    await screen.findByRole('button', { name: /Einnahmen/ })
     expect(
       norm(screen.getByText('Einnahmen', { selector: 'dt' }).nextElementSibling!.textContent),
     ).toMatch(/1'?500\.00/)
@@ -295,5 +295,26 @@ describe('Eingabe-Seite', () => {
     await waitFor(async () => expect((await db.templates.get(id))!.skipMonths).toHaveLength(1))
     // Die Anzeige folgt der Datenbank erst einen Moment später.
     await waitFor(() => expect(screen.queryByText(/buchen\?/)).not.toBeInTheDocument())
+  })
+
+  it('bis 15 Buchungen sind die Bereiche offen, darüber starten sie eingeklappt', async () => {
+    const miete = (await db.categories.toArray()).find((c) => c.catalogKey === 'miete')!
+    const monat = new Date()
+    const datum = `${monat.getFullYear()}-${String(monat.getMonth() + 1).padStart(2, '0')}-01`
+    for (let i = 0; i < 16; i++)
+      await store.put('transactions', {
+        id: crypto.randomUUID(),
+        deleted: false,
+        date: datum,
+        categoryId: miete.id,
+        amountCents: 100,
+        myAmountCents: 100,
+        note: `Buchung ${i}`,
+      })
+    await setup()
+    const kopf = await screen.findByRole('button', { name: /Wohnen/ })
+    expect(kopf).toHaveAttribute('aria-expanded', 'false')
+    expect(kopf).toHaveTextContent('16 Buchungen')
+    expect(screen.queryByText('Buchung 0')).not.toBeInTheDocument()
   })
 })

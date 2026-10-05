@@ -1,5 +1,6 @@
 import { render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
+import { MemoryRouter } from 'react-router'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { db } from '../data/db'
 import { completeOnboarding } from '../data/onboarding'
@@ -23,13 +24,26 @@ beforeEach(async () => {
   })
 })
 
-async function setup() {
+/** Öffnet die Budget-Seite im gewünschten Reiter; die Bereiche werden aufgeklappt, damit ihre Felder da sind. */
+async function setup(ansicht: 'monat' | 'kategorien' | 'fixkosten' | 'datei' = 'monat') {
   const user = userEvent.setup()
-  render(<Budget />)
+  render(
+    <MemoryRouter initialEntries={[ansicht === 'monat' ? '/budget' : `/budget?ansicht=${ansicht}`]}>
+      <Budget />
+    </MemoryRouter>,
+  )
   await screen.findByRole('heading', { level: 1, name: 'Budget' })
-  await screen.findByLabelText('Monatsbudget Miete')
+  if (ansicht === 'monat' || ansicht === 'kategorien') {
+    // Erst wenn die Bereiche geladen sind, weiss «Alle aufklappen», was es aufklappen soll.
+    await screen.findByRole('button', { name: /Haushalt/ })
+    await user.click(await screen.findByRole('button', { name: 'Alle aufklappen' }))
+  }
+  if (ansicht === 'monat') await screen.findByLabelText('Monatsbudget Miete')
   return user
 }
+/** Öffnet die Bearbeitung einer Kategorie (Reiter «Kategorien»). */
+const bearbeiten = async (user: ReturnType<typeof userEvent.setup>, name: string) =>
+  user.click(await screen.findByRole('button', { name: `Kategorie bearbeiten ${name}` }))
 const catByKey = async (key: string) =>
   (await db.categories.toArray()).find((c) => c.catalogKey === key)!
 const summary = (label: string) =>
@@ -121,9 +135,10 @@ describe('Budget-Seite', () => {
   })
 
   it('Fixkosten und Übertrag lassen sich umschalten', async () => {
-    const user = await setup()
+    const user = await setup('kategorien')
     const strom = await catByKey('strom')
-    const row = screen.getByLabelText('Monatsbudget Strom').closest('li')!
+    await bearbeiten(user, 'Strom')
+    const row = screen.getByLabelText('Name Strom').closest('li')!
     await user.click(within(row).getByLabelText('Fixkosten'))
     await waitFor(async () => expect((await db.categories.get(strom.id))!.fix).toBe(true))
     await user.click(within(row).getByLabelText(/Rest übertragen/))
@@ -139,19 +154,31 @@ describe('Budget-Seite', () => {
     await user.type(screen.getByLabelText('Monatsbudget Strom'), '50')
     await user.tab()
     await waitFor(() => expect(summary('Ausgaben')).toMatch(/50\.00/))
-    const row = () => screen.getByLabelText('Monatsbudget Strom').closest('li')!
+
+    await user.click(screen.getByRole('button', { name: 'Kategorien' }))
+    await user.click(await screen.findByRole('button', { name: 'Alle aufklappen' }))
+    await bearbeiten(user, 'Strom')
+    const row = () => screen.getByLabelText('Name Strom').closest('li')!
     await user.click(within(row()).getByRole('button', { name: 'Ausblenden' }))
     await waitFor(() =>
-      expect(screen.queryByLabelText('Monatsbudget Strom')).not.toBeInTheDocument(),
+      expect(
+        screen.queryByRole('button', { name: 'Kategorie bearbeiten Strom' }),
+      ).not.toBeInTheDocument(),
     )
-    expect(summary('Ausgaben')).toMatch(/0\.00/)
+    await user.click(screen.getByRole('button', { name: 'Monatsbudget' }))
+    await waitFor(() => expect(summary('Ausgaben')).toMatch(/0\.00/))
+
+    await user.click(screen.getByRole('button', { name: 'Kategorien' }))
     await user.click(screen.getByLabelText('Ausgeblendete Kategorien anzeigen'))
+    await user.click(await screen.findByRole('button', { name: 'Alle aufklappen' }))
+    await bearbeiten(user, 'Strom')
     await user.click(within(row()).getByRole('button', { name: 'Einblenden' }))
+    await user.click(screen.getByRole('button', { name: 'Monatsbudget' }))
     await waitFor(() => expect(summary('Ausgaben')).toMatch(/50\.00/))
   })
 
   it('legt eine neue Kategorie an, benennt um und lehnt Doppelte ab', async () => {
-    const user = await setup()
+    const user = await setup('kategorien')
     await user.type(screen.getByLabelText('Neue Kategorie in Haushalt'), 'Katzenfutter')
     await user.click(
       within(screen.getByLabelText('Neue Kategorie in Haushalt').closest('form')!).getByRole(
@@ -159,6 +186,7 @@ describe('Budget-Seite', () => {
         { name: 'Hinzufügen' },
       ),
     )
+    await bearbeiten(user, 'Katzenfutter')
     const name = await screen.findByLabelText('Name Katzenfutter')
     await user.clear(name)
     await user.type(name, 'Tierbedarf')
@@ -177,9 +205,10 @@ describe('Budget-Seite', () => {
   })
 
   it('verschiebt Kategorien nach unten und in einen anderen Bereich', async () => {
-    const user = await setup()
+    const user = await setup('kategorien')
     const strom = await catByKey('strom')
     const internet = await catByKey('internet')
+    await bearbeiten(user, 'Strom')
     await user.click(screen.getByRole('button', { name: 'Strom nach unten' }))
     await waitFor(async () =>
       expect((await db.categories.get(strom.id))!.order).toBeGreaterThan(
@@ -193,9 +222,11 @@ describe('Budget-Seite', () => {
   })
 
   it('legt einen Bereich an und benennt einen um', async () => {
-    const user = await setup()
+    const user = await setup('kategorien')
     await user.type(screen.getByLabelText('Neuer Bereich'), 'Haustier')
     await user.click(screen.getByRole('button', { name: 'Bereich anlegen' }))
+    await screen.findByRole('button', { name: /Haustier/ })
+    await user.click(screen.getByRole('button', { name: 'Alle aufklappen' }))
     await screen.findByLabelText('Bereich umbenennen Haustier')
     const wohnen = screen.getByLabelText('Bereich umbenennen Wohnen')
     await user.clear(wohnen)
@@ -215,7 +246,7 @@ describe('Budget-Seite', () => {
       months: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
       active: true,
     })
-    const user = await setup()
+    const user = await setup('fixkosten')
     await user.click(await screen.findByText(/Fixkosten-Vorlagen \(1\)/))
     await user.click(screen.getByRole('button', { name: 'Pausieren' }))
     await screen.findByText('pausiert')
@@ -234,11 +265,17 @@ describe('Budget-Seite', () => {
         validFrom: addMonths(NOW, -1),
         amountCents: 80000,
       })
-      return setup()
+      const user = await setup('datei')
+      // Die Seite liest Budget und Kategorien asynchron; erst wenn sie da sind, darf es losgehen.
+      await waitFor(() =>
+        expect(screen.getByRole('button', { name: 'Budget exportieren' })).toBeEnabled(),
+      )
+      await new Promise((r) => setTimeout(r, 300))
+      return user
     }
 
     it('ohne Budgetwerte ist der Export gesperrt; Zurücksetzen gibt es hier nicht mehr', async () => {
-      await setup()
+      await setup('datei')
       expect(screen.getByRole('button', { name: 'Budget exportieren' })).toBeDisabled()
       expect(screen.queryByRole('button', { name: /zurücksetzen/i })).not.toBeInTheDocument()
     })
@@ -296,6 +333,74 @@ describe('Budget-Seite', () => {
         { name: 'Miete', type: 'ausgabe', validFrom: addMonths(NOW, -1), amountCents: 80000 },
       ])
       klick.mockRestore()
+    })
+  })
+
+  describe('Reiter und Bereiche (Issue #84)', () => {
+    it('zeigt pro Bereich Anzahl und Summe im Kopf und startet eingeklappt', async () => {
+      const user = userEvent.setup()
+      const miete = await catByKey('miete')
+      await store.put('budgets', {
+        id: crypto.randomUUID(),
+        deleted: false,
+        categoryId: miete.id,
+        validFrom: NOW,
+        amountCents: 80000,
+      })
+      render(
+        <MemoryRouter initialEntries={['/budget']}>
+          <Budget />
+        </MemoryRouter>,
+      )
+      const kopf = await screen.findByRole('button', { name: /Wohnen/ })
+      expect(kopf).toHaveAttribute('aria-expanded', 'false')
+      await waitFor(() => expect(norm(kopf.textContent)).toMatch(/\d+ Kategorien · CHF 800\.00/))
+      expect(screen.queryByLabelText('Monatsbudget Miete')).not.toBeInTheDocument()
+      await user.click(kopf)
+      expect(await screen.findByLabelText('Monatsbudget Miete')).toHaveValue('800.00')
+    })
+
+    it('«Alle zuklappen» schliesst alles, und der Stand bleibt nach dem Neuladen', async () => {
+      const user = await setup()
+      await user.click(screen.getByRole('button', { name: 'Alle zuklappen' }))
+      expect(screen.queryByLabelText('Monatsbudget Miete')).not.toBeInTheDocument()
+      await user.click(screen.getByRole('button', { name: /Wohnen/ }))
+      expect(await screen.findByLabelText('Monatsbudget Miete')).toBeInTheDocument()
+
+      // Neu laden: nur «Wohnen» ist noch offen
+      document.body.innerHTML = ''
+      render(
+        <MemoryRouter initialEntries={['/budget']}>
+          <Budget />
+        </MemoryRouter>,
+      )
+      expect(await screen.findByLabelText('Monatsbudget Miete')).toBeInTheDocument()
+      expect(screen.getByRole('button', { name: /Lebensmittel/ })).toHaveAttribute(
+        'aria-expanded',
+        'false',
+      )
+    })
+
+    it('Reiter wechseln den Inhalt und stehen in der Adresse', async () => {
+      const user = await setup()
+      expect(screen.getByRole('button', { name: 'Monatsbudget' })).toHaveAttribute(
+        'aria-current',
+        'page',
+      )
+      await user.click(screen.getByRole('button', { name: 'Fixkosten' }))
+      expect(await screen.findByText(/Fixkosten-Vorlagen/)).toBeInTheDocument()
+      expect(screen.queryByLabelText('Monatsbudget Miete')).not.toBeInTheDocument()
+      await user.click(screen.getByRole('button', { name: 'Datei' }))
+      expect(await screen.findByRole('button', { name: 'Budget exportieren' })).toBeInTheDocument()
+    })
+
+    it('Kategorien: Bearbeiten klappt die Steuerzeile auf und zu', async () => {
+      const user = await setup('kategorien')
+      expect(screen.queryByLabelText('Name Strom')).not.toBeInTheDocument()
+      await bearbeiten(user, 'Strom')
+      expect(screen.getByLabelText('Name Strom')).toBeInTheDocument()
+      await user.click(screen.getByRole('button', { name: 'Kategorie bearbeiten Strom' }))
+      expect(screen.queryByLabelText('Name Strom')).not.toBeInTheDocument()
     })
   })
 })

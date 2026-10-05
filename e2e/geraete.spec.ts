@@ -1,5 +1,5 @@
 import type { Browser, Page } from '@playwright/test'
-import { anmelden, expect, syncAbwarten, test } from './support/fixtures'
+import { anmelden, expect, syncAbwarten, test, einstellungen } from './support/fixtures'
 import type { Konto } from './support/konto'
 
 /** Zweites Gerät: eigener Browser-Kontext (eigener lokaler Speicher), gleiches Konto. */
@@ -119,7 +119,7 @@ test('zurücksetzen auf A löscht die Buchungen auch auf B', async ({
     await abgleichen(b)
     await expect(b.getByText('Wird gelöscht')).toBeVisible()
 
-    await a.getByRole('link', { name: 'Einstellungen' }).click()
+    await einstellungen(a, 'Daten')
     await a.getByRole('button', { name: 'Zurücksetzen …' }).click()
     const dialog = a.getByRole('dialog', { name: 'Daten zurücksetzen' })
     await dialog.getByRole('checkbox', { name: /^Buchungen \(1\)/ }).check()

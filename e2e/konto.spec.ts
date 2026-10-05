@@ -1,4 +1,4 @@
-import { anmelden, expect, syncAbwarten, test } from './support/fixtures'
+import { anmelden, expect, syncAbwarten, test, einstellungen } from './support/fixtures'
 import { kontoExistiert } from './support/konto'
 
 const NEU = 'Ganz-neues-Passwort-2'
@@ -12,7 +12,7 @@ test('Passwort ändern: das alte gilt nicht mehr, das neue öffnet dieselben Dat
   await page.getByRole('button', { name: 'Speichern' }).click()
   await expect(page.getByText('Mensa Dienstag')).toBeVisible()
 
-  await page.getByRole('link', { name: 'Einstellungen' }).click()
+  await einstellungen(page, 'Konto')
   const bereich = page.locator('details', { hasText: 'Passwort ändern' }).first()
   await bereich.locator('summary').click()
   await bereich.getByLabel('Aktuelles Passwort').fill(konto.passwort)
@@ -30,7 +30,7 @@ test('Passwort ändern: das alte gilt nicht mehr, das neue öffnet dieselben Dat
 })
 
 test('Konto löschen: Konto und Daten sind weg', async ({ eingerichtet: { page, konto } }) => {
-  await page.getByRole('link', { name: 'Einstellungen' }).click()
+  await einstellungen(page, 'Konto')
   const bereich = page.locator('details', { hasText: 'Konto endgültig löschen' })
   await bereich.locator('summary').click()
   await bereich.getByLabel('Passwort zur Bestätigung').fill(konto.passwort)
@@ -75,7 +75,7 @@ test('Abmelden leert die Daten auf dem Gerät', async ({ eingerichtet: { page } 
     )
   expect(await zeilen()).toBeGreaterThan(0)
 
-  await page.getByRole('link', { name: 'Einstellungen' }).click()
+  await einstellungen(page, 'Konto')
   await page.getByRole('button', { name: 'Abmelden' }).click()
   await expect(page.getByRole('heading', { name: 'Anmelden' })).toBeVisible()
   expect(await zeilen()).toBe(0)

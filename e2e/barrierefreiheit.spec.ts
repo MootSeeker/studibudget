@@ -106,7 +106,7 @@ for (const v of VARIANTEN) {
       await pruefen(page, 'Eingabe mit Fehlern', befunde)
 
       // Offener Dialog «Daten zurücksetzen»
-      await page.goto('./#/einstellungen')
+      await page.goto('./#/einstellungen?bereich=daten')
       await page.getByRole('button', { name: 'Zurücksetzen …' }).click()
       await expect(page.getByRole('dialog', { name: 'Daten zurücksetzen' })).toBeVisible()
       await pruefen(page, 'Dialog Daten zurücksetzen', befunde)
@@ -116,6 +116,22 @@ for (const v of VARIANTEN) {
         await page.goto(`./#${seite}`)
         await expect(page.getByRole('heading', { level: 1 })).toBeVisible()
         await pruefen(page, seite, befunde)
+      }
+
+      // Reiter von Budget und Einstellungen, dazu aufgeklappte Bereiche
+      for (const ansicht of ['monat', 'kategorien', 'fixkosten', 'datei']) {
+        await page.goto(`./#/budget${ansicht === 'monat' ? '' : `?ansicht=${ansicht}`}`)
+        await expect(page.getByRole('heading', { level: 1, name: 'Budget' })).toBeVisible()
+        if (ansicht === 'monat' || ansicht === 'kategorien') {
+          await page.getByRole('button', { name: 'Alle aufklappen' }).click()
+          await expect(page.getByRole('button', { expanded: true }).first()).toBeVisible()
+        }
+        await pruefen(page, `/budget (${ansicht})`, befunde)
+      }
+      for (const bereich of ['haushalt', 'darstellung', 'daten', 'konto']) {
+        await page.goto(`./#/einstellungen${bereich === 'haushalt' ? '' : `?bereich=${bereich}`}`)
+        await expect(page.getByRole('heading', { level: 1, name: 'Einstellungen' })).toBeVisible()
+        await pruefen(page, `/einstellungen (${bereich})`, befunde)
       }
       await berichten(befunde, testInfo)
     })

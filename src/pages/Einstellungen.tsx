@@ -1,6 +1,8 @@
 import { useState } from 'react'
 import { useAuth } from '../auth/AuthProvider'
 import { Field, Form, buttonClass } from '../auth/ui'
+import { SubNav } from '../components/SubNav'
+import { useSubNav, type SubNavItem } from '../lib/useSubNav'
 import { useSettings } from '../data/hooks'
 import { BackupSection } from './einstellungen/BackupSection'
 import { InstallSection } from './einstellungen/InstallSection'
@@ -107,57 +109,77 @@ function DeleteAccount() {
   )
 }
 
+const TABS: SubNavItem[] = [
+  { id: 'haushalt', label: 'Haushalt' },
+  { id: 'darstellung', label: 'Darstellung' },
+  { id: 'daten', label: 'Daten' },
+  { id: 'konto', label: 'Konto' },
+]
+
 export function Einstellungen() {
   const auth = useAuth()
   const settings = useSettings()
+  const tab = useSubNav('bereich', TABS)
   return (
     <section className="max-w-xl space-y-8">
       <h1 className="text-2xl font-semibold">Einstellungen</h1>
-      {settings && (
+      <SubNav param="bereich" items={TABS} label="Einstellungsbereiche" />
+
+      {settings && tab === 'haushalt' && (
         <>
           <HousingSection settings={settings} />
           <PersonsSection settings={settings} />
           <CarsSection settings={settings} />
           <SemesterSection settings={settings} />
+        </>
+      )}
+      {settings && tab === 'darstellung' && (
+        <>
           <DisplaySection settings={settings} />
-          <BackupSection settings={settings} />
-          <ResetSection settings={settings} />
           <InstallSection />
         </>
       )}
+      {settings && tab === 'daten' && (
+        <>
+          <BackupSection settings={settings} />
+          <ResetSection settings={settings} />
+        </>
+      )}
 
-      <div className="space-y-6">
-        <h2 className="text-xl font-semibold">Konto</h2>
-        <p>
-          Angemeldet als <strong>{auth.state.email}</strong>
-        </p>
-        <details className="rounded-md border border-border p-4">
-          <summary className="cursor-pointer font-medium">Passwort ändern</summary>
-          <div className="mt-4">
-            <ChangePassword />
-          </div>
-        </details>
-        <details className="rounded-md border border-border p-4">
-          <summary className="cursor-pointer font-medium">
-            Neuen Wiederherstellungsschlüssel erzeugen
-          </summary>
-          <div className="mt-4">
-            <RenewKey />
-          </div>
-        </details>
-        <details className="rounded-md border border-border p-4">
-          <summary className="cursor-pointer font-medium">Konto löschen</summary>
-          <div className="mt-4">
-            <DeleteAccount />
-          </div>
-        </details>
-        <button className={buttonClass} onClick={() => void auth.logout()}>
-          Abmelden
-        </button>
-        <p className="text-xs text-muted">
-          Beim Abmelden werden die Daten auf diesem Gerät gelöscht.
-        </p>
-      </div>
+      {tab === 'konto' && (
+        <div className="space-y-6">
+          <h2 className="text-xl font-semibold">Konto</h2>
+          <p>
+            Angemeldet als <strong>{auth.state.email}</strong>
+          </p>
+          <details className="rounded-md border border-border p-4">
+            <summary className="cursor-pointer font-medium">Passwort ändern</summary>
+            <div className="mt-4">
+              <ChangePassword />
+            </div>
+          </details>
+          <details className="rounded-md border border-border p-4">
+            <summary className="cursor-pointer font-medium">
+              Neuen Wiederherstellungsschlüssel erzeugen
+            </summary>
+            <div className="mt-4">
+              <RenewKey />
+            </div>
+          </details>
+          <details className="rounded-md border border-border p-4">
+            <summary className="cursor-pointer font-medium">Konto löschen</summary>
+            <div className="mt-4">
+              <DeleteAccount />
+            </div>
+          </details>
+          <button className={buttonClass} onClick={() => void auth.logout()}>
+            Abmelden
+          </button>
+          <p className="text-xs text-muted">
+            Beim Abmelden werden die Daten auf diesem Gerät gelöscht.
+          </p>
+        </div>
+      )}
     </section>
   )
 }
