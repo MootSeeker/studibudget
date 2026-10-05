@@ -22,6 +22,9 @@
     "test:slow": "vitest run --project slow",
     "test:prop": "vitest run --project unit --tags-filter property",
     "test:mutation": "stryker run",
+    "build:e2e": "vite build --outDir dist-e2e",
+    "preview:e2e": "vite preview --outDir dist-e2e --port 4173 --strictPort",
+    "test:e2e": "playwright test",
     "test:regression": "vitest run --project unit --tags-filter regression"
   },
   "dependencies": {
@@ -36,6 +39,7 @@
     "zod": "^4.6.5"
   },
   "devDependencies": {
+    "@playwright/test": "^1.63.0",
     "@stryker-mutator/core": "^10.0.0",
     "@stryker-mutator/vitest-runner": "^10.0.0",
     "@testing-library/jest-dom": "^7.0.1",
