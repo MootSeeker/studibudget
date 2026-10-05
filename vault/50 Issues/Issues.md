@@ -9,7 +9,7 @@ tags:
 
 # Issues
 
-Alle Issues sind umgesetzt und geschlossen (Stand 2026-10-04). Repo: github.com/MootSeeker/studibudget/issues
+Stand 2026-10-05. Repo: github.com/MootSeeker/studibudget/issues. Offen: #48, #62, #65, #72, #76, #78 (siehe [[Offene Punkte]]).
 
 | # | Titel | Umsetzung | PR |
 | --- | --- | --- | --- |
@@ -35,7 +35,19 @@ Alle Issues sind umgesetzt und geschlossen (Stand 2026-10-04). Repo: github.com/
 | 51 | Doppelte Feld-IDs in den Einstellungen | #53 |
 | 55 | HLC-Zähler läuft über | #56 |
 
-Weitere Bausteine der Test-Suite: Stryker #58 (PR #59), E2E #60 (PR #61), zwei Geräte #63 (PR #64), axe #66 (PR #67), Bildvergleich #68 (PR #69), Doku und Release #70.
+Weitere Bausteine der Test-Suite: Stryker #58 (PR #59), E2E #60 (PR #61), zwei Geräte #63 (PR #64), axe #66 (PR #67), Bildvergleich #68 (PR #69), Doku und Release #70 (PR #71).
+
+## Nach `v1.1.0`
+
+| # | Titel | Umsetzung | PR |
+| --- | --- | --- | --- |
+| 52 | Vermögen in der Statistik | Abschnitt «Vermögen» mit Verlauf und Veränderung | #74 |
+| 30 | Budget zurücksetzen, exportieren, importieren | Export/Import (Budget-Seite), «Daten zurücksetzen» mit Auswahl (Einstellungen) | #74, #77 |
+| 79 | Sync startet nach manchen Änderungen nicht sofort | `storeFor(db)`, gemeinsamer Store als Standard | #80 |
+| 62 | CI dauert lange | teilweise: Zwischenspeicher und parallele E2E-Tests; offen bis gemessen | #81 |
+| 84 | Ewiges Scrollen | Reiter, einklappbare Bereiche, Einstellungen in Reitern | #85 |
+
+Weitere Änderungen ohne Issue: Version 1.2.0 (#82), CI-Warnungen und veraltete Pakete (#83), PWA-Test-Fix (#75).
 
 Offen: #48 (Analyse: Lücken in `records_seq` bei gleichzeitigen Pushes), #30 (Budget zurücksetzen, älter).
 

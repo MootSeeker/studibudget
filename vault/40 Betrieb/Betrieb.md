@@ -22,7 +22,11 @@ tags:
 - **Auth-Mails:** Standardversand begrenzt, vor dem Start eigener SMTP ([[Offene Punkte]]).
 - **Weitere Workflows:** `mutation.yml` (Mutationstests, montags 02:00 UTC und auf Abruf, rund 3 Stunden) und `referenzbilder.yml` (Referenzbilder der visuellen Regression erzeugen, auf Abruf).
 - **Pflicht-Checks:** Es gibt keinen Branch-Schutz; vor dem Merge müssen alle Jobs grün sein (Vereinbarung).
-- **Releases:** Tag `v1.0.0` plus GitHub-Release; Änderungen stehen in `CHANGELOG.md`.
+- **Releases:** `v1.0.0` (2026-10-04), `v1.1.0` und `v1.2.0` (2026-10-05), jeweils Tag plus GitHub-Release mit den Notizen aus `CHANGELOG.md`. Ablauf: Version per PR anheben (`npm version … --no-git-tag-version`), nach dem Merge Tag auf den Merge-Commit setzen.
+- **CI-Zwischenspeicher:** Docker-Images des lokalen Supabase (Tar im Actions-Cache, Schlüssel aus Lock-Datei und `supabase/config.toml`) und Playwright-Browser; Wirkung noch zu messen ([[Offene Punkte]], #62). Kosten: keine, das Repo ist öffentlich.
+- **Actions** laufen auf Node 24 (checkout 7, setup-node 7, cache 6, upload-artifact 7, download-artifact 8, pages 5). Verbleibende `punycode`-/`Buffer()`-Hinweise stammen aus `deploy-pages` und `download-artifact`, nicht aus unserem Code.
+- **Abhängigkeiten:** `overrides` für `glob` (^13) und `qs` (^6.16); `npm audit` soll 0 melden.
+- **Aufräumen:** Nach Squash-Merges bleiben Branches stehen, wenn über die Weboberfläche gemergt wurde; regelmässig `git fetch --prune` und Remote-Branches löschen. `backup-vor-umschreiben` (lokal) ist das Backup von der Historienbereinigung.
 
 ## Git-Ablauf
 
