@@ -41,7 +41,7 @@ installieren» (auf dem iPhone: Safari › Teilen › Zum Home-Bildschirm).
 
 ## Für Entwicklung
 
-React 19, TypeScript, Vite, Tailwind CSS 4, Dexie (IndexedDB), Supabase (Anmeldung und verschlüsselter Speicher), Vitest.
+React 19, TypeScript, Vite, Tailwind CSS 4, Dexie (IndexedDB), Supabase (Anmeldung und verschlüsselter Speicher), Vitest, Playwright.
 
 ```bash
 npm install
@@ -50,13 +50,20 @@ cp .env.example .env.local  # dann API_URL und ANON_KEY aus `npx supabase status
 npm run dev
 ```
 
-| Befehl                 | Zweck                                                                                                                    |
-| ---------------------- | ------------------------------------------------------------------------------------------------------------------------ |
-| `npm run verify`       | Lint, Typen, Tests, Build und Build-Prüfung (Definition von «fertig»)                                                    |
-| `npm run test:slow`    | Alle Tests mit künstlich verlangsamter Datenbank: findet Zeitfehler, die sonst nur auf langsamen Rechnern (CI) auftreten |
-| `npm run test:db`      | Tests gegen das lokale Supabase (Zugriffsregeln, Konto, Sync)                                                            |
-| `npm run check:launch` | Ist die App bereit für die öffentliche Freigabe? (schlägt absichtlich fehl, solange Texte offen sind)                    |
-| `npx supabase db push` | Datenbank-Struktur auf das verknüpfte Projekt spielen                                                                    |
+| Befehl                  | Zweck                                                                                                               |
+| ----------------------- | ------------------------------------------------------------------------------------------------------------------- |
+| `npm run verify`        | Lint, Typen, Tests mit Coverage, Build und Build-Prüfung (Definition von «fertig»)                                  |
+| `npm test`              | Unit-Tests (Vitest)                                                                                                 |
+| `npm run test:slow`     | Alle Tests mit künstlich verlangsamter Datenbank: findet Zeitfehler, die sonst nur auf langsamen Rechnern auftreten |
+| `npm run test:prop`     | Eigenschaftsbasierte Tests (fast-check)                                                                             |
+| `npm run test:db`       | Tests gegen das lokale Supabase (Zugriffsregeln, Konto, Sync), braucht Docker                                       |
+| `npm run test:e2e`      | Ende-zu-Ende-, Barrierefreiheits- und Bildvergleichstests (Playwright), braucht Docker                              |
+| `npm run test:mutation` | Mutationstests (Stryker), dauert rund 3 Stunden                                                                     |
+| `npm run check:launch`  | Ist die App bereit für die öffentliche Freigabe?                                                                    |
+| `npx supabase db push`  | Datenbank-Struktur auf das verknüpfte Projekt spielen                                                               |
+
+Details zu den Testebenen, Berichten und Referenzbildern stehen in [docs/testing.md](docs/testing.md); die Änderungen
+pro Version in [CHANGELOG.md](CHANGELOG.md).
 
 Mails (Bestätigung, Passwort zurücksetzen) landen lokal im Mail-Fänger unter http://127.0.0.1:54324.
 

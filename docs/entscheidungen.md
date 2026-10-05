@@ -10,6 +10,10 @@
 | @supabase/supabase-js                   | Konto und Sync                                                  |
 | supabase (dev)                          | CLI für Migrationen und lokales Supabase in Docker              |
 | vitest, testing-library, fake-indexeddb | Tests                                                           |
+| fast-check                              | Eigenschaftsbasierte Tests, modellbasierter Sync-Test           |
+| @stryker-mutator/core, vitest-runner    | Mutationstests (wöchentlich, nicht in der PR-CI)                |
+| @playwright/test                        | Ende-zu-Ende-Tests und Bildvergleich (Chromium, WebKit)         |
+| @axe-core/playwright                    | Barrierefreiheitsprüfung nach WCAG 2.0 bis 2.2                  |
 
 Krypto läuft ausschliesslich über die eingebaute Web Crypto API, es gibt keine Krypto-Bibliothek.
 
@@ -260,3 +264,20 @@ beträgt 15 s, `asyncUtilTimeout` 4 s.
 - Das «echte Defizit» ist eine Kassensicht, kein Budgetwert: bar bezahlte Ausgaben (bei gemeinsamen Ausgaben der ganze vorgestreckte Betrag) plus gezahlte Ausgleichszahlungen, minus Einnahmen und erhaltene Ausgleichszahlungen. Sparen zählt nicht. So wirkt eine Rückzahlung im Monat, in dem sie fliesst.
 - Bewusst nicht der Eigenanteil: Er enthält den Anteil der anderen schon nicht mehr, die erhaltene Rückzahlung würde doppelt abgezogen.
 - Ausgleichszahlungen zählen weiterhin nicht ins Budget und nicht in Monat oder Statistik.
+
+## Teststrategie
+
+- **Pyramide:** viele schnelle Unit-Tests, wenige Ende-zu-Ende-Tests. Ein Fehler wird auf der tiefstmöglichen Ebene getestet.
+- **Zeitfehler zuerst:** Das Projekt `slow` verlangsamt die Datenbank künstlich, weil die CI langsamer ist als lokale Rechner.
+- **Gefundene Fehler:** Issue mit Label `gefunden-durch-tests`, roter Regressionstest, dann der Fix.
+- **Coverage mit Ratchet:** Untergrenzen pro Bereich werden nur angehoben, nie gesenkt. Das Ziel ist ein Richtwert, nicht die Pflicht.
+- **Echtes Supabase:** Zugriffsregeln und Sync werden gegen ein lokales Supabase in Docker getestet, nicht gegen Attrappen allein.
+- **E2E ohne Hintertür:** Konten entstehen mit demselben Krypto-Code wie in der App; die App kennt keinen Testmodus.
+  Wackler (erst im zweiten Versuch grün) gelten als Fehler.
+- **Referenzbilder auf dem CI-Runner:** Weil lokal nicht jeder Docker hat, entstehen die Bilder im Workflow «Referenzbilder»
+  statt in einem Container auf dem eigenen Rechner. Nur Chromium, feste Uhr, feste Daten.
+- **Barrierefreiheit als Test:** axe läuft über alle Seiten, hell und dunkel, Handy und Desktop. Ausnahmen brauchen eine Issue-Nummer.
+- **Mutationstests wöchentlich:** Sie dauern etwa 3 Stunden und laufen deshalb nicht bei jedem PR.
+- **Kein Branch-Schutz:** Die grüne CI vor dem Merge ist eine Vereinbarung.
+
+Einzelheiten: [testing.md](testing.md).

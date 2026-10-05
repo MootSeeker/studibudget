@@ -2,7 +2,7 @@
 typ: referenz
 bereich: betrieb
 status: aktiv
-aktualisiert: 2026-10-04
+aktualisiert: 2026-10-05
 repo-quelle:
   - .github/workflows/deploy.yml
   - docs/start-checkliste.md
@@ -12,7 +12,7 @@ tags:
 
 # Betrieb
 
-- **Hosting:** GitHub Pages, Basis `/studibudget/`. Der Workflow `deploy.yml` führt auf PRs und `main` parallele Jobs aus (statisch, unit mit Coverage, langsam, datenbank mit lokalem Supabase, build, bericht); das Deployment passiert nur auf `main` und erst nach allen Jobs.
+- **Hosting:** GitHub Pages, Basis `/studibudget/`. Der Workflow `deploy.yml` führt auf PRs und `main` parallele Jobs aus (statisch, unit mit Coverage, langsam, datenbank mit lokalem Supabase, e2e in Chromium und WebKit, build, bericht); das Deployment passiert nur auf `main` und erst nach allen Jobs.
 - **Backend:** Supabase-Projekt (Auth + Tabellen `user_keys`, `records`, RPC `push_records`, `delete_account`). Die
   Projekt-URL steht ohnehin öffentlich in der Content-Security-Policy; den Anon-Key liefern GitHub-Variablen
   (`VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`) beim Build.
@@ -20,7 +20,9 @@ tags:
   auf das echte Projekt bei Kevin nachfragen.
 - **Supabase-Gratisstufe:** pausiert nach längerer Inaktivität; die App läuft lokal weiter, synchronisiert aber nicht.
 - **Auth-Mails:** Standardversand begrenzt, vor dem Start eigener SMTP ([[Offene Punkte]]).
-- **Releases:** Tag `v1.0.0` plus GitHub-Release.
+- **Weitere Workflows:** `mutation.yml` (Mutationstests, montags 02:00 UTC und auf Abruf, rund 3 Stunden) und `referenzbilder.yml` (Referenzbilder der visuellen Regression erzeugen, auf Abruf).
+- **Pflicht-Checks:** Es gibt keinen Branch-Schutz; vor dem Merge müssen alle Jobs grün sein (Vereinbarung).
+- **Releases:** Tag `v1.0.0` plus GitHub-Release; Änderungen stehen in `CHANGELOG.md`.
 
 ## Git-Ablauf
 

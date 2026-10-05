@@ -2,7 +2,7 @@
 typ: hub
 bereich: produkt
 status: erledigt
-aktualisiert: 2026-10-04
+aktualisiert: 2026-10-05
 tags:
   - typ/hub
 ---
@@ -34,6 +34,8 @@ Alle Issues sind umgesetzt und geschlossen (Stand 2026-10-04). Repo: github.com/
 | 47 | Passwort ändern nicht atomar | #49 |
 | 51 | Doppelte Feld-IDs in den Einstellungen | #53 |
 | 55 | HLC-Zähler läuft über | #56 |
+
+Weitere Bausteine der Test-Suite: Stryker #58 (PR #59), E2E #60 (PR #61), zwei Geräte #63 (PR #64), axe #66 (PR #67), Bildvergleich #68 (PR #69), Doku und Release #70.
 
 Offen: #48 (Analyse: Lücken in `records_seq` bei gleichzeitigen Pushes), #30 (Budget zurücksetzen, älter).
 
