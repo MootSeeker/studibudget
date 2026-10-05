@@ -155,3 +155,9 @@ export function createStore(db: StudiBudgetDB = defaultDb, now: () => number = D
 
 export type Store = ReturnType<typeof createStore>
 export const store = createStore()
+
+/**
+ * Der Store zu einer Datenbank. Für die App-Datenbank ist es der gemeinsame `store`: Nur seine Änderungen stossen den Sync
+ * an (`onChange`). Ein eigener Store (andere Datenbank, andere Uhr) gilt nur in Tests.
+ */
+export const storeFor = (db: StudiBudgetDB): Store => (db === defaultDb ? store : createStore(db))

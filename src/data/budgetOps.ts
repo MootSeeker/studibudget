@@ -1,9 +1,9 @@
 import type { BudgetImportPlan } from '../domain/budgetFile'
 import type { StudiBudgetDB } from './db'
 import { newId } from './seed'
-import { createStore, type Store } from './store'
+import { storeFor, type Store } from './store'
 
-export function createBudgetOps(db: StudiBudgetDB, store: Store = createStore(db)) {
+export function createBudgetOps(db: StudiBudgetDB, store: Store = storeFor(db)) {
   const live = async () => (await db.budgets.toArray()).filter((b) => !b.deleted)
 
   return {

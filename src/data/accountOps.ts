@@ -1,11 +1,11 @@
 import type { StudiBudgetDB } from './db'
 import { newId } from './seed'
-import { createStore, type Store } from './store'
+import { storeFor, type Store } from './store'
 import { storedBalance } from '../domain/wealth'
 import type { Account, AccountKind, Goal } from '../domain/types'
 
 /** Konten, Monatsendstände und Sparziele. Alles läuft über den Store, wird also synchronisiert. */
-export function createAccountOps(db: StudiBudgetDB, store: Store = createStore(db)) {
+export function createAccountOps(db: StudiBudgetDB, store: Store = storeFor(db)) {
   const live = async <T extends { deleted: boolean }>(rows: Promise<T[]>) =>
     (await rows).filter((r) => !r.deleted)
 

@@ -2,7 +2,6 @@ import { useEffect, useRef, useState } from 'react'
 import { buttonClass } from '../../auth/ui'
 import { db } from '../../data/db'
 import { createResetOps } from '../../data/resetOps'
-import { store } from '../../data/store'
 import {
   RESET_KINDS,
   effectiveSelection,
@@ -14,8 +13,7 @@ import type { Settings } from '../../domain/types'
 import { downloadBackup } from './backupDownload'
 import { Section } from './Sections'
 
-// Der gemeinsame Store: nur seine Änderungen stossen den Sync an.
-const ops = createResetOps(db, store)
+const ops = createResetOps(db)
 const secondaryClass = 'min-h-11 rounded-md border border-control px-4 py-2'
 const entries = (n: number) => `${n} ${n === 1 ? 'Eintrag' : 'Einträge'}`
 

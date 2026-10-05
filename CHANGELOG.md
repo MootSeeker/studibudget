@@ -13,6 +13,11 @@ die Versionen folgen [Semantic Versioning](https://semver.org/lang/de/).
   Ausgleichszahlungen, Konten, Kontostände und Sparziele, mit Backup-Angebot vorab. Konto, Kategorien und
   Einstellungen bleiben (#30).
 
+### Behoben
+
+- Der Sync startet jetzt auch nach Änderungen bei Konten, Budget-Kategorien, Einrichtung, Backup-Import und
+  Katalogwechsel sofort; sie nutzten zuvor einen eigenen Store (#79).
+
 ## [1.1.0] – 2026-10-05
 
 Dieses Release bringt eine umfassende Test-Suite. Die App selbst ändert sich kaum, aber elf Fehler, die die Tests

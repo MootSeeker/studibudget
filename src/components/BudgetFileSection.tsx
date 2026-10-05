@@ -2,7 +2,6 @@ import { useState } from 'react'
 import { buttonClass } from '../auth/ui'
 import { createBudgetOps } from '../data/budgetOps'
 import { db } from '../data/db'
-import { store } from '../data/store'
 import {
   MAX_BUDGET_FILE_BYTES,
   exportBudgetFile,
@@ -11,8 +10,7 @@ import {
 } from '../domain/budgetFile'
 import type { Budget, Category } from '../domain/types'
 
-// Der gemeinsame Store: nur seine Änderungen stossen den Sync an.
-const ops = createBudgetOps(db, store)
+const ops = createBudgetOps(db)
 const secondaryClass = 'rounded-md border border-control px-4 py-2 min-h-11'
 
 /** Budget als Datei sichern oder aus einer Datei übernehmen (Issue #30). Zurücksetzen liegt in den Einstellungen. */

@@ -1,6 +1,6 @@
 import { z } from 'zod'
 import type { StudiBudgetDB } from './db'
-import { createStore, SYNCED_TABLES, type Store, type SyncedTable } from './store'
+import { storeFor, SYNCED_TABLES, type Store, type SyncedTable } from './store'
 
 export const BACKUP_APP = 'studibudget'
 export const BACKUP_VERSION = 1
@@ -281,7 +281,7 @@ export function parseBackup(raw: string): ParseResult {
 export async function applyBackup(
   db: StudiBudgetDB,
   backup: Backup,
-  store: Store = createStore(db),
+  store: Store = storeFor(db),
 ): Promise<void> {
   const entries: { name: SyncedTable; drafts: object[] }[] = []
   for (const t of SYNCED_TABLES) {

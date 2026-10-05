@@ -1,6 +1,6 @@
 import type { StudiBudgetDB } from './db'
 import { buildCatalogDrafts, defaultSettings, newId } from './seed'
-import { createStore, type Store } from './store'
+import { storeFor, type Store } from './store'
 import { currentMonth, type MonthKey } from '../domain/period'
 import { firstDuplicate } from '../domain/persons'
 import type { Country, Living, Semester } from '../domain/types'
@@ -23,7 +23,7 @@ export async function completeOnboarding(
   db: StudiBudgetDB,
   input: OnboardingInput,
   month: MonthKey = currentMonth(),
-  store: Store = createStore(db),
+  store: Store = storeFor(db),
 ): Promise<void> {
   const dup = firstDuplicate(input.persons)
   if (dup) throw new Error(`«${dup}» kommt mehrfach vor.`)
