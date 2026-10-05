@@ -20,7 +20,9 @@ export const admin: SupabaseClient = createClient(sb.url, sb.serviceKey, {
 
 let zaehler = 0
 export function neueAdresse(vorname = 'lena'): string {
-  return `${vorname}-${Date.now()}-${++zaehler}@test.local`
+  // Prozess-ID und Zufall: Parallele Worker dürfen nie dieselbe Adresse erzeugen.
+  const zufall = Math.random().toString(36).slice(2, 8)
+  return `${vorname}-${Date.now()}-${process.pid}-${++zaehler}-${zufall}@test.local`
 }
 
 /**

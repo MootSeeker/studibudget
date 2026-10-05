@@ -21,7 +21,7 @@ export function SubNav({
           aria-current={i.id === current ? 'page' : undefined}
           className={`min-h-11 rounded-md border px-4 py-2 text-sm font-medium ${
             i.id === current
-              ? 'border-accent bg-accent/10 text-accent'
+              ? 'border-accent bg-accent text-accent-text'
               : 'border-border hover:bg-surface'
           }`}
           onClick={() => {
