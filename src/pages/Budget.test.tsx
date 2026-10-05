@@ -1,6 +1,6 @@
 import { render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { beforeEach, describe, expect, it } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { db } from '../data/db'
 import { completeOnboarding } from '../data/onboarding'
 import { store } from '../data/store'
@@ -220,5 +220,100 @@ describe('Budget-Seite', () => {
     await user.click(screen.getByRole('button', { name: 'Pausieren' }))
     await screen.findByText('pausiert')
     expect((await db.templates.toArray())[0].active).toBe(false)
+  })
+
+  describe('Budget sichern und zurücksetzen (Issue #30)', () => {
+    const alive = async () => (await db.budgets.toArray()).filter((b) => !b.deleted)
+
+    async function mitBudget() {
+      const miete = await catByKey('miete')
+      await store.put('budgets', {
+        id: 'b-miete',
+        deleted: false,
+        categoryId: miete.id,
+        validFrom: addMonths(NOW, -1),
+        amountCents: 80000,
+      })
+      return setup()
+    }
+
+    it('Zurücksetzen löscht alle Budgetwerte nach Bestätigung, Buchungen bleiben', async () => {
+      const user = await mitBudget()
+      const confirm = vi.spyOn(window, 'confirm').mockReturnValue(true)
+      await user.click(screen.getByRole('button', { name: 'Budget zurücksetzen' }))
+      expect(await screen.findByText('1 Budgetwerte gelöscht.')).toBeInTheDocument()
+      expect(await alive()).toHaveLength(0)
+      expect(confirm).toHaveBeenCalledOnce()
+      confirm.mockRestore()
+    })
+
+    it('Zurücksetzen ohne Bestätigung ändert nichts', async () => {
+      const user = await mitBudget()
+      const confirm = vi.spyOn(window, 'confirm').mockReturnValue(false)
+      await user.click(screen.getByRole('button', { name: 'Budget zurücksetzen' }))
+      expect(await alive()).toHaveLength(1)
+      confirm.mockRestore()
+    })
+
+    it('ohne Budgetwerte sind Export und Zurücksetzen gesperrt', async () => {
+      await setup()
+      expect(screen.getByRole('button', { name: 'Budget exportieren' })).toBeDisabled()
+      expect(screen.getByRole('button', { name: 'Budget zurücksetzen' })).toBeDisabled()
+    })
+
+    it('Import ersetzt das Budget und nennt, was nicht passte', async () => {
+      const user = await mitBudget()
+      const confirm = vi.spyOn(window, 'confirm').mockReturnValue(true)
+      const datei = {
+        app: 'studibudget',
+        kind: 'budget',
+        schemaVersion: 1,
+        exportedAt: '2026-10-05T00:00:00Z',
+        items: [
+          { name: 'Einkauf zuhause', type: 'ausgabe', validFrom: '2026-01', amountCents: 40000 },
+          { name: 'Gibt es nicht', type: 'ausgabe', validFrom: '2026-01', amountCents: 100 },
+        ],
+      }
+      await user.upload(
+        screen.getByLabelText('Budget-Datei wählen'),
+        new File([JSON.stringify(datei)], 'budget.json', { type: 'application/json' }),
+      )
+      expect(
+        await screen.findByText(/1 Budgetwerte übernommen\..*Gibt es nicht/),
+      ).toBeInTheDocument()
+      const rest = await alive()
+      expect(rest).toHaveLength(1)
+      expect(rest[0].amountCents).toBe(40000)
+      expect(rest[0].categoryId).toBe((await catByKey('einkauf')).id)
+      confirm.mockRestore()
+    })
+
+    it('eine ungültige Datei ändert nichts und zeigt den Grund', async () => {
+      const user = await mitBudget()
+      await user.upload(
+        screen.getByLabelText('Budget-Datei wählen'),
+        new File(['kein json'], 'budget.json', { type: 'application/json' }),
+      )
+      expect(await screen.findByRole('alert')).toHaveTextContent('kein gültiges JSON')
+      expect(await alive()).toHaveLength(1)
+    })
+
+    it('Export lädt eine Datei mit den Werten herunter', async () => {
+      const user = await mitBudget()
+      let blob: Blob | undefined
+      URL.createObjectURL = vi.fn((b: Blob | MediaSource) => {
+        blob = b as Blob
+        return 'blob:test'
+      })
+      URL.revokeObjectURL = vi.fn()
+      const klick = vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(() => {})
+      await user.click(screen.getByRole('button', { name: 'Budget exportieren' }))
+      expect(await screen.findByText('Das Budget wurde heruntergeladen.')).toBeInTheDocument()
+      const inhalt = JSON.parse(await blob!.text())
+      expect(inhalt.items).toEqual([
+        { name: 'Miete', type: 'ausgabe', validFrom: addMonths(NOW, -1), amountCents: 80000 },
+      ])
+      klick.mockRestore()
+    })
   })
 })

@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { buttonClass, inputClass } from '../auth/ui'
+import { BudgetFileSection } from '../components/BudgetFileSection'
 import { DraftInput } from '../components/DraftInput'
 import { MONTH_NAMES } from '../components/MonthSelect'
 import { ReserveHint } from '../components/ReserveHint'
@@ -382,6 +383,8 @@ export function Budget() {
         categories={categories}
         country={settings.country}
       />
+
+      <BudgetFileSection categories={categories} budgets={budgets} />
     </section>
   )
 }
