@@ -16,6 +16,8 @@ async function zweitesGeraet(browser: Browser, baseURL: string | undefined, a: P
   await anmelden(page, konto)
   // Neues Gerät: die Einstellungen kommen aus dem Konto, der Assistent entfällt.
   await expect(page.getByRole('navigation', { name: 'Hauptnavigation' })).toBeVisible()
+  // Gerät A arbeitet als Nächstes weiter.
+  await a.bringToFront()
   return { context, page }
 }
 
