@@ -79,8 +79,10 @@ Mails landen im Mail-Fänger unter http://127.0.0.1:54324; die E2E-Tests lesen s
 
 `npm run test:mutation` mutiert `src/{domain,crypto,sync,data}/**` und dauert etwa 3 Stunden. In der CI läuft er
 montags und auf Abruf (`workflow_dispatch` von `mutation.yml`); der inkrementelle Zwischenstand wird zwischengespeichert.
-Einen `break`-Schwellenwert gibt es noch nicht: Er soll zwei Punkte unter dem Ausgangswert eines vollständigen Laufs
-liegen, der noch aussteht (Stichprobe `money.ts`: 85,6 %). Bis dahin gelten nur `high: 80` und `low: 60` als Farbgrenzen.
+Ausgangswert (voller Lauf vom 2026-10-05, 3258 Mutanten): **82,26 %**. Der Lauf bricht ab, wenn der Score unter
+`break: 80` fällt (Ausgangswert minus 2). Nach Bereich: `src/crypto` 92,4 %, `src/domain` 85,2 %, `src/sync` 79,1 %,
+`src/data` 78,6 %. Die meisten überlebenden Mutanten stecken in `src/data/hooks.ts` (134, von keinem Unit-Test erfasst),
+`src/domain/period.ts` (38) und `src/domain/monthView.ts` (36).
 
 ## Bekannte Eigenheiten
 
