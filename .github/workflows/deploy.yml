@@ -76,6 +76,32 @@ jobs:
           path: reports
           retention-days: ${{ github.ref == 'refs/heads/main' && 30 || 14 }}
 
+  # Ganze App im echten Browser gegen ein lokales Supabase (Docker), je Browser ein Lauf
+  e2e:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        browser: [chromium, webkit]
+    env:
+      E2E_BROWSER: ${{ matrix.browser }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup
+      - uses: ./.github/actions/supabase
+      - run: npx playwright install --with-deps ${{ matrix.browser }}
+      # Ein Wackler (erst beim zweiten Versuch grün) gilt als Fehler.
+      - run: npx playwright test --project=${{ matrix.browser }} --fail-on-flaky-tests
+      - uses: actions/upload-artifact@v4
+        if: ${{ !cancelled() }}
+        with:
+          name: bericht-e2e-${{ matrix.browser }}
+          path: |
+            reports/e2e-${{ matrix.browser }}
+            test-results
+          retention-days: ${{ github.ref == 'refs/heads/main' && 30 || 14 }}
+
   build:
     runs-on: ubuntu-latest
     timeout-minutes: 10
@@ -111,7 +137,7 @@ jobs:
 
   deploy:
     if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
-    needs: [statisch, unit, langsam, datenbank, build]
+    needs: [statisch, unit, langsam, datenbank, e2e, build]
     runs-on: ubuntu-latest
     permissions:
       pages: write
