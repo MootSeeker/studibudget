@@ -96,7 +96,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       async login(email, password) {
         const { dek, user } = await flows.login(need(), email, password)
         const prev = await db.keystore.get('dek')
-        if (prev && prev.email !== user.email) await db.wipe()
+        // Ohne Schlüssel gilt der lokale Stand als fremd: ein spät beendeter Sync der letzten Sitzung
+        // darf keinen Abgleichsstand (lastSeq) zurücklassen, der das erneute Laden vom Server überspringt.
+        if (!prev || prev.email !== user.email) await db.wipe()
         await storeDek(user.email ?? email, dek)
         set({ status: 'in', email: user.email ?? email, notice: null })
       },
@@ -111,7 +113,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           )
         const dek = await flows.resetWithRecovery(need(), email, code, newPassword)
         const prev = await db.keystore.get('dek')
-        if (prev && prev.email !== email) await db.wipe()
+        if (!prev || prev.email !== email) await db.wipe()
         await storeDek(email, dek)
         set({ status: 'in', notice: null })
       },
