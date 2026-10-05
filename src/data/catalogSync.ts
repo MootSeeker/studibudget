@@ -1,7 +1,7 @@
 import { catalogFor, type CatalogItem } from './catalog'
 import type { StudiBudgetDB } from './db'
 import { newId } from './seed'
-import { createStore, type Store } from './store'
+import { storeFor, type Store } from './store'
 import type { Area, Category, Country, Living } from '../domain/types'
 
 export interface CatalogContext {
@@ -57,7 +57,7 @@ export async function planCatalogChange(
 export async function applyCatalogPlan(
   db: StudiBudgetDB,
   plan: CatalogPlan,
-  store: Store = createStore(db),
+  store: Store = storeFor(db),
 ): Promise<void> {
   const strip = <T extends { updatedAt: string }>({ updatedAt: _u, ...rest }: T) => rest
   const areas = (await db.areas.toArray()).filter((a) => !a.deleted)

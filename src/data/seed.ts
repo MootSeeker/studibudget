@@ -1,6 +1,6 @@
 import { catalogFor } from './catalog'
 import type { StudiBudgetDB } from './db'
-import { createStore, type Draft } from './store'
+import { storeFor, type Draft } from './store'
 import { defaultSemesters } from '../domain/period'
 import type { Country, Living } from '../domain/types'
 
@@ -67,7 +67,7 @@ export async function seedFromCatalog(
   living: Living,
   hasCar: boolean,
 ): Promise<void> {
-  const store = createStore(db)
+  const store = storeFor(db)
   const { areas, categories } = buildCatalogDrafts(country, living, hasCar)
   await store.put('settings', defaultSettings(country, living, hasCar))
   await store.putMany('areas', areas)

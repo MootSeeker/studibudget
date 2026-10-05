@@ -1,8 +1,8 @@
 import { planReset, type ResetData, type ResetKind, type ResetPlan } from '../domain/reset'
 import type { StudiBudgetDB } from './db'
-import { createStore, type Store } from './store'
+import { storeFor, type Store } from './store'
 
-export function createResetOps(db: StudiBudgetDB, store: Store = createStore(db)) {
+export function createResetOps(db: StudiBudgetDB, store: Store = storeFor(db)) {
   async function load(): Promise<ResetData> {
     return {
       budgets: await db.budgets.toArray(),

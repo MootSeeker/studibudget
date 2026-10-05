@@ -1,13 +1,13 @@
 import type { StudiBudgetDB } from './db'
 import { newId } from './seed'
-import { createStore, type Store } from './store'
+import { storeFor, type Store } from './store'
 import { moveWithin } from '../domain/budgetPlan'
 import type { Area, Category, CategoryType } from '../domain/types'
 
 const strip = <T extends { updatedAt: string }>({ updatedAt: _u, ...rest }: T) => rest
 
 /** Änderungen an Bereichen und Kategorien. Alles läuft über den Store, wird also synchronisiert. */
-export function createCategoryOps(db: StudiBudgetDB, store: Store = createStore(db)) {
+export function createCategoryOps(db: StudiBudgetDB, store: Store = storeFor(db)) {
   const live = async <T extends { deleted: boolean }>(rows: Promise<T[]>) =>
     (await rows).filter((r) => !r.deleted)
 
