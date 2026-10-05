@@ -1,0 +1,47 @@
+name: Mutationstests
+
+# Läuft nicht in der PR-CI (Dauer ca. 3 Stunden). Der inkrementelle Zwischenstand wird zwischengespeichert,
+# danach werden nur geänderte Mutanten neu geprüft.
+on:
+  schedule:
+    - cron: '0 2 * * 1' # montags 02:00 UTC
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: mutation
+  cancel-in-progress: false
+
+jobs:
+  mutation:
+    runs-on: ubuntu-latest
+    timeout-minutes: 340
+    env:
+      FC_NUM_RUNS: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup
+      - uses: actions/cache@v4
+        with:
+          path: reports/mutation/incremental.json
+          key: mutation-${{ github.sha }}
+          restore-keys: mutation-
+      - run: npx stryker run
+      - uses: actions/upload-artifact@v4
+        if: ${{ !cancelled() }}
+        with:
+          name: bericht-mutation
+          path: reports/mutation
+          retention-days: 30
+      - name: Zusammenfassung
+        if: ${{ !cancelled() }}
+        run: |
+          node -e "
+          const r = JSON.parse(require('fs').readFileSync('reports/mutation/mutation.json','utf8'));
+          const c = {};
+          for (const f of Object.values(r.files)) for (const m of f.mutants) c[m.status] = (c[m.status]||0)+1;
+          const killed = (c.Killed||0)+(c.Timeout||0), valid = killed+(c.Survived||0)+(c.NoCoverage||0);
+          console.log('## Mutationstests\n\nScore: **' + (100*killed/valid).toFixed(2) + ' %**\n\n' + JSON.stringify(c));
+          " >> "$GITHUB_STEP_SUMMARY"

@@ -1,20 +1,23 @@
 import { defineConfig, mergeConfig } from 'vitest/config'
-import base from './vitest.config.ts'
+import viteConfig from './vite.config.ts'
 
-/** Nur das Projekt `unit`, ohne Coverage und ohne Berichte: Stryker führt die Tests tausendfach aus. */
+/**
+ * Eigene Config für Stryker: ohne Projekte (sonst läuft jede Test-Datei mehrfach), ohne Coverage und ohne Berichte.
+ * Nur die Tests der Bereiche, die mutiert werden; Seitentests (jsdom, UI) sind für Mutationen zu langsam und zu zeitabhängig.
+ */
 export default mergeConfig(
-  base,
+  viteConfig({ mode: 'test', command: 'serve' }),
   defineConfig({
     test: {
-      coverage: { enabled: false, thresholds: {} },
-      reporters: ['default'],
-      projects: undefined,
+      globals: true,
       name: 'unit',
       environment: 'jsdom',
       setupFiles: ['./src/test/setup.ts'],
       include: ['src/{domain,crypto,sync,data}/**/*.test.ts'],
-      exclude: ['e2e/**', '**/*.db.test.ts', '**/node_modules/**'],
+      exclude: ['**/node_modules/**', '**/*.db.test.ts'],
       testTimeout: 15_000,
+      reporters: ['default'],
+      tags: [{ name: 'regression' }, { name: 'property' }, { name: 'negativ' }],
     },
   }),
 )

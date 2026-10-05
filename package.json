@@ -21,6 +21,7 @@
     "check:launch": "node scripts/check-launch.mjs",
     "test:slow": "vitest run --project slow",
     "test:prop": "vitest run --project unit --tags-filter property",
+    "test:mutation": "stryker run",
     "test:regression": "vitest run --project unit --tags-filter regression"
   },
   "dependencies": {

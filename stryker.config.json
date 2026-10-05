@@ -1,21 +1,18 @@
 {
   "$schema": "./node_modules/@stryker-mutator/core/schema/stryker-schema.json",
-  "testRunner": "vitest",
-  "vitest": { "configFile": "vitest.stryker.config.ts" },
-  "mutate": [
-    "src/{domain,crypto,sync,data}/**/*.ts",
-    "!src/**/*.test.ts",
-    "!src/domain/types.ts"
-  ],
-  "ignoreStatic": true,
+  "_hinweis": "testRunner 'command' statt vitest-runner: Der Runner killt mit Vitest 5 keine Mutanten (alle überleben). Pro Mutant läuft die Testmenge von vitest.stryker.config.ts, bei erstem Fehler Abbruch.",
+  "testRunner": "command",
+  "commandRunner": { "command": "npx vitest run --config vitest.stryker.config.ts --bail 1" },
+  "mutate": ["src/{domain,crypto,sync,data}/**/*.ts", "!src/**/*.test.ts", "!src/domain/types.ts"],
+  "coverageAnalysis": "off",
+  "ignoreStatic": false,
   "incremental": true,
   "incrementalFile": "reports/mutation/incremental.json",
   "reporters": ["html", "json", "clear-text", "progress"],
   "htmlReporter": { "fileName": "reports/mutation/index.html" },
   "jsonReporter": { "fileName": "reports/mutation/mutation.json" },
-  "coverageAnalysis": "perTest",
   "concurrency": 4,
-  "timeoutMS": 30000,
+  "timeoutMS": 60000,
   "tempDirName": ".stryker-tmp",
   "thresholds": { "high": 80, "low": 60 }
 }
