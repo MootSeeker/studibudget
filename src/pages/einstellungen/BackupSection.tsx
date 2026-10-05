@@ -6,7 +6,9 @@ import { backupStatus } from '../../domain/backup'
 import type { Settings } from '../../domain/types'
 import { isStoragePersisted } from '../../lib/storage'
 import { downloadBackup } from './backupDownload'
-import { saveSettings, Section } from './Sections'
+import { saveSettings } from './saveSettings'
+import { Section } from './Sections'
+import { useNow } from '../../lib/useNow'
 
 const COUNT_LABEL: [string, string][] = [
   ['transactions', 'Buchungen'],
@@ -45,12 +47,13 @@ export function BackupSection({ settings }: { settings: Settings }) {
   const [busy, setBusy] = useState(false)
   const [persisted, setPersisted] = useState<boolean | null>(null)
   const fileInput = useRef<HTMLInputElement>(null)
+  const now = useNow()
 
   useEffect(() => {
     void isStoragePersisted().then(setPersisted)
   }, [])
 
-  const status = backupStatus(settings, new Date(), true)
+  const status = backupStatus(settings, now, true)
 
   async function download() {
     setError(null)

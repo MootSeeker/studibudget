@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { MONTH_NAMES } from '../MonthSelect'
+import { MONTH_NAMES } from '../../lib/months'
 import { niceStep } from './scale'
 import type { WealthPoint } from '../../domain/wealth'
 

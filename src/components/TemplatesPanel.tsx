@@ -10,7 +10,7 @@ import {
   type IntervalEvery,
 } from '../domain/templates'
 import type { Car, Category, Country, Template } from '../domain/types'
-import { MONTH_NAMES } from './MonthSelect'
+import { MONTH_NAMES } from '../lib/months'
 
 export interface TemplatesPanelProps {
   templates: Template[]

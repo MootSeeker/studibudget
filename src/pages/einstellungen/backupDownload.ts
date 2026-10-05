@@ -1,6 +1,6 @@
 import { db } from '../../data/db'
 import type { Settings } from '../../domain/types'
-import { saveSettings } from './Sections'
+import { saveSettings } from './saveSettings'
 
 /** Die Backup-Logik (mit der Datei-Prüfung) wird erst geladen, wenn man sie braucht. */
 const backupModule = () => import('../../data/backup')

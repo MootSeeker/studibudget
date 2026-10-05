@@ -1,7 +1,7 @@
 import { formatMoney } from '../domain/money'
 import { reservePlan } from '../domain/templates'
 import type { Category, Country, Template } from '../domain/types'
-import { MONTH_NAMES } from './MonthSelect'
+import { MONTH_NAMES } from '../lib/months'
 
 export interface ReserveHintProps {
   templates: Template[]

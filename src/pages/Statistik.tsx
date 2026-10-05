@@ -3,7 +3,7 @@ import { inputClass } from '../auth/ui'
 import { ExpenseBars } from '../components/charts/ExpenseBars'
 import { MonthlyChart } from '../components/charts/MonthlyChart'
 import { WealthChart } from '../components/charts/WealthChart'
-import { MONTH_NAMES } from '../components/MonthSelect'
+import { MONTH_NAMES } from '../lib/months'
 import {
   useAccountBalances,
   useAccounts,
