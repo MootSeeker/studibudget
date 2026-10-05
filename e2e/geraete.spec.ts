@@ -28,7 +28,7 @@ async function buchen(page: Page, betrag: string, notiz: string) {
 }
 
 async function notizAendern(page: Page, alt: string, neu: string) {
-  await page.getByRole('link', { name: 'Monat', exact: true }).click()
+  await page.getByRole('link', { name: 'Eingabe' }).click()
   await page.getByRole('button', { name: `Bearbeiten ${alt}` }).click()
   const form = page.getByRole('form', { name: 'Buchung bearbeiten' })
   await form.getByLabel(/Notiz/).fill(neu)
@@ -77,7 +77,7 @@ test('zwei Geräte: bei gleichzeitigen Änderungen gewinnt die spätere', async 
     await abgleichen(b)
     await abgleichen(a)
 
-    await a.getByRole('link', { name: 'Monat', exact: true }).click()
+    await a.getByRole('link', { name: 'Eingabe' }).click()
     await expect(a.getByText('Text von B')).toBeVisible()
     await expect(a.getByText('Text von A')).toBeHidden()
     await expect(b.getByText('Text von B')).toBeVisible()
