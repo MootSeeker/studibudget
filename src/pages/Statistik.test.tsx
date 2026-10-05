@@ -212,3 +212,33 @@ describe('Statistik-Seite', () => {
     })
   })
 })
+
+describe('Ausgleichszahlungen (Issue #78)', () => {
+  it('zeigt ohne Zahlungen einen Hinweis', async () => {
+    render(<Statistik />)
+    expect(await screen.findByText(/keine Ausgleichszahlungen/)).toBeInTheDocument()
+  })
+  it('zeigt mit Zahlungen Chart und Tabelle pro Person', async () => {
+    const personId = newId()
+    await store.put('persons', {
+      id: personId,
+      deleted: false,
+      name: 'Anna',
+      kind: 'mitbewohner',
+    } as never)
+    await store.put('settlements', {
+      id: newId(),
+      deleted: false,
+      date: `${prev(1)}-10`,
+      personId,
+      direction: 'ich_zahle',
+      amountCents: 12_300,
+      note: '',
+    })
+    render(<Statistik />)
+    expect(await screen.findByRole('heading', { name: 'Ausgleichszahlungen' })).toBeInTheDocument()
+    const region = await screen.findByRole('region', { name: 'Tabelle zu den Ausgleichszahlungen' })
+    expect(within(region).getByText('Anna')).toBeInTheDocument()
+    expect(norm(region.textContent)).toContain('123.00')
+  })
+})

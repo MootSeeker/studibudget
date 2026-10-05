@@ -5,6 +5,7 @@ import {
   effectsOf,
   monthSettlement,
   settlementEffect,
+  settlementsByMonth,
   suggestSettlement,
 } from './settlement'
 import { buildSharedEqual, buildSharedPartner } from './split'
@@ -204,5 +205,54 @@ describe('monthSettlement (Kassensicht)', () => {
   it('gelöschte Einträge und andere Monate zählen nicht', () => {
     const txs = [{ ...miete('2026-10-01', 'me'), deleted: true }, miete('2026-09-01', 'me')]
     expect(monthSettlement(txs, [], cats, '2026-10').deficit).toBe(0)
+  })
+})
+
+describe('settlementsByMonth', () => {
+  const s = (
+    id: string,
+    date: string,
+    personId: string,
+    direction: Settlement['direction'],
+    amountCents: number,
+    deleted = false,
+  ): Settlement =>
+    ({ id, date, personId, direction, amountCents, note: '', deleted, updatedAt: '' }) as Settlement
+
+  it('summiert pro Monat und Person getrennt nach Richtung', () => {
+    const r = settlementsByMonth(
+      [
+        s('1', '2026-09-03', 'a', 'ich_zahle', 1000),
+        s('2', '2026-09-20', 'a', 'ich_zahle', 500),
+        s('3', '2026-09-21', 'b', 'ich_erhalte', 700),
+      ],
+      ['2026-09', '2026-10'],
+    )
+    expect(r.persons).toEqual(['a', 'b'])
+    expect(r.rows).toHaveLength(4)
+    expect(r.rows.find((x) => x.month === '2026-09' && x.personId === 'a')).toMatchObject({
+      paid: 1500,
+      received: 0,
+    })
+    expect(r.rows.find((x) => x.month === '2026-09' && x.personId === 'b')).toMatchObject({
+      paid: 0,
+      received: 700,
+    })
+    expect(r.rows.find((x) => x.month === '2026-10' && x.personId === 'a')).toMatchObject({
+      paid: 0,
+      received: 0,
+    })
+  })
+
+  it('ignoriert gelöschte Zahlungen und Monate ausserhalb', () => {
+    const r = settlementsByMonth(
+      [
+        s('1', '2026-09-03', 'a', 'ich_zahle', 1000, true),
+        s('2', '2026-01-03', 'a', 'ich_zahle', 1000),
+      ],
+      ['2026-09'],
+    )
+    expect(r.persons).toEqual([])
+    expect(r.rows).toEqual([])
   })
 })

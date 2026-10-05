@@ -5,6 +5,11 @@ die Versionen folgen [Semantic Versioning](https://semver.org/lang/de/).
 
 ## [Unreleased]
 
+### Hinzugefügt
+
+- Statistik: neuer Abschnitt «Ausgleichszahlungen» mit Chart pro Person und Monat (bezahlt und erhalten) und Tabelle,
+  damit man sieht, wie zuverlässig Schulden bezahlt wurden (#78).
+
 ### Geändert
 
 - Budget: weniger Scrollen. Vier Reiter (Monatsbudget, Kategorien, Fixkosten, Datei); im Monatsbudget stehen die

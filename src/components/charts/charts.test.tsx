@@ -7,6 +7,7 @@ import type { ExpenseArea } from '../../domain/statsView'
 import { ExpenseBars } from './ExpenseBars'
 import { MonthlyChart } from './MonthlyChart'
 import { niceStep } from './scale'
+import { SettlementChart } from './SettlementChart'
 import { WealthChart } from './WealthChart'
 
 const money = (c: number) => `CHF ${(c / 100).toFixed(2)}`
@@ -135,5 +136,47 @@ describe('ExpenseBars', { tags: ['negativ'] }, () => {
   it('Bereich mit Total 0 ergibt eine Leiste der Breite 0', () => {
     const { container } = render(<ExpenseBars areas={[area('a', 0)]} money={money} />)
     expect(container.querySelector('[role="img"] > div')).toHaveStyle({ width: '0%' })
+  })
+})
+
+describe('SettlementChart', { tags: ['negativ'] }, () => {
+  const persons = [
+    { id: 'a', name: 'Anna' },
+    { id: 'b', name: 'Ben' },
+  ]
+  const row = (month: string, personId: string, paid: number, received: number) => ({
+    month,
+    personId,
+    paid,
+    received,
+  })
+  it('zeigt je Person Säulen und im Tooltip Name, bezahlt und erhalten', async () => {
+    const months = ['2026-09', '2026-10']
+    const rows = [
+      row('2026-09', 'a', 10_000, 0),
+      row('2026-09', 'b', 0, 5_000),
+      row('2026-10', 'a', 0, 0),
+      row('2026-10', 'b', 0, 0),
+    ]
+    const { container } = render(
+      <SettlementChart months={months} persons={persons} rows={rows} money={money} />,
+    )
+    noBrokenNumbers(container.innerHTML)
+    await userEvent.setup().hover(container.querySelectorAll('rect[tabindex="0"]')[0])
+    const tip = container.querySelector('[role="status"]')!
+    expect(tip.textContent).toContain('Anna')
+    expect(tip.textContent).toContain('bezahlt CHF 100.00')
+    expect(tip.textContent).toContain('erhalten CHF 50.00')
+  })
+  it('lauter Nullen und viele Monate ergeben keine kaputten Zahlen', () => {
+    const months = Array.from(
+      { length: 30 },
+      (_, i) => `${2024 + Math.floor(i / 12)}-${String((i % 12) + 1).padStart(2, '0')}`,
+    )
+    const rows = months.flatMap((m) => persons.map((p) => row(m, p.id, 0, 0)))
+    const { container } = render(
+      <SettlementChart months={months} persons={persons} rows={rows} money={money} />,
+    )
+    noBrokenNumbers(container.innerHTML)
   })
 })

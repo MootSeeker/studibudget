@@ -145,3 +145,36 @@ export function monthSettlement(
     deficit: outOfPocket + paid - income - received,
   }
 }
+
+export interface PersonMonthSettlement {
+  month: string
+  personId: string
+  /** Von der Person erhalten (Zahlungen «ich erhalte»). */
+  received: number
+  /** An die Person bezahlt (Zahlungen «ich zahle»). */
+  paid: number
+}
+
+/** Ausgleichszahlungen pro Monat und Person. Nur Monate der Liste, nur Personen mit Zahlungen im Zeitraum. */
+export function settlementsByMonth(
+  settlements: Settlement[],
+  months: string[],
+): { persons: string[]; rows: PersonMonthSettlement[] } {
+  const inRange = new Set(months)
+  const sums = new Map<string, PersonMonthSettlement>()
+  const persons: string[] = []
+  for (const s of settlements) {
+    const month = s.date.slice(0, 7)
+    if (s.deleted || !inRange.has(month)) continue
+    if (!persons.includes(s.personId)) persons.push(s.personId)
+    const key = `${month}|${s.personId}`
+    const row = sums.get(key) ?? { month, personId: s.personId, received: 0, paid: 0 }
+    if (s.direction === 'ich_erhalte') row.received += s.amountCents
+    else row.paid += s.amountCents
+    sums.set(key, row)
+  }
+  const rows = months.flatMap((m) =>
+    persons.map((p) => sums.get(`${m}|${p}`) ?? { month: m, personId: p, received: 0, paid: 0 }),
+  )
+  return { persons, rows }
+}
