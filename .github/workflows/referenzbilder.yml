@@ -19,7 +19,7 @@ jobs:
       - uses: ./.github/actions/setup
       - uses: ./.github/actions/supabase
       - run: npx playwright install --with-deps chromium
-      - run: npx playwright test e2e/visuell.spec.ts --project=chromium --update-snapshots --retries=0
+      - run: npx playwright test e2e/visuell.spec.ts --project=chromium --update-snapshots=all --retries=0
       - uses: actions/upload-artifact@v7
         if: ${{ !cancelled() }}
         with:
