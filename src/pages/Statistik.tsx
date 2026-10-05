@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { inputClass } from '../auth/ui'
 import { ExpenseBars } from '../components/charts/ExpenseBars'
 import { MonthlyChart } from '../components/charts/MonthlyChart'
+import { SettlementChart } from '../components/charts/SettlementChart'
 import { WealthChart } from '../components/charts/WealthChart'
 import { MONTH_NAMES } from '../lib/months'
 import {
@@ -11,9 +12,12 @@ import {
   useAreas,
   useBudgets,
   useCategories,
+  usePersons,
   useSettings,
+  useSettlements,
 } from '../data/hooks'
 import { formatMoney } from '../domain/money'
+import { settlementsByMonth } from '../domain/settlement'
 import { wealthByMonth } from '../domain/wealth'
 import {
   addMonths,
@@ -149,6 +153,8 @@ export function Statistik() {
   const txs = useAllTransactions()
   const accounts = useAccounts()
   const balances = useAccountBalances()
+  const settlements = useSettlements()
+  const persons = usePersons()
   const [kind, setKind] = useState<PeriodKind>('semester')
   const [ref, setRef] = useState(currentMonth())
   const [custom, setCustom] = useState({ from: addMonths(currentMonth(), -2), to: currentMonth() })
@@ -187,6 +193,12 @@ export function Statistik() {
     wealthComplete.length >= 2
       ? wealthComplete[wealthComplete.length - 1].total! - wealthComplete[0].total!
       : null
+  const rangeMonths = monthRange(range.from, range.to)
+  const settled = settlementsByMonth(settlements, rangeMonths)
+  const settledPersons = settled.persons.map((id) => ({
+    id,
+    name: persons.find((p) => p.id === id)?.name ?? 'Unbekannt',
+  }))
   const pct = (v: number | null) =>
     v === null ? '–' : `${v.toLocaleString('de-CH', { maximumFractionDigits: 1 })} %`
 
@@ -343,6 +355,72 @@ export function Statistik() {
               </strong>
             </p>
             <WealthChart points={wealth} money={money} />
+          </>
+        )}
+      </section>
+
+      <section className="space-y-3 rounded-xl border border-border bg-surface p-4">
+        <h2 className="text-lg font-semibold">Ausgleichszahlungen</h2>
+        {settledPersons.length === 0 ? (
+          <p className="text-sm text-muted">
+            In diesem Zeitraum gibt es keine Ausgleichszahlungen. Erfasst du welche unter
+            «Ausgleich», siehst du hier, wie zuverlässig bezahlt wurde.
+          </p>
+        ) : (
+          <>
+            <p className="text-sm text-muted">
+              Pro Person und Monat: was du bezahlt und was du erhalten hast.
+            </p>
+            <SettlementChart
+              months={rangeMonths}
+              persons={settledPersons}
+              rows={settled.rows}
+              money={money}
+            />
+            <details>
+              <summary className="cursor-pointer text-sm text-accent">Als Tabelle anzeigen</summary>
+              <div
+                tabIndex={0}
+                role="region"
+                aria-label="Tabelle zu den Ausgleichszahlungen"
+                className="overflow-x-auto"
+              >
+                <table className="mt-2 w-full text-sm">
+                  <thead>
+                    <tr className="text-left text-muted">
+                      <th scope="col" className="py-1 font-normal">
+                        Monat
+                      </th>
+                      <th scope="col" className="py-1 font-normal">
+                        Person
+                      </th>
+                      <th scope="col" className="py-1 text-right font-normal">
+                        Ich zahle
+                      </th>
+                      <th scope="col" className="py-1 text-right font-normal">
+                        Ich erhalte
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {settled.rows
+                      .filter((r) => r.paid > 0 || r.received > 0)
+                      .map((r) => (
+                        <tr key={`${r.month}|${r.personId}`} className="border-t border-border">
+                          <th scope="row" className="py-1 text-left font-normal">
+                            {monthName(r.month)}
+                          </th>
+                          <td className="py-1">
+                            {settledPersons.find((p) => p.id === r.personId)?.name}
+                          </td>
+                          <td className="py-1 text-right tabular-nums">{money(r.paid)}</td>
+                          <td className="py-1 text-right tabular-nums">{money(r.received)}</td>
+                        </tr>
+                      ))}
+                  </tbody>
+                </table>
+              </div>
+            </details>
           </>
         )}
       </section>
