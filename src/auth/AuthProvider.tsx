@@ -43,16 +43,18 @@ async function storeDek(email: string, key: CryptoKey) {
 }
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [state, setState] = useState<AuthState>({ status: 'loading', email: null, notice: null })
   const sb = supabase
+  // Ohne konfigurierten Server gibt es nichts zu laden: gleich «abgemeldet».
+  const [state, setState] = useState<AuthState>({
+    status: sb ? 'loading' : 'out',
+    email: null,
+    notice: null,
+  })
 
   const set = useCallback((patch: Partial<AuthState>) => setState((s) => ({ ...s, ...patch })), [])
 
   useEffect(() => {
-    if (!sb) {
-      set({ status: 'out' })
-      return
-    }
+    if (!sb) return
     let cancelled = false
     const { data: sub } = sb.auth.onAuthStateChange((event, session) => {
       // Nicht direkt in diesem Callback auf supabase zugreifen (Deadlock-Gefahr), nur Zustand setzen.

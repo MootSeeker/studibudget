@@ -1,6 +1,6 @@
 import { ReserveHint } from '../components/ReserveHint'
 import { useState } from 'react'
-import { MONTH_NAMES } from '../components/MonthSelect'
+import { MONTH_NAMES } from '../lib/months'
 import {
   useAllCars,
   useAllTransactions,
@@ -15,6 +15,7 @@ import { addMonths, currentMonth, monthOf } from '../domain/period'
 import { buildMonthView, type Compare, type RowView, type Triple } from '../domain/monthView'
 import type { Ampel } from '../domain/month'
 import type { Country } from '../domain/types'
+import { useNow } from '../lib/useNow'
 
 const STATUS: Record<Ampel, { text: string; color: string; bar: string }> = {
   gruen: { text: 'Im Rahmen', color: 'text-ok', bar: 'bg-ok' },
@@ -141,11 +142,11 @@ export function Monat() {
   const cars = useAllCars()
   const txs = useAllTransactions()
   const [month, setMonth] = useState(currentMonth())
+  const now = useNow()
 
   if (!settings) return null
   const country: Country = settings.country
   const money = (c: number) => formatMoney(c, country)
-  const now = new Date()
   const view = buildMonthView({
     month,
     today: { month: currentMonth(now), day: now.getDate() },

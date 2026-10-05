@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { BookTemplatesDialog } from '../components/BookTemplatesDialog'
 import { EntryForm } from '../components/EntryForm'
 import { MonthList } from '../components/MonthList'
-import { MONTH_NAMES } from '../components/MonthSelect'
+import { MONTH_NAMES } from '../lib/months'
 import { db } from '../data/db'
 import {
   useAllCars,
@@ -23,6 +23,7 @@ import { addMonths, currentMonth, monthOf } from '../domain/period'
 import { totalsByMonth } from '../domain/stats'
 import { openTemplates, templateToDraft, withSkipped } from '../domain/templates'
 import type { Transaction } from '../domain/types'
+import { useNow } from '../lib/useNow'
 
 export function Eingabe() {
   const settings = useSettings()
@@ -36,11 +37,11 @@ export function Eingabe() {
   const txs = useMonthTransactions(month)
   const [editing, setEditing] = useState<Transaction | null>(null)
   const [booking, setBooking] = useState(false)
+  const today = useNow()
 
   if (!settings) return null
   const country = settings.country
   const money = (c: number) => formatMoney(c, country)
-  const today = new Date()
   const todayIso = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`
   const defaultDate = monthOf(todayIso) === month ? todayIso : `${month}-01`
 

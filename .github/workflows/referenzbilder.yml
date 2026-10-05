@@ -15,12 +15,12 @@ jobs:
     env:
       E2E_BROWSER: chromium
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: ./.github/actions/setup
       - uses: ./.github/actions/supabase
       - run: npx playwright install --with-deps chromium
       - run: npx playwright test e2e/visuell.spec.ts --project=chromium --update-snapshots --retries=0
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         if: ${{ !cancelled() }}
         with:
           name: referenzbilder

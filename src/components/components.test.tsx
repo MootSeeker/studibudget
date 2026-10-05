@@ -6,7 +6,8 @@ import type { AreaGroup } from '../domain/ledger'
 import type { Car, Person, Template } from '../domain/types'
 import { BookTemplatesDialog } from './BookTemplatesDialog'
 import { MonthList } from './MonthList'
-import { MonthSelect, MONTH_NAMES } from './MonthSelect'
+import { MonthSelect } from './MonthSelect'
+import { MONTH_NAMES } from '../lib/months'
 
 const norm = (s: string | null) => (s ?? '').replace(/\s/g, ' ').replace('’', "'")
 

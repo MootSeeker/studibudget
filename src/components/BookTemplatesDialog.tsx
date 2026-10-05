@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { buttonClass, inputClass } from '../auth/ui'
 import { formatMoney, parseAmount } from '../domain/money'
 import type { MonthKey } from '../domain/period'
-import { MONTH_NAMES } from './MonthSelect'
+import { MONTH_NAMES } from '../lib/months'
 import type { Category, Country, Template } from '../domain/types'
 
 export interface BookTemplatesDialogProps {

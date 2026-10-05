@@ -1,4 +1,5 @@
 import { act, render, screen, waitFor } from '@testing-library/react'
+import { useEffect } from 'react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { generateDek } from '../crypto/keys'
 import { db } from '../data/db'
@@ -18,11 +19,14 @@ vi.mock('./flows', async (orig) => ({ ...(await orig<typeof import('./flows')>()
 
 let api: ReturnType<typeof useAuth>
 function Probe() {
-  api = useAuth()
+  const current = useAuth()
+  useEffect(() => {
+    api = current
+  })
   return (
     <p>
-      {api.state.status}|{api.state.email ?? '-'}|{api.state.notice ?? '-'}|
-      {api.configured ? 'konfiguriert' : 'nicht konfiguriert'}
+      {current.state.status}|{current.state.email ?? '-'}|{current.state.notice ?? '-'}|
+      {current.configured ? 'konfiguriert' : 'nicht konfiguriert'}
     </p>
   )
 }

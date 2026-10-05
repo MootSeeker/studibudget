@@ -1,19 +1,5 @@
 import { inputClass } from '../auth/ui'
-
-export const MONTH_NAMES = [
-  'Januar',
-  'Februar',
-  'März',
-  'April',
-  'Mai',
-  'Juni',
-  'Juli',
-  'August',
-  'September',
-  'Oktober',
-  'November',
-  'Dezember',
-]
+import { MONTH_NAMES } from '../lib/months'
 
 /** Monat 1–12 auswählen. */
 export function MonthSelect(props: {

@@ -2,14 +2,16 @@ import { useState } from 'react'
 import { Link } from 'react-router'
 import { useAllTransactions, useSettings } from '../data/hooks'
 import { backupStatus } from '../domain/backup'
+import { useNow } from '../lib/useNow'
 
 /** Hinweis oben auf der Seite, wenn das Backup überfällig ist. Lässt sich für diese Sitzung wegklicken. */
 export function BackupReminder() {
   const settings = useSettings()
   const txs = useAllTransactions()
   const [hidden, setHidden] = useState(false)
+  const now = useNow()
   if (!settings || hidden) return null
-  const status = backupStatus(settings, new Date(), txs.length > 0)
+  const status = backupStatus(settings, now, txs.length > 0)
   if (!status.due) return null
   return (
     <div

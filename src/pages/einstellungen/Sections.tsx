@@ -10,12 +10,7 @@ import { defaultSemesters } from '../../domain/period'
 import { isDuplicateName } from '../../domain/persons'
 import type { Country, Living, Semester, Settings, ThemeChoice } from '../../domain/types'
 import { applyTheme } from '../../theme'
-
-/** Speichert Änderungen an den Einstellungen (wird synchronisiert). */
-export function saveSettings(settings: Settings, patch: Partial<Settings>): Promise<void> {
-  // Nur die geänderten Felder, angewendet auf den aktuellen Stand (nicht auf den Bildschirmzustand `settings`).
-  return store.patch('settings', settings.id, patch)
-}
+import { saveSettings } from './saveSettings'
 
 export function Section({ title, children }: { title: string; children: ReactNode }) {
   return (

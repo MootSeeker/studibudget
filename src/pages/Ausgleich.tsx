@@ -10,7 +10,7 @@ import {
 } from '../data/hooks'
 import { newId } from '../data/seed'
 import { store } from '../data/store'
-import { MONTH_NAMES } from '../components/MonthSelect'
+import { MONTH_NAMES } from '../lib/months'
 import { formatMoney } from '../domain/money'
 import { addMonths, currentMonth, monthOf } from '../domain/period'
 import {

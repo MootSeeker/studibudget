@@ -5,6 +5,16 @@ die Versionen folgen [Semantic Versioning](https://semver.org/lang/de/).
 
 ## [Unreleased]
 
+### Geändert
+
+- CI: GitHub-Actions auf Versionen mit Node 24 gehoben (checkout 7, setup-node 7, cache 6, upload-artifact 7,
+  download-artifact 8, upload-pages-artifact 5, deploy-pages 5); das beseitigt die Node-20-Warnung und die
+  `punycode`/`url.parse`-Hinweise.
+- Abhängigkeiten: `glob` (veraltet, mit Sicherheitshinweis) und `qs` (zwei Schwachstellen, nur im Mutationstest-Werkzeug)
+  über `overrides` auf aktuelle Versionen; `npm audit` meldet keine Schwachstellen mehr.
+- Lint: alle elf Warnungen behoben (Monatsnamen und `saveSettings` in eigene Dateien, `useNow` statt `new Date()` beim
+  Zeichnen, kein `setState` im Effekt der Anmeldung).
+
 ## [1.2.0] – 2026-10-05
 
 ### Hinzugefügt
