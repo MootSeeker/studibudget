@@ -9,6 +9,13 @@ export async function anmelden(page: Page, konto: Konto, passwort = konto.passwo
   await page.getByRole('button', { name: 'Anmelden' }).click()
 }
 
+/** Wartet, bis alle Änderungen auf dem Server sind; wer sich danach abmeldet, verliert nichts. */
+export async function syncAbwarten(page: Page) {
+  const knopf = page.getByRole('button', { name: /^(Synchronisiert|\d+ Änderungen? ausstehend)/ })
+  await knopf.click()
+  await expect(page.getByRole('button', { name: 'Synchronisiert', exact: true })).toBeVisible()
+}
+
 export async function assistentDurchlaufen(page: Page, wohnen: 'Allein' | 'WG' = 'WG') {
   await expect(page.getByRole('heading', { name: 'Willkommen bei StudiBudget' })).toBeVisible()
   await page.getByRole('button', { name: 'Weiter' }).click() // Land: Schweiz

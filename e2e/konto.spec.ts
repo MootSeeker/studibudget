@@ -1,4 +1,4 @@
-import { anmelden, expect, test } from './support/fixtures'
+import { anmelden, expect, syncAbwarten, test } from './support/fixtures'
 import { kontoExistiert } from './support/konto'
 
 const NEU = 'Ganz-neues-Passwort-2'
@@ -20,6 +20,7 @@ test('Passwort ändern: das alte gilt nicht mehr, das neue öffnet dieselben Dat
   await bereich.getByRole('button', { name: 'Passwort ändern' }).click()
   await expect(bereich.getByRole('status')).toHaveText('Passwort geändert.')
 
+  await syncAbwarten(page)
   await page.getByRole('button', { name: 'Abmelden' }).click()
   await anmelden(page, konto)
   await expect(page.getByRole('alert')).toHaveText('E-Mail oder Passwort stimmt nicht.')
