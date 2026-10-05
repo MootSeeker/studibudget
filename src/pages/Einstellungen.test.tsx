@@ -4,6 +4,7 @@ import { MemoryRouter } from 'react-router'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { db } from '../data/db'
 import { completeOnboarding } from '../data/onboarding'
+import { store } from '../data/store'
 import { defaultSemesters } from '../domain/period'
 import { Einstellungen } from './Einstellungen'
 
@@ -131,5 +132,178 @@ describe('Einstellungen: Konto', () => {
     const user = await open('Passwort ändern')
     await user.click(screen.getByRole('button', { name: 'Abmelden' }))
     expect(auth.logout).toHaveBeenCalled()
+  })
+})
+
+describe('Einstellungen: Daten zurücksetzen (Issue #30)', () => {
+  async function mitDaten() {
+    const miete = (await db.categories.toArray()).find((c) => c.catalogKey === 'miete')!
+    await store.put('transactions', {
+      id: 'reset-t1',
+      deleted: false,
+      date: '2026-03-01',
+      categoryId: miete.id,
+      amountCents: 80000,
+      myAmountCents: 80000,
+      note: 'Miete',
+    })
+    await store.put('accounts', {
+      id: 'reset-k1',
+      deleted: false,
+      name: 'Konto',
+      kind: 'bank',
+      include: true,
+      order: 0,
+    })
+    await store.put('accountBalances', {
+      id: 'reset-ks1',
+      deleted: false,
+      accountId: 'reset-k1',
+      month: '2026-03',
+      amountCents: 100,
+    })
+  }
+
+  async function dialog() {
+    const user = userEvent.setup()
+    render(
+      <MemoryRouter>
+        <Einstellungen />
+      </MemoryRouter>,
+    )
+    await user.click(await screen.findByRole('button', { name: 'Zurücksetzen …' }))
+    const d = await screen.findByRole('dialog', { name: 'Daten zurücksetzen' })
+    await within(d).findByRole('checkbox', { name: /Buchungen \(\d+\)/ })
+    return { user, d: within(d) }
+  }
+
+  it('löscht die gewählten Buchungen erst nach dem Klick auf den Löschen-Knopf', async () => {
+    await mitDaten()
+    const { user, d } = await dialog()
+    expect(d.getByRole('button', { name: 'Löschen' })).toBeDisabled()
+    await user.click(d.getByRole('checkbox', { name: /Buchungen/ }))
+    expect(d.getByText(/Es werden 1 Eintrag gelöscht\./)).toBeInTheDocument()
+    await user.click(d.getByRole('button', { name: '1 Eintrag löschen' }))
+    expect(await screen.findByRole('status')).toHaveTextContent('1 Eintrag gelöscht.')
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+    expect((await db.transactions.get('reset-t1'))?.deleted).toBe(true)
+    expect((await db.accounts.get('reset-k1'))?.deleted).toBe(false)
+  })
+
+  it('Konten ziehen ihre Kontostände mit', async () => {
+    await mitDaten()
+    const { user, d } = await dialog()
+    await user.click(d.getByRole('checkbox', { name: /^Konten/ }))
+    const stand = d.getByRole('checkbox', { name: /Kontostände/ })
+    expect(stand).toBeChecked()
+    expect(stand).toBeDisabled()
+    await user.click(d.getByRole('button', { name: '2 Einträge löschen' }))
+    await screen.findByText('2 Einträge gelöscht.')
+    expect((await db.accountBalances.get('reset-ks1'))?.deleted).toBe(true)
+  })
+
+  it('Abbrechen und Esc schliessen den Dialog, ohne etwas zu löschen', async () => {
+    await mitDaten()
+    const { user, d } = await dialog()
+    await user.click(d.getByRole('checkbox', { name: /Buchungen/ }))
+    await user.click(d.getByRole('button', { name: 'Abbrechen' }))
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Zurücksetzen …' })).toHaveFocus()
+
+    await user.click(screen.getByRole('button', { name: 'Zurücksetzen …' }))
+    await screen.findByRole('dialog')
+    await user.keyboard('{Escape}')
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+    expect((await db.transactions.get('reset-t1'))?.deleted).toBe(false)
+  })
+
+  it('bietet vorher ein Backup an', async () => {
+    URL.createObjectURL = vi.fn(() => 'blob:test')
+    URL.revokeObjectURL = vi.fn()
+    const klick = vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(() => {})
+    const { user, d } = await dialog()
+    await user.click(d.getByRole('button', { name: 'Backup herunterladen' }))
+    expect(await d.findByText('Das Backup wurde heruntergeladen.')).toBeInTheDocument()
+    expect(klick).toHaveBeenCalledOnce()
+    klick.mockRestore()
+  })
+
+  it('nennt Buchungen, die ihre Vorlage oder ihr Sparziel verlieren', async () => {
+    const cats = await db.categories.toArray()
+    const miete = cats.find((c) => c.catalogKey === 'miete')!
+    const sparen = cats.find((c) => c.type === 'sparen')!
+    await store.put('templates', {
+      id: 'reset-v1',
+      deleted: false,
+      categoryId: miete.id,
+      amountCents: 80000,
+      note: '',
+      months: [3],
+      active: true,
+    })
+    await store.put('goals', {
+      id: 'reset-z1',
+      deleted: false,
+      name: 'Velo',
+      targetCents: 100,
+      targetDate: null,
+      startCents: 0,
+      archived: false,
+    })
+    for (const [id, extra] of [
+      ['reset-a', { categoryId: miete.id, templateId: 'reset-v1', templateMonth: '2026-03' }],
+      ['reset-b', { categoryId: sparen.id, goalId: 'reset-z1', goalDirection: 'einzahlung' }],
+    ] as const)
+      await store.put('transactions', {
+        id,
+        deleted: false,
+        date: '2026-03-01',
+        amountCents: 100,
+        myAmountCents: 100,
+        note: '',
+        ...extra,
+      })
+    const { user, d } = await dialog()
+    await user.click(d.getByRole('checkbox', { name: /Fixkosten-Vorlagen/ }))
+    await user.click(d.getByRole('checkbox', { name: /Sparziele/ }))
+    expect(
+      d.getByText('1 Buchungen aus Vorlagen bleiben als normale Buchungen.'),
+    ).toBeInTheDocument()
+    expect(d.getByText(/1 Sparbuchungen bleiben als normale Sparbuchungen/)).toBeInTheDocument()
+    await user.click(d.getByRole('checkbox', { name: /Fixkosten-Vorlagen/ }))
+    expect(d.queryByText(/aus Vorlagen bleiben/)).not.toBeInTheDocument()
+  })
+
+  it('ein Fehler beim Löschen lässt den Dialog offen und zeigt den Grund', async () => {
+    await mitDaten()
+    const { user, d } = await dialog()
+    const tx = vi.spyOn(db, 'transaction').mockRejectedValueOnce(new Error('Speicher voll'))
+    await user.click(d.getByRole('checkbox', { name: /Buchungen/ }))
+    await user.click(d.getByRole('button', { name: '1 Eintrag löschen' }))
+    expect(await d.findByRole('alert')).toHaveTextContent('Speicher voll')
+    expect(screen.getByRole('dialog')).toBeInTheDocument()
+    expect(d.getByRole('button', { name: '1 Eintrag löschen' })).toBeEnabled()
+    tx.mockRestore()
+    expect((await db.transactions.get('reset-t1'))?.deleted).toBe(false)
+  })
+
+  it('ein Fehler beim Backup wird im Dialog gemeldet', async () => {
+    URL.createObjectURL = vi.fn(() => {
+      throw new Error('Kein Download möglich')
+    })
+    const { user, d } = await dialog()
+    await user.click(d.getByRole('button', { name: 'Backup herunterladen' }))
+    expect(await d.findByRole('alert')).toHaveTextContent('Kein Download möglich')
+  })
+
+  it('Tab bleibt im Dialog', async () => {
+    const { user, d } = await dialog()
+    const backup = d.getByRole('button', { name: 'Backup herunterladen' })
+    const abbrechen = d.getByRole('button', { name: 'Abbrechen' })
+    abbrechen.focus()
+    await user.tab()
+    expect(backup).toHaveFocus()
+    await user.tab({ shift: true })
+    expect(abbrechen).toHaveFocus()
   })
 })

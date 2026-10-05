@@ -4,6 +4,7 @@ import { Field, Form, buttonClass } from '../auth/ui'
 import { useSettings } from '../data/hooks'
 import { BackupSection } from './einstellungen/BackupSection'
 import { InstallSection } from './einstellungen/InstallSection'
+import { ResetSection } from './einstellungen/ResetSection'
 import {
   CarsSection,
   DisplaySection,
@@ -120,6 +121,7 @@ export function Einstellungen() {
           <SemesterSection settings={settings} />
           <DisplaySection settings={settings} />
           <BackupSection settings={settings} />
+          <ResetSection settings={settings} />
           <InstallSection />
         </>
       )}

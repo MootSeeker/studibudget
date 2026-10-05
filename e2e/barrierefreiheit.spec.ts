@@ -105,6 +105,13 @@ for (const v of VARIANTEN) {
       await page.getByRole('button', { name: 'Speichern' }).click()
       await pruefen(page, 'Eingabe mit Fehlern', befunde)
 
+      // Offener Dialog «Daten zurücksetzen»
+      await page.goto('./#/einstellungen')
+      await page.getByRole('button', { name: 'Zurücksetzen …' }).click()
+      await expect(page.getByRole('dialog', { name: 'Daten zurücksetzen' })).toBeVisible()
+      await pruefen(page, 'Dialog Daten zurücksetzen', befunde)
+      await page.keyboard.press('Escape')
+
       for (const seite of [...PAGES.map((p) => p.path), '/datenschutz', '/impressum']) {
         await page.goto(`./#${seite}`)
         await expect(page.getByRole('heading', { level: 1 })).toBeVisible()

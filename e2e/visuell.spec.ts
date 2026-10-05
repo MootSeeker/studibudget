@@ -56,7 +56,7 @@ for (const schema of SCHEMEN) {
             maxDiffPixelRatio: 0.01,
             mask: [
               page.getByRole('button', {
-                name: /^(Synchronisiert|Offline|\d+ Änderungen? ausstehend)/,
+                name: /^(Synchronisiert|Offline|\d+ Änderung(en)? ausstehend)/,
               }),
               page.getByRole('status'),
             ],

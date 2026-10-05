@@ -8,7 +8,10 @@ die Versionen folgen [Semantic Versioning](https://semver.org/lang/de/).
 ### Hinzugefügt
 
 - Statistik: Abschnitt «Vermögen» mit Verlauf und Veränderung im gewählten Zeitraum (#52).
-- Budget: das Budget lässt sich exportieren, aus einer Datei importieren und zurücksetzen (#30).
+- Budget: das Budget lässt sich exportieren und aus einer Datei importieren (#30).
+- Einstellungen: «Daten zurücksetzen» löscht wahlweise Budget, Buchungen, Fixkosten-Vorlagen,
+  Ausgleichszahlungen, Konten, Kontostände und Sparziele, mit Backup-Angebot vorab. Konto, Kategorien und
+  Einstellungen bleiben (#30).
 
 ## [1.1.0] – 2026-10-05
 
