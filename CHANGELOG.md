@@ -7,6 +7,14 @@ die Versionen folgen [Semantic Versioning](https://semver.org/lang/de/).
 
 ### Geändert
 
+- Budget: weniger Scrollen. Vier Reiter (Monatsbudget, Kategorien, Fixkosten, Datei); im Monatsbudget stehen die
+  Bereiche eingeklappt mit Anzahl und Summe im Kopf und eine Kategorie braucht nur noch eine Zeile; Bearbeiten steckt im
+  Reiter «Kategorien» (#84).
+- Einstellungen: gegliedert in die Reiter Haushalt, Darstellung, Daten und Konto (#84).
+- Eingabe: die Buchungsliste klappt ihre Bereiche ein, wenn ein Monat mehr als 15 Buchungen hat (#84).
+
+### Geändert
+
 - CI: GitHub-Actions auf Versionen mit Node 24 gehoben (checkout 7, setup-node 7, cache 6, upload-artifact 7,
   download-artifact 8, upload-pages-artifact 5, deploy-pages 5); das beseitigt die Node-20-Warnung und die
   `punycode`/`url.parse`-Hinweise.

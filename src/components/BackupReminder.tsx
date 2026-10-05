@@ -25,7 +25,7 @@ export function BackupReminder() {
         Sichere deine Daten als Datei.
       </span>
       <span className="flex items-center gap-3">
-        <Link to="/einstellungen" className="rounded-md bg-accent px-3 py-1 text-accent-text">
+        <Link to="/einstellungen?bereich=daten" className="rounded-md bg-accent px-3 py-1 text-accent-text">
           Zum Backup
         </Link>
         <button className="underline" onClick={() => setHidden(true)}>

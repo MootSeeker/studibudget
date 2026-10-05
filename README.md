@@ -18,11 +18,14 @@ als App installieren und funktioniert auch ohne Internet.
 5. **Monat.** Zeigt pro Kategorie, wie viel Budget noch übrig ist (Ampel), eine Prognose bis Monatsende und den
    Vergleich mit den Vormonaten.
 6. **Statistik.** Semester, Jahr oder frei gewählte Zeiträume: Wohin geht das Geld, Verlauf pro Monat, Plan gegen Ist.
-7. **Budget.** Monatsbeträge und eigene Kategorien. Eine Änderung gilt ab dem gewählten Monat.
+7. **Budget.** Vier Reiter: «Monatsbudget» (Beträge pro Kategorie, Bereiche einklappbar mit Summe im Kopf), «Kategorien»
+   (umbenennen, verschieben, ausblenden, neue anlegen), «Fixkosten» (Vorlagen) und «Datei» (Export und Import). Eine
+   Änderung gilt ab dem gewählten Monat.
 8. **Konten & Sparziele.** Kontostände am Monatsende, Vermögensverlauf und Sparziele mit Fortschritt.
 9. **Ausgleich** (WG und Partner/in). Gemeinsame Ausgaben teilen, sehen wer wem wie viel schuldet, Zahlungen erfassen.
-10. **Backup.** Unter Einstellungen kannst du alle Daten als Datei sichern und wieder einspielen.
-11. **Neu anfangen.** Unter Einstellungen › «Daten zurücksetzen» löschst du wahlweise Budget, Buchungen, Vorlagen,
+10. **Backup.** Unter Einstellungen › Daten kannst du alle Daten als Datei sichern und wieder einspielen. Die Einstellungen sind in
+    Reiter gegliedert: Haushalt, Darstellung, Daten und Konto.
+11. **Neu anfangen.** Unter Einstellungen › Daten › «Daten zurücksetzen» löschst du wahlweise Budget, Buchungen, Vorlagen,
     Ausgleichszahlungen, Konten oder Sparziele. Konto, Kategorien und Einstellungen bleiben. Das Budget allein
     kannst du auf der Budget-Seite exportieren und importieren.
 

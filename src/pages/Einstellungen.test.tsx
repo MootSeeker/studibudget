@@ -38,11 +38,11 @@ const formOf = (button: string) =>
 async function open(name: string) {
   const user = userEvent.setup()
   render(
-    <MemoryRouter>
+    <MemoryRouter initialEntries={['/einstellungen?bereich=konto']}>
       <Einstellungen />
     </MemoryRouter>,
   )
-  await screen.findByRole('heading', { name: 'Land und Wohnsituation' })
+  await screen.findByRole('heading', { name: 'Konto' })
   await user.click(screen.getByText(name, { selector: 'summary' }))
   return user
 }
@@ -167,7 +167,7 @@ describe('Einstellungen: Daten zurücksetzen (Issue #30)', () => {
   async function dialog() {
     const user = userEvent.setup()
     render(
-      <MemoryRouter>
+      <MemoryRouter initialEntries={['/einstellungen?bereich=daten']}>
         <Einstellungen />
       </MemoryRouter>,
     )
@@ -305,5 +305,51 @@ describe('Einstellungen: Daten zurücksetzen (Issue #30)', () => {
     expect(backup).toHaveFocus()
     await user.tab({ shift: true })
     expect(abbrechen).toHaveFocus()
+  })
+})
+
+describe('Einstellungen: Reiter', () => {
+  const zeige = (url: string) =>
+    render(
+      <MemoryRouter initialEntries={[url]}>
+        <Einstellungen />
+      </MemoryRouter>,
+    )
+
+  it('startet im Reiter «Haushalt» und zeigt nur dessen Abschnitte', async () => {
+    zeige('/einstellungen')
+    expect(
+      await screen.findByRole('heading', { name: 'Land und Wohnsituation' }),
+    ).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Haushalt' })).toHaveAttribute('aria-current', 'page')
+    expect(screen.queryByRole('heading', { name: 'Backup' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('heading', { name: 'Konto' })).not.toBeInTheDocument()
+  })
+
+  it('ein unbekannter Reiter in der Adresse gilt als erster', async () => {
+    zeige('/einstellungen?bereich=gibtsnicht')
+    expect(
+      await screen.findByRole('heading', { name: 'Land und Wohnsituation' }),
+    ).toBeInTheDocument()
+  })
+
+  it.each([
+    ['darstellung', 'Darstellung und Ampel'],
+    ['daten', 'Backup'],
+    ['konto', 'Konto'],
+  ])('Reiter «%s» zeigt «%s»', async (id, heading) => {
+    zeige(`/einstellungen?bereich=${id}`)
+    expect(await screen.findByRole('heading', { name: heading })).toBeInTheDocument()
+    expect(
+      screen.queryByRole('heading', { name: 'Land und Wohnsituation' }),
+    ).not.toBeInTheDocument()
+  })
+
+  it('ein Klick auf den Reiter wechselt den Inhalt', async () => {
+    const user = userEvent.setup()
+    zeige('/einstellungen')
+    await user.click(await screen.findByRole('button', { name: 'Daten' }))
+    expect(await screen.findByRole('heading', { name: 'Backup' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Daten' })).toHaveAttribute('aria-current', 'page')
   })
 })

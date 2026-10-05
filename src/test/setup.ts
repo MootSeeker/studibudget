@@ -48,6 +48,12 @@ for (const level of ['error', 'warn'] as const) {
   }
 }
 afterEach(() => {
+  // Gemerkte Auf-/Zuklapp-Zustände sollen nicht von Test zu Test wandern.
+  try {
+    localStorage.clear()
+  } catch {
+    /* node-Umgebung ohne Speicher */
+  }
   const found = unexpectedOutput.splice(0)
   if (found.length > 0) throw new Error(`Unerwartete Konsolenausgabe im Test:\n${found.join('\n')}`)
 })

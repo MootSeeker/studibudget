@@ -1,5 +1,5 @@
 import { readFileSync } from 'node:fs'
-import { expect, test } from './support/fixtures'
+import { expect, test, einstellungen } from './support/fixtures'
 
 test('Backup exportieren, Daten löschen, Backup wieder einspielen', async ({
   eingerichtet: { page },
@@ -10,7 +10,7 @@ test('Backup exportieren, Daten löschen, Backup wieder einspielen', async ({
   await page.getByRole('button', { name: 'Speichern' }).click()
   await expect(page.getByText('Migros')).toBeVisible()
 
-  await page.getByRole('link', { name: 'Einstellungen' }).click()
+  await einstellungen(page, 'Daten')
   const download = page.waitForEvent('download')
   await page.getByRole('button', { name: 'Backup herunterladen' }).click()
   const datei = testInfo.outputPath('backup.json')
@@ -23,7 +23,7 @@ test('Backup exportieren, Daten löschen, Backup wieder einspielen', async ({
   await page.getByRole('button', { name: /Löschen/ }).click()
   await expect(page.getByText('Migros')).toBeHidden()
 
-  await page.getByRole('link', { name: 'Einstellungen' }).click()
+  await einstellungen(page, 'Daten')
   await page.getByLabel('Backup einspielen').setInputFiles(datei)
   const inhalt = page.getByRole('region', { name: 'Inhalt des Backups' })
   await expect(inhalt).toContainText('1 Buchungen')

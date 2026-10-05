@@ -79,7 +79,7 @@ export function BudgetFileSection({
       <p className="text-sm text-muted">
         Exportiere dein Budget als Datei oder übernimm es aus einer Datei. Buchungen bleiben dabei
         unberührt. Beim Import zählen Name und Art der Kategorie. Neu anfangen kannst du unter
-        Einstellungen › Daten zurücksetzen.
+        Einstellungen › Daten › Zurücksetzen.
       </p>
       <div className="flex flex-wrap items-center gap-3">
         <button type="button" className={buttonClass} onClick={exportFile} disabled={count === 0}>

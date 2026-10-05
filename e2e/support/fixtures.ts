@@ -9,6 +9,18 @@ export async function anmelden(page: Page, konto: Konto, passwort = konto.passwo
   await page.getByRole('button', { name: 'Anmelden' }).click()
 }
 
+/** Öffnet die Einstellungen im gewünschten Reiter. */
+export async function einstellungen(
+  page: Page,
+  bereich: 'Haushalt' | 'Darstellung' | 'Daten' | 'Konto',
+) {
+  await page.getByRole('link', { name: 'Einstellungen' }).click()
+  await page
+    .getByRole('navigation', { name: 'Einstellungsbereiche' })
+    .getByRole('button', { name: bereich })
+    .click()
+}
+
 /** Wartet, bis alle Änderungen auf dem Server sind; wer sich danach abmeldet, verliert nichts. */
 export async function syncAbwarten(page: Page) {
   const knopf = page.getByRole('button', { name: /^(Synchronisiert|\d+ Änderung(en)? ausstehend)/ })
