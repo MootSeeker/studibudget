@@ -29,6 +29,9 @@ export default defineConfig({
       ]
     : [['list']],
   outputDir: 'test-results',
+  // Referenzbilder ohne Plattform im Namen; in der CI wird nie still ein neues Bild angelegt.
+  snapshotPathTemplate: '{testDir}/referenz/{arg}{ext}',
+  updateSnapshots: process.env.CI ? 'none' : 'missing',
   use: {
     baseURL: `http://localhost:${PORT}/studibudget/`,
     locale: 'de-CH',
