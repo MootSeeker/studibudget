@@ -1,9 +1,11 @@
 import type { Browser, Page } from '@playwright/test'
-import { anmelden, assistentDurchlaufen, expect, syncAbwarten, test } from './support/fixtures'
+import { anmelden, expect, syncAbwarten, test } from './support/fixtures'
 import type { Konto } from './support/konto'
 
 /** Zweites Gerät: eigener Browser-Kontext (eigener lokaler Speicher), gleiches Konto. */
-async function zweitesGeraet(browser: Browser, baseURL: string | undefined, konto: Konto) {
+async function zweitesGeraet(browser: Browser, baseURL: string | undefined, a: Page, konto: Konto) {
+  // Die Einstellungen des ersten Geräts müssen auf dem Server sein, bevor sich das zweite anmeldet.
+  await syncAbwarten(a)
   const context = await browser.newContext({
     baseURL,
     locale: 'de-CH',
@@ -43,7 +45,7 @@ test('zwei Geräte: was auf A gebucht wird, erscheint auf B', async ({
   browser,
   baseURL,
 }) => {
-  const { context, page: b } = await zweitesGeraet(browser, baseURL, konto)
+  const { context, page: b } = await zweitesGeraet(browser, baseURL, a, konto)
   try {
     await buchen(a, '18.40', 'Kaffeebohnen')
     await abgleichen(a)
@@ -59,7 +61,7 @@ test('zwei Geräte: bei gleichzeitigen Änderungen gewinnt die spätere', async 
   browser,
   baseURL,
 }) => {
-  const { context, page: b } = await zweitesGeraet(browser, baseURL, konto)
+  const { context, page: b } = await zweitesGeraet(browser, baseURL, a, konto)
   try {
     await buchen(a, '9', 'Ausgangstext')
     await abgleichen(a)
@@ -90,7 +92,7 @@ test('offline: Änderung bleibt vorgemerkt und kommt beim Wiederverbinden auf B 
   browser,
   baseURL,
 }) => {
-  const { context, page: b } = await zweitesGeraet(browser, baseURL, konto)
+  const { context, page: b } = await zweitesGeraet(browser, baseURL, a, konto)
   try {
     await a.context().setOffline(true)
     await buchen(a, '5.50', 'Offline-Gipfeli')
