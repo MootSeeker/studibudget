@@ -11,7 +11,7 @@ export async function anmelden(page: Page, konto: Konto, passwort = konto.passwo
 
 /** Wartet, bis alle Änderungen auf dem Server sind; wer sich danach abmeldet, verliert nichts. */
 export async function syncAbwarten(page: Page) {
-  const knopf = page.getByRole('button', { name: /^(Synchronisiert|\d+ Änderungen? ausstehend)/ })
+  const knopf = page.getByRole('button', { name: /^(Synchronisiert|\d+ Änderung(en)? ausstehend)/ })
   await knopf.click()
   await expect(page.getByRole('button', { name: 'Synchronisiert', exact: true })).toBeVisible()
 }

@@ -16,8 +16,6 @@ async function zweitesGeraet(browser: Browser, baseURL: string | undefined, a: P
   await anmelden(page, konto)
   // Neues Gerät: die Einstellungen kommen aus dem Konto, der Assistent entfällt.
   await expect(page.getByRole('navigation', { name: 'Hauptnavigation' })).toBeVisible()
-  // Gerät A arbeitet als Nächstes weiter.
-  await a.bringToFront()
   return { context, page }
 }
 
@@ -38,16 +36,7 @@ async function notizAendern(page: Page, alt: string, neu: string) {
   await expect(page.getByText(neu)).toBeVisible()
 }
 
-/**
- * Das Gerät zuerst in den Vordergrund holen: WebKit drosselt eine verdeckte Seite (Timer, Animationsbilder), dann
- * laufen weder der Sync der App noch die Wiederholungen von Playwright, und der Test hängt bis zum Zeitlimit.
- */
-async function vorne(page: Page) {
-  await page.bringToFront()
-}
-
 async function abgleichen(page: Page) {
-  await vorne(page)
   await syncAbwarten(page)
 }
 
@@ -80,11 +69,9 @@ test('zwei Geräte: bei gleichzeitigen Änderungen gewinnt die spätere', async 
     await expect(b.getByText('Ausgangstext')).toBeVisible()
 
     await context.setOffline(true)
-    await vorne(a)
     await notizAendern(a, 'Ausgangstext', 'Text von A')
     await abgleichen(a)
     // B ändert danach, ohne A zu kennen
-    await vorne(b)
     await notizAendern(b, 'Ausgangstext', 'Text von B')
     await context.setOffline(false)
     await abgleichen(b)
@@ -132,53 +119,12 @@ test('zurücksetzen auf A löscht die Buchungen auch auf B', async ({
     await abgleichen(b)
     await expect(b.getByText('Wird gelöscht')).toBeVisible()
 
-    // DIAGNOSE (vorübergehend)
-    a.on('console', (m) => console.log('[A console]', m.type(), m.text()))
-    a.on('pageerror', (e) => console.log('[A pageerror]', e.message))
-    await a.evaluate(() => {
-      const t0 = Date.now()
-      setInterval(() => {
-        const knopf = [...document.querySelectorAll('nav button')].map((b) => b.textContent)
-        console.log('hb', Date.now() - t0, document.visibilityState, JSON.stringify(knopf))
-      }, 1000)
-      let last = performance.now()
-      const raf = () => {
-        const now = performance.now()
-        if (now - last > 500) console.log('raf-gap', Math.round(now - last))
-        last = now
-        requestAnimationFrame(raf)
-      }
-      requestAnimationFrame(raf)
-    })
-    await vorne(a)
     await a.getByRole('link', { name: 'Einstellungen' }).click()
     await a.getByRole('button', { name: 'Zurücksetzen …' }).click()
     const dialog = a.getByRole('dialog', { name: 'Daten zurücksetzen' })
     await dialog.getByRole('checkbox', { name: /^Buchungen \(1\)/ }).check()
     await dialog.getByRole('button', { name: '1 Eintrag löschen' }).click()
     await expect(a.getByText('1 Eintrag gelöscht.')).toBeVisible()
-    // DIAGNOSE (vorübergehend)
-    for (let i = 0; i < 3; i++) {
-      const info = await a.evaluate(async () => {
-        const raf = await Promise.race([
-          new Promise((r) => requestAnimationFrame(() => r('raf ok'))),
-          new Promise((r) => setTimeout(() => r('raf HAENGT'), 1500)),
-        ])
-        return {
-          raf,
-          modal: document.querySelectorAll('[aria-modal]').length,
-          dialog: document.querySelectorAll('[role=dialog]').length,
-          inert: document.querySelectorAll('[inert],[aria-hidden=true]').length,
-          active: document.activeElement?.outerHTML.slice(0, 80),
-          knopf: [...document.querySelectorAll('nav button')].map((b) => b.textContent),
-        }
-      })
-      const rolle = await a
-        .getByRole('button', { name: /^(Synchronisiert|\d+ Änderungen? ausstehend)/ })
-        .count()
-      console.log('DIAG', i, JSON.stringify(info), 'rolle', rolle)
-      await a.waitForTimeout(1000)
-    }
     await abgleichen(a)
 
     await abgleichen(b)
