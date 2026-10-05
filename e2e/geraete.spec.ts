@@ -36,7 +36,16 @@ async function notizAendern(page: Page, alt: string, neu: string) {
   await expect(page.getByText(neu)).toBeVisible()
 }
 
+/**
+ * Das Gerät zuerst in den Vordergrund holen: WebKit drosselt eine verdeckte Seite (Timer, Animationsbilder), dann
+ * laufen weder der Sync der App noch die Wiederholungen von Playwright, und der Test hängt bis zum Zeitlimit.
+ */
+async function vorne(page: Page) {
+  await page.bringToFront()
+}
+
 async function abgleichen(page: Page) {
+  await vorne(page)
   await syncAbwarten(page)
 }
 
@@ -69,9 +78,11 @@ test('zwei Geräte: bei gleichzeitigen Änderungen gewinnt die spätere', async 
     await expect(b.getByText('Ausgangstext')).toBeVisible()
 
     await context.setOffline(true)
+    await vorne(a)
     await notizAendern(a, 'Ausgangstext', 'Text von A')
     await abgleichen(a)
     // B ändert danach, ohne A zu kennen
+    await vorne(b)
     await notizAendern(b, 'Ausgangstext', 'Text von B')
     await context.setOffline(false)
     await abgleichen(b)
@@ -119,6 +130,7 @@ test('zurücksetzen auf A löscht die Buchungen auch auf B', async ({
     await abgleichen(b)
     await expect(b.getByText('Wird gelöscht')).toBeVisible()
 
+    await vorne(a)
     await a.getByRole('link', { name: 'Einstellungen' }).click()
     await a.getByRole('button', { name: 'Zurücksetzen …' }).click()
     const dialog = a.getByRole('dialog', { name: 'Daten zurücksetzen' })
