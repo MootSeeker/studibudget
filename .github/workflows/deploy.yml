@@ -90,6 +90,11 @@ jobs:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/setup
       - uses: ./.github/actions/supabase
+      - uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ matrix.browser }}-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
+      # Mit Zwischenspeicher lädt der Befehl keinen Browser mehr herunter, installiert aber weiter die Systempakete.
       - run: npx playwright install --with-deps ${{ matrix.browser }}
       # Ein Wackler (erst beim zweiten Versuch grün) gilt als Fehler.
       - run: npx playwright test --project=${{ matrix.browser }} --fail-on-flaky-tests

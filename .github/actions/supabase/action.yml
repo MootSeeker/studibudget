@@ -1,8 +1,17 @@
 name: Supabase
-description: Lokales Supabase in Docker starten (ohne Dienste, die die App nicht braucht)
+description: Lokales Supabase in Docker starten (ohne Dienste, die die App nicht braucht); die Docker-Images werden zwischengespeichert
 runs:
   using: composite
   steps:
+    - id: cache
+      uses: actions/cache@v4
+      with:
+        path: ~/supabase-images.tar
+        key: supabase-images-${{ runner.os }}-${{ hashFiles('package-lock.json', 'supabase/config.toml') }}
+    - name: Docker-Images laden
+      if: steps.cache.outputs.cache-hit == 'true'
+      shell: bash
+      run: docker load -i ~/supabase-images.tar
     - shell: bash
       run: |
         # Ein zweiter Versuch fängt gelegentliche Fehler beim Laden der Docker-Images ab.
@@ -11,3 +20,9 @@ runs:
         }
         start || { echo "Erster Start gescheitert, zweiter Versuch"; npx supabase stop --no-backup || true; start; }
         npx supabase status
+    - name: Docker-Images sichern
+      if: steps.cache.outputs.cache-hit != 'true'
+      shell: bash
+      run: |
+        images=$(docker images --format '{{.Repository}}:{{.Tag}}' | grep -E '/supabase/|^supabase/' | grep -v '<none>' || true)
+        [ -n "$images" ] && docker save $images -o ~/supabase-images.tar && ls -lh ~/supabase-images.tar || true

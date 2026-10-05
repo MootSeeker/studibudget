@@ -11,9 +11,10 @@ const PORT = 4173
 export default defineConfig({
   testDir: 'e2e',
   testMatch: '**/*.spec.ts',
-  // Das lokale Supabase ist ein gemeinsamer Zustand; jedes Konto ist eigen, aber der Mail-Fänger ist es nicht.
-  fullyParallel: false,
-  workers: 1,
+  // Jeder Test legt sein eigenes Konto an und sucht Mails nach der eigenen Adresse: Tests dürfen parallel laufen.
+  // Lokal bleibt es bei einem Worker (schont den Rechner), in der CI laufen mehrere.
+  fullyParallel: true,
+  workers: process.env.CI ? 3 : 1,
   forbidOnly: !!process.env.CI,
   // Ein zweiter Versuch fängt nichts zu; er macht Wackler sichtbar: `--fail-on-flaky-tests` (siehe package.json).
   retries: 1,
