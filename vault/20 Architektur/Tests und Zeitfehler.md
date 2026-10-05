@@ -43,3 +43,10 @@ IndexedDB geladen waren. Einmal steckte dahinter ein echter Fehler (Änderungen 
 - **Definition von «fertig»:** `verify` und `test:slow` grün, neue Logik mit Test, ein gefundener Fehler mit Regressionstest. Ausführlich: `docs/testing.md`.
 - **Neue Regeln aus den E2E-Tests:** Vor dem Abmelden auf den Sync warten; `wipe()` leert alle Tabellen in einer Transaktion (WebKit, #61).
 - **Eigenschaftstests:** `FC_NUM_RUNS` stellt die Zufallsfälle ein (Standard 100).
+- **E2E parallel:** `fullyParallel`, in der CI 3 Worker, lokal 1. Jeder Test legt ein eigenes Konto an (`neueAdresse()` mit Zeit, Prozess-ID und Zufall), Mails werden nach Adresse gesucht. Das Anmelde-Limit des lokalen Supabase ist dafür auf 300 angehoben.
+- **Sync-Knopf in Tests:** `syncAbwarten` sucht `/^(Synchronisiert|\d+ Änderung(en)? ausstehend)/`; `Änderungen?` hätte «1 Änderung» nie gefunden.
+- **Mutationstests:** Ausgangswert 82,26 % (2026-10-05), `break: 80`; je Bereich crypto 92,4, domain 85,2, sync 79,1, data 78,6.
+- **Referenzbilder** nur auf dem CI-Runner (Workflow «Referenzbilder», `--update-snapshots=all`; ohne `all` übernimmt Playwright kleine Abweichungen unter der Toleranz nicht). Aufnahmen für Budget-/Einstellungs-Reiter inklusive.
+- **axe:** prüft alle Reiter und aufgeklappte Bereiche; aktive Reiter brauchen ausreichenden Kontrast (Vollfarbe `bg-accent text-accent-text`).
+- **Auf- und Zuklapp-Zustand** liegt in `localStorage`; `src/test/setup.ts` leert ihn nach jedem Test.
+- **Lint:** `oxlint` ohne Warnungen halten (`Date` beim Zeichnen über `useNow`, keine Konstanten aus Komponentendateien exportieren).
