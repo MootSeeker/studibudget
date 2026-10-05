@@ -132,6 +132,24 @@ test('zurücksetzen auf A löscht die Buchungen auch auf B', async ({
     await abgleichen(b)
     await expect(b.getByText('Wird gelöscht')).toBeVisible()
 
+    // DIAGNOSE (vorübergehend)
+    a.on('console', (m) => console.log('[A console]', m.type(), m.text()))
+    a.on('pageerror', (e) => console.log('[A pageerror]', e.message))
+    await a.evaluate(() => {
+      const t0 = Date.now()
+      setInterval(() => {
+        const knopf = [...document.querySelectorAll('nav button')].map((b) => b.textContent)
+        console.log('hb', Date.now() - t0, document.visibilityState, JSON.stringify(knopf))
+      }, 1000)
+      let last = performance.now()
+      const raf = () => {
+        const now = performance.now()
+        if (now - last > 500) console.log('raf-gap', Math.round(now - last))
+        last = now
+        requestAnimationFrame(raf)
+      }
+      requestAnimationFrame(raf)
+    })
     await vorne(a)
     await a.getByRole('link', { name: 'Einstellungen' }).click()
     await a.getByRole('button', { name: 'Zurücksetzen …' }).click()
