@@ -77,7 +77,11 @@ export class StudiBudgetDB extends Dexie {
 
   /** Alle lokalen Daten und Schlüssel löschen (Abmelden, Kontowechsel). */
   async wipe(): Promise<void> {
-    await Promise.all(this.tables.map((t) => t.clear()))
+    // Eine einzige Transaktion: Einzelne clear()-Aufrufe nebeneinander liessen in WebKit Tabellen (z. B. den
+    // Abgleichsstand) stehen, während andere schon leer waren.
+    await this.transaction('rw', this.tables, async () => {
+      for (const t of this.tables) await t.clear()
+    })
   }
 }
 
