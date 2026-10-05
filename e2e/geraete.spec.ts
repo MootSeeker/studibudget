@@ -122,6 +122,6 @@ test('PWA: nach dem Laden startet die App offline aus dem Cache mit den lokalen 
   await page.reload()
   await expect(page.getByRole('navigation', { name: 'Hauptnavigation' })).toBeVisible()
   await page.getByRole('link', { name: 'Monat', exact: true }).click()
-  await expect(page.getByText('Aus dem Cache')).toBeVisible()
+  await expect(page.getByText('Aus dem Cache').first()).toBeVisible()
   await page.context().setOffline(false)
 })
