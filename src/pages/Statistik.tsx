@@ -80,7 +80,12 @@ function PlanTable({ areas, money }: { areas: PlanArea[]; money: (c: number) => 
     return types.size === 1 ? [...types][0] : null
   }
   return (
-    <div className="overflow-x-auto">
+    <div
+      tabIndex={0}
+      role="region"
+      aria-label="Plan und Ist pro Kategorie"
+      className="overflow-x-auto"
+    >
       <table className="w-full text-sm">
         <caption className="sr-only">Plan und Ist pro Kategorie im gewählten Zeitraum</caption>
         <thead>
@@ -313,7 +318,12 @@ export function Statistik() {
         <MonthlyChart months={stats.months} money={money} />
         <details>
           <summary className="cursor-pointer text-sm text-accent">Als Tabelle anzeigen</summary>
-          <div className="overflow-x-auto">
+          <div
+            tabIndex={0}
+            role="region"
+            aria-label="Tabelle zur Grafik"
+            className="overflow-x-auto"
+          >
             <table className="mt-2 w-full text-sm">
               <thead>
                 <tr className="text-left text-muted">

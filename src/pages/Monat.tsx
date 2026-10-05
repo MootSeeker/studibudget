@@ -202,7 +202,12 @@ export function Monat() {
         month={month}
       />
 
-      <div className="overflow-x-auto rounded-xl border border-border bg-surface">
+      <div
+        tabIndex={0}
+        role="region"
+        aria-label="Plan, Ist und Prognose"
+        className="overflow-x-auto rounded-xl border border-border bg-surface"
+      >
         <table className="w-full text-sm">
           <caption className="sr-only">Plan, Ist und Prognose für {label}</caption>
           <thead>

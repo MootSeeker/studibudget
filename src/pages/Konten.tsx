@@ -371,7 +371,12 @@ export function Konten() {
             Ein leeres Feld heisst «unbekannt», nicht 0. Schulden trägst du als geschuldeten Betrag
             ein, er wird vom Vermögen abgezogen.
           </p>
-          <div className="overflow-x-auto">
+          <div
+            tabIndex={0}
+            role="region"
+            aria-label="Kontostände pro Monatsende"
+            className="overflow-x-auto"
+          >
             <table className="w-full text-sm">
               <caption className="sr-only">Kontostände pro Monatsende und Gesamtvermögen</caption>
               <thead>
