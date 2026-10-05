@@ -4,6 +4,8 @@ name: Referenzbilder
 # Das Ergebnis liegt als Artefakt «referenzbilder»; den Ordner e2e/referenz ersetzen und einchecken.
 on:
   workflow_dispatch:
+  push:
+    branches: [test/visuelle-regression] # vorläufig, bis der Workflow auf main liegt
 
 permissions:
   contents: read
