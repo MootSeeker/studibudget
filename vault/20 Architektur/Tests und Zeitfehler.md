@@ -2,7 +2,7 @@
 typ: referenz
 bereich: qualitaet
 status: aktiv
-aktualisiert: 2026-10-04
+aktualisiert: 2026-10-05
 repo-quelle:
   - docs/entscheidungen.md
   - vitest.slow.config.ts
@@ -29,7 +29,7 @@ IndexedDB geladen waren. Einmal steckte dahinter ein echter Fehler (Änderungen 
 - Vor dem Commit `verify` und `test:slow` ausführen; bei Verdacht mit `SLOW_DB=250` und mehreren parallelen Läufen stressen.
 - Ein PR-Lauf, der rot war, nicht als Zufall abtun, auch wenn `main` danach grün ist.
 
-## Test-Aufbau (seit Baustein 1 bis 7)
+## Test-Aufbau (seit Baustein 1 bis 12)
 
 - **Vitest-Projekte** in `vitest.config.ts`: `unit` (`npm test`), `slow` (`npm run test:slow`), `db` (`npm run test:db`, Docker nötig). Immer mit `--project`.
 - **Tags:** `regression`, `property`, `negativ` (`npm run test:regression`, `test:prop`). Regressionstests heissen `… (Regression #N)`.
@@ -37,5 +37,9 @@ IndexedDB geladen waren. Einmal steckte dahinter ein echter Fehler (Änderungen 
 - **Coverage** pro Bereich: Untergrenzen in `scripts/coverage-areas.json`; nach neuen Tests `npm run coverage:ratchet` und committen. `verify` enthält jetzt die Coverage.
 - **Konsolen-Wächter** (`src/test/setup.ts`): jede `console.error/warn` im Test lässt ihn scheitern. «not wrapped in act» ist bewusst abgeschaltet (Live-Abfragen); stattdessen `findBy…`/`waitFor`.
 - **Fehler, die Tests finden:** Issue mit Label `gefunden-durch-tests`, roter Regressionstest, dann Fix.
-- **CI:** Jobs `statisch`, `unit`, `langsam`, `datenbank`, `build`, `bericht` (Zusammenfassung auf der Actions-Seite), `deploy`. Kein Branch-Schutz im Repo.
+- **E2E, axe, Bildvergleich** (Playwright, `e2e/`): Chromium und WebKit; axe und Bilder nur Chromium. Wackler gelten als Fehler. Referenzbilder entstehen im Workflow «Referenzbilder», nicht lokal.
+- **Mutationstests** (Stryker): wöchentlich, nicht in der PR-CI.
+- **CI:** Jobs `statisch`, `unit`, `langsam`, `datenbank`, `e2e` (Chromium, WebKit), `build`, `bericht` (Zusammenfassung auf der Actions-Seite), `deploy`. Kein Branch-Schutz im Repo.
+- **Definition von «fertig»:** `verify` und `test:slow` grün, neue Logik mit Test, ein gefundener Fehler mit Regressionstest. Ausführlich: `docs/testing.md`.
+- **Neue Regeln aus den E2E-Tests:** Vor dem Abmelden auf den Sync warten; `wipe()` leert alle Tabellen in einer Transaktion (WebKit, #61).
 - **Eigenschaftstests:** `FC_NUM_RUNS` stellt die Zufallsfälle ein (Standard 100).
