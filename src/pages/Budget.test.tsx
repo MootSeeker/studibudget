@@ -222,7 +222,7 @@ describe('Budget-Seite', () => {
     expect((await db.templates.toArray())[0].active).toBe(false)
   })
 
-  describe('Budget sichern und zurücksetzen (Issue #30)', () => {
+  describe('Budget exportieren und importieren (Issue #30)', () => {
     const alive = async () => (await db.budgets.toArray()).filter((b) => !b.deleted)
 
     async function mitBudget() {
@@ -237,28 +237,10 @@ describe('Budget-Seite', () => {
       return setup()
     }
 
-    it('Zurücksetzen löscht alle Budgetwerte nach Bestätigung, Buchungen bleiben', async () => {
-      const user = await mitBudget()
-      const confirm = vi.spyOn(window, 'confirm').mockReturnValue(true)
-      await user.click(screen.getByRole('button', { name: 'Budget zurücksetzen' }))
-      expect(await screen.findByText('1 Budgetwerte gelöscht.')).toBeInTheDocument()
-      expect(await alive()).toHaveLength(0)
-      expect(confirm).toHaveBeenCalledOnce()
-      confirm.mockRestore()
-    })
-
-    it('Zurücksetzen ohne Bestätigung ändert nichts', async () => {
-      const user = await mitBudget()
-      const confirm = vi.spyOn(window, 'confirm').mockReturnValue(false)
-      await user.click(screen.getByRole('button', { name: 'Budget zurücksetzen' }))
-      expect(await alive()).toHaveLength(1)
-      confirm.mockRestore()
-    })
-
-    it('ohne Budgetwerte sind Export und Zurücksetzen gesperrt', async () => {
+    it('ohne Budgetwerte ist der Export gesperrt; Zurücksetzen gibt es hier nicht mehr', async () => {
       await setup()
       expect(screen.getByRole('button', { name: 'Budget exportieren' })).toBeDisabled()
-      expect(screen.getByRole('button', { name: 'Budget zurücksetzen' })).toBeDisabled()
+      expect(screen.queryByRole('button', { name: /zurücksetzen/i })).not.toBeInTheDocument()
     })
 
     it('Import ersetzt das Budget und nennt, was nicht passte', async () => {

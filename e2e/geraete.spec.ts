@@ -107,6 +107,33 @@ test('offline: Änderung bleibt vorgemerkt und kommt beim Wiederverbinden auf B 
   }
 })
 
+test('zurücksetzen auf A löscht die Buchungen auch auf B', async ({
+  eingerichtet: { page: a, konto },
+  browser,
+  baseURL,
+}) => {
+  const { context, page: b } = await zweitesGeraet(browser, baseURL, a, konto)
+  try {
+    await buchen(a, '14', 'Wird gelöscht')
+    await abgleichen(a)
+    await abgleichen(b)
+    await expect(b.getByText('Wird gelöscht')).toBeVisible()
+
+    await a.getByRole('link', { name: 'Einstellungen' }).click()
+    await a.getByRole('button', { name: 'Zurücksetzen …' }).click()
+    const dialog = a.getByRole('dialog', { name: 'Daten zurücksetzen' })
+    await dialog.getByRole('checkbox', { name: /^Buchungen \(1\)/ }).check()
+    await dialog.getByRole('button', { name: '1 Eintrag löschen' }).click()
+    await expect(a.getByText('1 Eintrag gelöscht.')).toBeVisible()
+    await abgleichen(a)
+
+    await abgleichen(b)
+    await expect(b.getByText('Wird gelöscht')).toBeHidden()
+  } finally {
+    await context.close()
+  }
+})
+
 test('PWA: nach dem Laden startet die App offline aus dem Cache mit den lokalen Daten', async ({
   eingerichtet: { page },
   browserName,

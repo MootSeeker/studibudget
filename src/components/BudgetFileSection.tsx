@@ -13,7 +13,7 @@ import type { Budget, Category } from '../domain/types'
 const ops = createBudgetOps(db)
 const secondaryClass = 'rounded-md border border-control px-4 py-2 min-h-11'
 
-/** Budget sichern, aus einer Datei übernehmen oder von vorn beginnen (Issue #30). */
+/** Budget als Datei sichern oder aus einer Datei übernehmen (Issue #30). Zurücksetzen liegt in den Einstellungen. */
 export function BudgetFileSection({
   categories,
   budgets,
@@ -70,32 +70,16 @@ export function BudgetFileSection({
     }
   }
 
-  async function reset() {
-    setMessage(null)
-    setError(null)
-    if (
-      !window.confirm(
-        'Alle Budgetwerte werden gelöscht. Buchungen und Kategorien bleiben erhalten. Das lässt sich nicht rückgängig machen. Fortfahren?',
-      )
-    )
-      return
-    try {
-      const n = await ops.reset()
-      setMessage(`${n} Budgetwerte gelöscht.`)
-    } catch (e) {
-      setError(e instanceof Error ? e.message : 'Das Zurücksetzen hat nicht geklappt.')
-    }
-  }
-
   return (
     <section
       className="space-y-3 rounded-xl border border-border bg-surface p-4"
-      aria-label="Budget sichern und zurücksetzen"
+      aria-label="Budget exportieren und importieren"
     >
-      <h2 className="text-lg font-semibold">Budget sichern und zurücksetzen</h2>
+      <h2 className="text-lg font-semibold">Budget exportieren und importieren</h2>
       <p className="text-sm text-muted">
-        Exportiere dein Budget als Datei, übernimm es aus einer Datei oder beginne von vorn.
-        Buchungen bleiben dabei unberührt. Beim Import zählen Name und Art der Kategorie.
+        Exportiere dein Budget als Datei oder übernimm es aus einer Datei. Buchungen bleiben dabei
+        unberührt. Beim Import zählen Name und Art der Kategorie. Neu anfangen kannst du unter
+        Einstellungen › Daten zurücksetzen.
       </p>
       <div className="flex flex-wrap items-center gap-3">
         <button type="button" className={buttonClass} onClick={exportFile} disabled={count === 0}>
@@ -114,14 +98,6 @@ export function BudgetFileSection({
             }}
           />
         </label>
-        <button
-          type="button"
-          className={secondaryClass}
-          onClick={() => void reset()}
-          disabled={count === 0}
-        >
-          Budget zurücksetzen
-        </button>
       </div>
       {message && (
         <p role="status" className="text-sm text-ok">

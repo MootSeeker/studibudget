@@ -22,6 +22,9 @@ als App installieren und funktioniert auch ohne Internet.
 8. **Konten & Sparziele.** Kontostände am Monatsende, Vermögensverlauf und Sparziele mit Fortschritt.
 9. **Ausgleich** (WG und Partner/in). Gemeinsame Ausgaben teilen, sehen wer wem wie viel schuldet, Zahlungen erfassen.
 10. **Backup.** Unter Einstellungen kannst du alle Daten als Datei sichern und wieder einspielen.
+11. **Neu anfangen.** Unter Einstellungen › «Daten zurücksetzen» löschst du wahlweise Budget, Buchungen, Vorlagen,
+    Ausgleichszahlungen, Konten oder Sparziele. Konto, Kategorien und Einstellungen bleiben. Das Budget allein
+    kannst du auf der Budget-Seite exportieren und importieren.
 
 **Auf mehreren Geräten:** Melde dich überall mit demselben Konto an, die Daten werden abgeglichen. **Ohne Internet:**
 Eingaben werden gespeichert und abgeglichen, sobald du wieder online bist. **Installieren:** Einstellungen › «Als App

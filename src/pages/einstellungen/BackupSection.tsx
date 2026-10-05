@@ -5,6 +5,7 @@ import { db } from '../../data/db'
 import { backupStatus } from '../../domain/backup'
 import type { Settings } from '../../domain/types'
 import { isStoragePersisted } from '../../lib/storage'
+import { downloadBackup } from './backupDownload'
 import { saveSettings, Section } from './Sections'
 
 const COUNT_LABEL: [string, string][] = [
@@ -55,26 +56,7 @@ export function BackupSection({ settings }: { settings: Settings }) {
     setError(null)
     setMessage(null)
     try {
-      const { exportBackup, backupFileName, parseBackup } = await backupModule()
-      const now = new Date()
-      const backup = await exportBackup(db, now)
-      const json = JSON.stringify(backup, null, 2)
-      // Selbstprüfung: Eine Datei, die sich später nicht wieder einspielen liesse, soll gar nicht erst entstehen.
-      const check = parseBackup(json)
-      if (!check.ok)
-        throw new Error(
-          `Das Backup wurde nicht erstellt, weil deine Daten eine Unstimmigkeit enthalten. ${check.error}`,
-        )
-      const blob = new Blob([json], { type: 'application/json' })
-      const url = URL.createObjectURL(blob)
-      const a = document.createElement('a')
-      a.href = url
-      a.download = backupFileName(now)
-      document.body.appendChild(a)
-      a.click()
-      a.remove()
-      setTimeout(() => URL.revokeObjectURL(url), 1000)
-      await saveSettings(settings, { lastBackupAt: now.toISOString() })
+      await downloadBackup(settings)
       setMessage('Das Backup wurde heruntergeladen.')
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Das Backup konnte nicht erstellt werden.')
