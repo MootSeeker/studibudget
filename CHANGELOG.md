@@ -5,6 +5,8 @@ die Versionen folgen [Semantic Versioning](https://semver.org/lang/de/).
 
 ## [Unreleased]
 
+## [1.2.0] – 2026-10-05
+
 ### Hinzugefügt
 
 - Statistik: Abschnitt «Vermögen» mit Verlauf und Veränderung im gewählten Zeitraum (#52).
@@ -17,6 +19,11 @@ die Versionen folgen [Semantic Versioning](https://semver.org/lang/de/).
 
 - Der Sync startet jetzt auch nach Änderungen bei Konten, Budget-Kategorien, Einrichtung, Backup-Import und
   Katalogwechsel sofort; sie nutzten zuvor einen eigenen Store (#79).
+
+### Geändert
+
+- CI: Docker-Images des lokalen Supabase und Playwright-Browser werden zwischengespeichert, die E2E-Tests laufen
+  parallel (#62).
 
 ## [1.1.0] – 2026-10-05
 
@@ -76,6 +83,7 @@ Erste Veröffentlichung.
 - Fixkosten-Vorlagen, Intervalle, Rückstellungs-Hinweis, mehrere Autos, responsives Layout.
 - Datenschutzerklärung und Impressum.
 
-[Unreleased]: https://github.com/MootSeeker/studibudget/compare/v1.1.0...HEAD
+[Unreleased]: https://github.com/MootSeeker/studibudget/compare/v1.2.0...HEAD
+[1.2.0]: https://github.com/MootSeeker/studibudget/compare/v1.1.0...v1.2.0
 [1.1.0]: https://github.com/MootSeeker/studibudget/compare/v1.0.0...v1.1.0
 [1.0.0]: https://github.com/MootSeeker/studibudget/releases/tag/v1.0.0
