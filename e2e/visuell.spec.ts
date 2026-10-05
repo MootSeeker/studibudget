@@ -1,12 +1,24 @@
 import type { Page } from '@playwright/test'
 import { PAGES } from '../src/pages'
-import { anmelden, assistentDurchlaufen, expect, test } from './support/fixtures'
+import { anmelden, expect, test } from './support/fixtures'
 
 // Chromium auf dem CI-Runner ist die Referenz; Referenzbilder entstehen im Workflow «Referenzbilder»,
 // nicht auf dem eigenen Rechner (Schrift und Rasterung weichen sonst ab).
 const BREITEN = [375, 768, 1280] as const
 const SCHEMEN = ['hell', 'dunkel'] as const
 const SEITEN = [...PAGES.map((p) => p.path), '/datenschutz']
+
+/** Wie `assistentDurchlaufen`, aber ohne Hauptnavigation zu verlangen: auf dem Handy ist sie eingeklappt. */
+async function einrichten(page: Page) {
+  await expect(page.getByRole('heading', { name: 'Willkommen bei StudiBudget' })).toBeVisible()
+  await page.getByRole('button', { name: 'Weiter' }).click()
+  await page.getByRole('radio', { name: /^WG/ }).check()
+  await page.getByLabel('Mitbewohner/in 1').fill('Anna')
+  await page.getByRole('button', { name: 'Weiter' }).click()
+  await page.getByRole('button', { name: 'Weiter' }).click()
+  await page.getByRole('button', { name: 'Fertig' }).click()
+  await expect(page.getByLabel(/Betrag/)).toBeVisible()
+}
 
 async function buchen(
   page: Page,
@@ -56,7 +68,7 @@ for (const schema of SCHEMEN) {
         await aufnehmen('anmelden')
 
         await anmelden(page, konto)
-        await assistentDurchlaufen(page)
+        await einrichten(page)
         await buchen(page, '23.50', 'Einkauf zuhause', 'Migros')
         await buchen(page, '12.30', 'Mensa / Mittagessen', 'Mensa Dienstag')
         await buchen(page, '90', 'Einkauf zuhause', 'Wocheneinkauf', true)
