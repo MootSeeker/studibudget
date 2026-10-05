@@ -1,0 +1,28 @@
+name: Referenzbilder
+
+# Erzeugt die Referenzbilder der visuellen Regression auf dem CI-Runner (nur dort sind sie verbindlich).
+# Das Ergebnis liegt als Artefakt «referenzbilder»; den Ordner e2e/referenz ersetzen und einchecken.
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  referenzbilder:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      E2E_BROWSER: chromium
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup
+      - uses: ./.github/actions/supabase
+      - run: npx playwright install --with-deps chromium
+      - run: npx playwright test e2e/visuell.spec.ts --project=chromium --update-snapshots --retries=0
+      - uses: actions/upload-artifact@v4
+        if: ${{ !cancelled() }}
+        with:
+          name: referenzbilder
+          path: e2e/referenz
+          retention-days: 14
