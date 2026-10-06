@@ -49,6 +49,8 @@ installieren» (auf dem iPhone: Safari › Teilen › Zum Home-Bildschirm).
 
 React 19, TypeScript, Vite, Tailwind CSS 4, Dexie (IndexedDB), Supabase (Anmeldung und verschlüsselter Speicher), Vitest, Playwright.
 
+**Node:** Version 24 (steht in `.nvmrc`, daraus nimmt auch die CI ihre Version). Mindestens 24.15, sonst warnen mehrere Abhängigkeiten, und mit Node 24.13 scheitern drei Tests an der Schreibweise des Tausenderapostrophs.
+
 ```bash
 npm install
 npx supabase start        # lokales Supabase in Docker (braucht Docker)
