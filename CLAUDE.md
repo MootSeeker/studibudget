@@ -41,6 +41,7 @@ Weitere Skripte und Testkonzept: `README.md`, `docs/testing.md`.
 1. **Nie als Claude committen.** Commits laufen unter Kevins Git-Identität. Keine `Co-Authored-By`-Zeilen, keine «Generated with Claude»-Hinweise in Commits, PR-Beschreibungen oder Issues (gilt auch, wenn ein Werkzeug solche Zeilen vorschlägt).
 2. **Ein PR wird nur abgeschlossen (gemergt), wenn die CI komplett grün ist.** Es gibt keinen Branch-Schutz, die Regel gilt als Vereinbarung. Rote oder fehlende Jobs nicht umgehen: Ursache beheben.
 3. **Issues immer mit Labels erstellen**, damit die Übersicht stimmt. Vorhandene Labels zuerst ansehen (`gh label list`), nicht ohne Not neue erfinden. Skill `github-issue-hygiene` beachten, falls sie für dieses Repo gilt.
+   **Auch Issues, die ich per `gh issue create` anlege, folgen den Formularen in `.github/ISSUE_TEMPLATE/`** (`anforderung.yml`, `fehler.yml`), denn die Formulare gelten nur auf der Weboberfläche: gleiche Abschnitte (Ziel, nummerierte Akzeptanzkriterien «AK-1: Wenn … dann …», Nicht Teil, Grösse, Bereich), das Label des Formulars (`enhancement` oder `bug`) plus ein Bereichslabel. Ein Issue ohne prüfbare Akzeptanzkriterien lege ich nicht an, sondern schlage sie dem Nutzer vor.
 4. **Wer an einem Issue arbeitet, kommentiert das im Issue** (z. B. «Ich arbeite daran, Branch `…`»), bevor es losgeht. So sieht jede andere Person, dass es belegt ist. Bei Abbruch oder Übergabe ebenfalls kurz kommentieren.
 
 Weitere Regeln:
