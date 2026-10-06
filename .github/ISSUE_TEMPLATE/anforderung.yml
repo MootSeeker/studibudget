@@ -1,0 +1,59 @@
+name: Anforderung
+description: Neue Funktion oder Verbesserung. Dient als Anforderung (Spec) für Plan, Tests und Review.
+labels: [enhancement]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Dieses Issue ist die **Anforderung**. Plan, Tests und Review werden daran gemessen.
+        Deshalb müssen die Akzeptanzkriterien prüfbar sein.
+  - type: textarea
+    id: ziel
+    attributes:
+      label: Ziel
+      description: Was soll möglich sein, und warum? Ein bis drei Sätze, aus Sicht der Nutzerin oder des Nutzers.
+    validations:
+      required: true
+  - type: textarea
+    id: akzeptanzkriterien
+    attributes:
+      label: Akzeptanzkriterien
+      description: |
+        Nummeriert und einzeln prüfbar, jeweils «Wenn … dann …». Ein Kriterium, das man nicht mit einem Test oder einem Blick prüfen kann, ist zu unscharf.
+      placeholder: |
+        - AK-1: Wenn in einem Monat Ausgleichszahlungen vorliegen, dann zeigt die Statistik pro Person und Monat gezahlt und erhalten.
+        - AK-2: Wenn keine Zahlungen vorliegen, dann erscheint ein Leerzustand statt eines leeren Charts.
+    validations:
+      required: true
+  - type: textarea
+    id: ausserhalb
+    attributes:
+      label: Nicht Teil dieses Issues
+      description: Was ausdrücklich nicht umgesetzt wird (hilft dem Review gegen Ausufern).
+    validations:
+      required: false
+  - type: dropdown
+    id: groesse
+    attributes:
+      label: Grösse
+      description: Bestimmt den Ablauf. Klein = Test und Umsetzung. Mittel = Plan, Tests zuerst, Review. Gross = zusätzlich Rückfrage nach dem Plan.
+      options:
+        - Klein
+        - Mittel
+        - Gross
+    validations:
+      required: true
+  - type: dropdown
+    id: bereich
+    attributes:
+      label: Bereich
+      options:
+        - Budget
+        - Statistik
+        - Ausgleich
+        - Sync und Verschlüsselung
+        - Konten und Sparziele
+        - Betrieb und CI
+        - Sonstiges
+    validations:
+      required: true
