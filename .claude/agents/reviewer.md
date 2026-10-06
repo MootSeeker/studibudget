@@ -34,7 +34,7 @@ Du bekommst eine Issue-Nummer und einen PR (Nummer) oder Branch. Mehr nicht. Hol
 
 ## Regeln
 
-- **Nur lesen.** Keine Dateien ändern, nichts committen, keine Befehle ausführen, die Zustand verändern. Erlaubt sind `gh issue view`, `gh pr diff`, `gh pr view`, `gh pr checks`, `git diff`, `git log`, `git show`.
+- **Nur lesen.** Keine Dateien ändern oder anlegen, auch keine Ausgabeumleitung (`>`, `tee`) in eine Datei im Repo: Diffs lies direkt aus der Befehlsausgabe, nicht über eine Zwischendatei. Nichts committen, keine Befehle ausführen, die Zustand verändern. Erlaubt sind `gh issue view`, `gh pr diff`, `gh pr view`, `gh pr checks`, `git diff`, `git log`, `git show`.
 - Keine Tests oder Builds ausführen; das macht die CI.
 - Kein pauschales Lob. Ein AK ohne Beleg ist nicht «erfüllt».
 - Unsicher heisst «teilweise» oder «nicht belegt», nicht «erfüllt».
