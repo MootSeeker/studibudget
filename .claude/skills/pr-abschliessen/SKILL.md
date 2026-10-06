@@ -18,6 +18,6 @@ Voraussetzung: `npm run verify` und `npm run test:slow` waren lokal grün. Sonst
    - **NACHARBEIT:** Befunde beheben, Schritt 1 und 2 wiederholen, Reviewer erneut. Höchstens zwei Runden, danach den Nutzer fragen.
    - **BEREIT:** weiter.
 5. **Freigeben:** `gh pr ready <PR>`. Jetzt startet die volle CI.
-6. **Auf grüne CI warten** (`gh pr checks <PR> --watch`). Bei Rot: Ursache beheben, nicht umgehen (Regel 2).
-7. **Merge nur mit ausdrücklichem OK des Nutzers** (Regel 6). Dann `gh pr merge <PR> --squash --delete-branch`, danach den Hauptzweig lokal aktualisieren und `git fetch --prune`.
+6. **Nicht auf die CI warten** (Regel 2): Sage dem Nutzer, dass die CI läuft, und höre auf. Der Nutzer meldet das Ergebnis. Bei Rot: Protokoll des fehlgeschlagenen Jobs lesen, Ursache beheben, nicht umgehen.
+7. **Merge nur mit ausdrücklichem OK des Nutzers** (Regel 6) und wenn er «CI grün» gemeldet hat (oder «mergen, wenn CI grün» sagt: dann einmal `gh pr checks <PR>` prüfen, nicht warten). Dann `gh pr merge <PR> --squash --delete-branch`, danach den Hauptzweig lokal aktualisieren und `git fetch --prune`.
 8. **Issue:** Wird durch `Closes` geschlossen; kommentiere kurz, was umgesetzt wurde und in welchem PR.
