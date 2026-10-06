@@ -35,6 +35,17 @@ const pushes = afterGit('push')
 const commits = afterGit('commit')
 const writesGitHub = segments.some((s) => /^gh\s+(?:pr|issue)\s+(?:create|edit|comment)\b/.test(s))
 
+// Nicht auf die CI warten (Regel 2): der Nutzer meldet das Ergebnis. Ein einmaliges `gh pr checks` bleibt erlaubt.
+const waitsForCi = segments.some(
+  (s) =>
+    /(^|\s)gh\s+run\s+watch\b/.test(s) ||
+    (/(^|\s)gh\s+pr\s+checks\b/.test(s) && /(^|\s)(--watch|-w)(\s|$)/.test(s)),
+)
+if (waitsForCi)
+  block(
+    'Nicht auf die CI warten: der Nutzer meldet das Ergebnis. Einmal `gh pr checks` ist erlaubt.',
+  )
+
 for (const rest of [...pushes, ...commits]) {
   if (/(^|\s)--no-verify(\s|$)/.test(rest)) block('Hooks überspringen ist nicht erlaubt.')
 }
