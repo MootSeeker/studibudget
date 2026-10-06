@@ -1,0 +1,94 @@
+name: Doku
+
+# Leichte Prüfungen für Änderungen, bei denen «Deploy» absichtlich aussetzt (siehe paths-ignore dort).
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'vault/**'
+      - 'docs/**'
+      - '**.md'
+      - 'CLAUDE.md'
+      - '.claude/**'
+      - 'scripts/check-vault.mjs'
+      - '.github/workflows/doku.yml'
+  pull_request:
+    paths:
+      - 'vault/**'
+      - 'docs/**'
+      - '**.md'
+      - 'CLAUDE.md'
+      - '.claude/**'
+      - 'scripts/check-vault.mjs'
+      - '.github/workflows/doku.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: doku-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  format:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v7
+      - uses: ./.github/actions/setup
+      # .prettierignore nimmt vault/ aus; Claude-Dateien liegen in einem versteckten Ordner und werden ausdrücklich genannt
+      - run: npx prettier --check "**/*.md"
+      - name: Claude-Konfiguration
+        if: ${{ hashFiles('.claude/settings.json') != '' }}
+        run: npx prettier --check ".claude/settings.json" ".claude/hooks/*.mjs"
+
+  geheimnisse:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      - uses: gitleaks/gitleaks-action@v3
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  links:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+      - uses: lycheeverse/lychee-action@v2
+        with:
+          # Wiederholungen und 429 gelten als ok, damit fremde Server keine falschen Fehler auslösen
+          args: >-
+            --no-progress --max-retries 3 --accept 200,204,429
+            --exclude '^https?://(localhost|127\.0\.0\.1)'
+            README.md docs vault
+          fail: true
+
+  vault:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+      - run: node scripts/check-vault.mjs
+
+  claude-konfiguration:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+      - name: settings.json ist gültiges JSON
+        if: ${{ hashFiles('.claude/settings.json') != '' }}
+        run: node -e "JSON.parse(require('fs').readFileSync('.claude/settings.json','utf8')); console.log('settings.json ok')"
+      - name: Hook-Skripte haben gültige Syntax
+        if: ${{ hashFiles('.claude/hooks/*.mjs') != '' }}
+        run: for f in .claude/hooks/*.mjs; do node --check "$f"; done
