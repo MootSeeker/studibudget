@@ -10,7 +10,8 @@ if (!file) process.exit(0)
 
 const abs = isAbsolute(file) ? file : resolve(root, file)
 const rel = relative(root, abs).split(String.fromCharCode(92)).join('/')
-if (rel.startsWith('..') || rel.includes('node_modules/') || rel.startsWith('.claude/')) process.exit(0)
+if (rel.startsWith('..') || rel.includes('node_modules/') || rel.startsWith('.claude/'))
+  process.exit(0)
 
 const ext = extname(abs).toLowerCase()
 if (!['.ts', '.tsx', '.js', '.mjs', '.json', '.md', '.css'].includes(ext)) process.exit(0)
