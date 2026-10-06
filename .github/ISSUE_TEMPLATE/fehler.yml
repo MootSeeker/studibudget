@@ -1,0 +1,46 @@
+name: Fehler
+description: Etwas funktioniert nicht wie vorgesehen.
+labels: [bug]
+body:
+  - type: textarea
+    id: erlebt
+    attributes:
+      label: Was passiert
+    validations:
+      required: true
+  - type: textarea
+    id: erwartet
+    attributes:
+      label: Was erwartet wurde
+    validations:
+      required: true
+  - type: textarea
+    id: schritte
+    attributes:
+      label: Schritte zum Nachstellen
+    validations:
+      required: true
+  - type: textarea
+    id: akzeptanzkriterien
+    attributes:
+      label: Akzeptanzkriterien
+      description: Wann gilt der Fehler als behoben? Nummeriert, «Wenn … dann …». Ein Regressionstest gehört dazu.
+      placeholder: |
+        - AK-1: Wenn die Schritte oben ausgeführt werden, dann tritt der Fehler nicht mehr auf.
+        - AK-2: Ein Regressionstest deckt den Fall ab.
+    validations:
+      required: true
+  - type: dropdown
+    id: bereich
+    attributes:
+      label: Bereich
+      options:
+        - Budget
+        - Statistik
+        - Ausgleich
+        - Sync und Verschlüsselung
+        - Konten und Sparziele
+        - Betrieb und CI
+        - Sonstiges
+    validations:
+      required: true
