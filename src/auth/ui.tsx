@@ -13,6 +13,8 @@ export function Field(props: {
   onChange: (v: string) => void
   autoComplete?: string
   hint?: string
+  /** Pflichtfeld (Standard) oder freiwillig. */
+  required?: boolean
 }) {
   // Eigene ID pro Feld: dieselbe Beschriftung kann auf einer Seite mehrmals vorkommen.
   const id = useId()
@@ -28,7 +30,7 @@ export function Field(props: {
         value={props.value}
         autoComplete={props.autoComplete}
         onChange={(e) => props.onChange(e.target.value)}
-        required
+        required={props.required ?? true}
       />
       {props.hint && <p className="text-xs text-muted">{props.hint}</p>}
     </div>
