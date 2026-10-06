@@ -3,7 +3,18 @@ name: Deploy
 on:
   push:
     branches: [main]
+    paths-ignore:
+      - 'vault/**'
+      - 'docs/**'
+      - 'CLAUDE.md'
+      - '.claude/**'
   pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+    paths-ignore:
+      - 'vault/**'
+      - 'docs/**'
+      - 'CLAUDE.md'
+      - '.claude/**'
   workflow_dispatch:
 
 permissions:
@@ -16,6 +27,7 @@ concurrency:
 
 jobs:
   statisch:
+    if: github.event.pull_request.draft != true
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
@@ -25,6 +37,7 @@ jobs:
       - run: npm run typecheck
 
   unit:
+    if: github.event.pull_request.draft != true
     runs-on: ubuntu-latest
     timeout-minutes: 15
     env:
@@ -43,6 +56,7 @@ jobs:
 
   # Findet Zeitfehler, die nur auf langsamen Rechnern auftreten (Datenbank künstlich verlangsamt).
   langsam:
+    if: github.event.pull_request.draft != true
     runs-on: ubuntu-latest
     timeout-minutes: 15
     env:
@@ -60,6 +74,7 @@ jobs:
 
   # Zugriffsregeln, Konto und Sync gegen ein lokales Supabase (Docker)
   datenbank:
+    if: github.event.pull_request.draft != true
     runs-on: ubuntu-latest
     timeout-minutes: 15
     env:
@@ -78,6 +93,7 @@ jobs:
 
   # Ganze App im echten Browser gegen ein lokales Supabase (Docker), je Browser ein Lauf
   e2e:
+    if: github.event.pull_request.draft != true
     runs-on: ubuntu-latest
     timeout-minutes: 30
     strategy:
@@ -108,6 +124,7 @@ jobs:
           retention-days: ${{ github.ref == 'refs/heads/main' && 30 || 14 }}
 
   build:
+    if: github.event.pull_request.draft != true
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
@@ -127,7 +144,7 @@ jobs:
 
   # Fasst alle Berichte als Zusammenfassung auf der Actions-Seite zusammen.
   bericht:
-    if: ${{ !cancelled() }}
+    if: ${{ !cancelled() && github.event.pull_request.draft != true }}
     needs: [unit, langsam, datenbank]
     runs-on: ubuntu-latest
     timeout-minutes: 5
