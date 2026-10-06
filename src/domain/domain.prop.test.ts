@@ -21,6 +21,19 @@ describe('Eigenschaften: Beträge', { tags: ['property'] }, () => {
       }),
     )
   })
+  it('parseAmount wirft bei Ausdrücken nie und liefert null oder eine ganze Zahl', () => {
+    const zeichen = [...'0123456789+-*/()%., ']
+    fc.assert(
+      fc.property(
+        fc.array(fc.constantFrom(...zeichen), { maxLength: 30 }).map((a) => a.join('')),
+        (s) => {
+          const r = parseAmount(s)
+          expect(r === null || Number.isSafeInteger(r)).toBe(true)
+        },
+      ),
+      { numRuns: 500 },
+    )
+  })
   it('parseAmount wirft nie und liefert null oder eine ganze Zahl', () => {
     fc.assert(
       fc.property(fc.string({ maxLength: 40 }), (s) => {

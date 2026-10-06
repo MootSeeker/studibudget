@@ -2,7 +2,7 @@
 typ: hub
 bereich: betrieb
 status: offen
-aktualisiert: 2026-10-05
+aktualisiert: 2026-10-06
 repo-quelle:
   - docs/start-checkliste.md
 tags:
@@ -12,8 +12,8 @@ tags:
 
 # Offene Punkte
 
-Offene GitHub-Issues (Stand 2026-10-05): #48 (Analyse `records_seq`), #62 (CI dauert lange), #65 (Ausgleichsrechnungen mit QR),
-#72 (CI-Artefakte aufs NAS), #76 (Synchronisation von Informationen), #78 (Auszahlungen in der Statistik). Offen ist
+Offene GitHub-Issues (Stand 2026-10-06): #48 (Analyse `records_seq`), #65 (Ausgleichsrechnungen mit QR),
+#72 (CI-Artefakte aufs NAS), #76 (Synchronisation von Informationen), #88 (Rechnen in Betragsfeldern, PR in Arbeit). Offen ist
 ausserdem der **öffentliche Start**. Die vollständige Liste steht in `docs/start-checkliste.md`; hier der Stand:
 
 ## Blocker (Kevin)

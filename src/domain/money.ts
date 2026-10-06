@@ -1,3 +1,4 @@
+import { evaluateExpression } from './amountExpr'
 import type { Country } from './types'
 
 const LOCALE: Record<Country, { locale: string; currency: string }> = {
@@ -12,10 +13,16 @@ export function formatMoney(cents: number, country: Country): string {
 }
 
 /**
- * Liest eine eingetippte Zahl ("23.50", "23,5", "1'234.50", "1.234,50") als Cent.
- * Gibt null zurück, wenn nichts Sinnvolles erkannt wird.
+ * Liest eine eingetippte Zahl ("23.50", "23,5", "1'234.50", "1.234,50") als Cent oder eine einfache Rechnung
+ * ("3500*60%", "(100+20)*2", siehe `amountExpr.ts`). Gibt null zurück, wenn nichts Sinnvolles erkannt wird.
+ * Ein einzelner Betrag wird immer wie bisher gelesen; nur was so nicht lesbar ist, wird als Rechnung versucht.
  */
 export function parseAmount(input: string): number | null {
+  return parseSingleAmount(input) ?? evaluateExpression(input, parseSingleAmount)
+}
+
+/** Liest einen einzelnen Betrag als Cent. */
+function parseSingleAmount(input: string): number | null {
   let s = input.replace(/[\s'’]/g, '').replace(/^(CHF|EUR|€)|(CHF|EUR|€)$/gi, '')
   if (!/^-?[\d.,]+$/.test(s) || !/\d/.test(s)) return null
   const lastDot = s.lastIndexOf('.')
