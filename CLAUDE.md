@@ -57,3 +57,7 @@ Weitere Regeln:
 
 Supabase-Migrationen nur als Datei in `supabase/migrations/`, erst `--dry-run`; **vor dem Einspielen auf das echte Projekt nachfragen.**
 Releases: Version per PR anheben (`npm version … --no-git-tag-version`), nach dem Merge Tag setzen, `CHANGELOG.md` pflegen.
+
+## Arbeitsablauf (Spec-getrieben)
+
+Issues sind die Anforderung (Formular mit nummerierten Akzeptanzkriterien). `/issue-bearbeiten <Nr>` führt durch den Ablauf: Plan mit Testliste (`plan-schreiben`), Tests zuerst, Umsetzung, `verify`, dann `/pr-abschliessen <Nr>` mit dem Subagenten `reviewer` (Haiku). Die Grösse im Issue steuert den Aufwand: Klein ohne Plan und Reviewer, Mittel mit beidem, Gross zusätzlich mit Rückfrage nach dem Plan.
