@@ -51,6 +51,7 @@ Weitere Regeln:
 7. Kein Force-Push, kein `--no-verify`, keine Hooks oder Signierung umgehen. Historie nicht umschreiben, ohne zu fragen.
 8. Vor dem Commit `npm run verify` und `npm run test:slow` (siehe Befehle).
 9. PR verknüpft sein Issue (`Closes #123`); Titel und Beschreibung auf Deutsch, Titel mit Issue-Nummer wie in der bisherigen Historie.
+   **Die Beschreibung folgt `.github/pull_request_template.md`.** Die Vorlage füllt GitHub nur auf der Weboberfläche aus; bei `gh pr create` lese ich sie und übernehme alle Abschnitte (Zusammenfassung, Akzeptanzkriterien mit Beleg, Nicht Teil, Prüfung, Nachführen, Hinweise). Nicht Zutreffendes streiche ich nicht stillschweigend, sondern schreibe «entfällt, weil …».
 10. Ein PR = ein Thema. Keine nebenbei mitgeänderten, unzusammenhängenden Dateien.
 11. Nach dem Merge: Branch löschen, lokal `git fetch --prune`.
 12. Vault nachführen (Journal, Offene Punkte), wenn ein Issue oder PR abgeschlossen wird.
