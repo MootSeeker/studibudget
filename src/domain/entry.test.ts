@@ -39,6 +39,8 @@ describe('buildEntry', () => {
   })
   it('akzeptiert Komma und Tausenderzeichen', () => {
     expect(ok({ amount: "1'234,5" }).amountCents).toBe(123450)
+    expect(ok({ amount: '3500*60%' }).amountCents).toBe(210000) // Rechnen im Betragsfeld, #88
+    expect(err({ amount: '5/0' })).toMatch(/gültigen Betrag/)
   })
   it.each([
     [{ amount: '' }, 'gültigen Betrag'],

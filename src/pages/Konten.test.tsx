@@ -90,6 +90,16 @@ describe('Konten', () => {
     expect(screen.getByLabelText(`Stand Kreditkarte ${name(NOW)}`)).toHaveValue('250.00') // Anzeige positiv
   })
 
+  it('Stand als Rechnung: 1000+500 speichert 1500 (#88)', async () => {
+    const user = await setup()
+    await user.click(screen.getByRole('button', { name: 'Vorschläge übernehmen' }))
+    await screen.findByLabelText('Name Konto Privatkonto')
+    setBalance('Privatkonto', NOW, '1000+500')
+    await waitFor(() => expect(totalOf(NOW)).toMatch(/CHF 1'500\.00/))
+    setBalance('Privatkonto', NOW, '1000/0')
+    expect(await screen.findByRole('alert')).toHaveTextContent('kein gültiger Betrag')
+  })
+
   it('Feld leeren löscht die Angabe, ungültige Eingabe zeigt einen Fehler', async () => {
     const user = await setup()
     await user.click(screen.getByRole('button', { name: 'Vorschläge übernehmen' }))

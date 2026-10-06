@@ -126,6 +126,24 @@ describe('Budget-Seite', () => {
     expect(input()).toHaveValue('800.00')
   })
 
+  it('rechnet im Betragsfeld und speichert das Ergebnis (#88)', async () => {
+    const user = await setup()
+    await user.type(screen.getByLabelText('Monatsbudget Miete'), '3500*60%')
+    await user.tab()
+    await waitFor(async () => expect(await db.budgets.count()).toBe(1))
+    const [b] = await db.budgets.toArray()
+    expect(b.amountCents).toBe(210000)
+    await waitFor(() => expect(screen.getByLabelText('Monatsbudget Miete')).toHaveValue('2100.00'))
+  })
+
+  it('ungültige Rechnung zeigt einen Fehler und speichert nichts (#88)', async () => {
+    const user = await setup()
+    await user.type(screen.getByLabelText('Monatsbudget Miete'), '5/0')
+    await user.tab()
+    expect(await screen.findByRole('alert')).toHaveTextContent('gültigen Betrag')
+    expect(await db.budgets.count()).toBe(0)
+  })
+
   it('ungültiger Betrag zeigt einen Fehler und speichert nichts', async () => {
     const user = await setup()
     await user.type(screen.getByLabelText('Monatsbudget Miete'), 'abc')

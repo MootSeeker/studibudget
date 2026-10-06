@@ -2,6 +2,29 @@ import { describe, expect, it } from 'vitest'
 import { MAX_AMOUNT_CENTS, buildEntry, type EntryInput } from './entry'
 import { parseAmount } from './money'
 
+describe('parseAmount: ungültige Ausdrücke (AK-5)', { tags: ['negativ'] }, () => {
+  it.each([
+    ['Operator ohne rechten Teil', '3+'],
+    ['Operator ohne linken Teil', '*5'],
+    ['Multiplikation ohne rechten Teil', '5*'],
+    ['Potenz wird nicht unterstützt', '2**3'],
+    ['Klammer nicht geschlossen', '(1+2'],
+    ['Klammer ohne Öffnung', '1+2)'],
+    ['zu viele schliessende Klammern', '(1+2))'],
+    ['leere Klammern', '()'],
+    ['zwei Operatoren hintereinander', '1+*2'],
+    ['Division durch null', '5/0'],
+    ['Division durch einen Ausdruck, der null ergibt', '5/(3-3)'],
+    ['null durch null', '0/0'],
+    ['doppeltes Prozentzeichen', '3500*60%%'],
+    ['wissenschaftliche Schreibweise im Ausdruck', '1e3+1'],
+    ['Buchstaben im Ausdruck', '5+abc'],
+    ['Ergebnis über dem sicheren Bereich', '99999999999*99999999999'],
+  ])('%s → null', (_name, input) => {
+    expect(parseAmount(input)).toBeNull()
+  })
+})
+
 describe('parseAmount: ungültige Eingaben', { tags: ['negativ'] }, () => {
   it.each([
     ['nur ein Minus', '-'],

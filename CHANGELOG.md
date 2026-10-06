@@ -7,6 +7,9 @@ die Versionen folgen [Semantic Versioning](https://semver.org/lang/de/).
 
 ### Hinzugefügt
 
+- Betragsfelder verstehen einfache Rechnungen mit `+`, `-`, `*`, `/`, Klammern und Prozent, zum Beispiel `3500*60%`.
+  Gespeichert wird das Ergebnis, auf ganze Rappen/Cent gerundet; ungültige Rechnungen werden wie ein ungültiger Betrag
+  abgelehnt (#88).
 - Statistik: neuer Abschnitt «Ausgleichszahlungen» mit Chart pro Person und Monat (bezahlt und erhalten) und Tabelle,
   damit man sieht, wie zuverlässig Schulden bezahlt wurden (#78).
 
