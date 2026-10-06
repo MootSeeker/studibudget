@@ -1,4 +1,24 @@
 {
+  "permissions": {
+    "allow": [
+      "Bash(npm run lint)",
+      "Bash(npm run typecheck)",
+      "Bash(npm run verify)",
+      "Bash(npm run build)",
+      "Bash(npm test)",
+      "Bash(npm run test:coverage)",
+      "Bash(npm run test:slow)",
+      "Bash(npm run check:build)",
+      "mcp__Claude_Browser__get_page_text",
+      "mcp__Claude_Browser__read_page",
+      "mcp__Claude_Browser__find",
+      "mcp__Claude_Browser__tabs_context",
+      "mcp__Claude_Browser__read_console_messages",
+      "mcp__Claude_Browser__read_network_requests",
+      "mcp__Claude_Browser__preview_list",
+      "mcp__Claude_Browser__preview_logs"
+    ]
+  },
   "hooks": {
     "PreToolUse": [
       {
