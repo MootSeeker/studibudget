@@ -5,7 +5,7 @@ import { applyBackup, backupFileName, exportBackup, parseBackup, type Backup } f
 import { StudiBudgetDB } from './db'
 import { completeOnboarding } from './onboarding'
 import { createStore, SYNCED_TABLES } from './store'
-import { newId } from './seed'
+import { newId, SETTINGS_ID } from './seed'
 import { defaultSemesters } from '../domain/period'
 import { buildSharedEqual } from '../domain/split'
 
@@ -133,6 +133,40 @@ describe('Export', () => {
     expect(JSON.stringify(b)).not.toContain('updatedAt')
     expect(b.data.settings).toHaveLength(1)
   })
+  it('Bankverbindung (#104, AK-5): ein Backup mit dem Feld übersteht Export und Import, eines ohne bleibt gültig', async () => {
+    const a = fresh()
+    await populate(a)
+    const bank = {
+      holder: 'Anna Muster',
+      street: 'Seestrasse 12',
+      zip: '8000',
+      town: 'Zürich',
+      country: 'CH' as const,
+      iban: 'CH9300762011623852957',
+    }
+    // ohne Feld: gültig, und nach dem Import steht keines da
+    const ohne = await roundtrip(a)
+    const c = fresh()
+    await applyBackup(c, ohne.backup)
+    expect((await c.settings.get(SETTINGS_ID))!.bank).toBeUndefined()
+    // mit Feld: exportiert, geprüft und wiederhergestellt
+    await createStore(a).patch('settings', SETTINGS_ID, { bank })
+    const mit = await roundtrip(a)
+    const b = fresh()
+    await applyBackup(b, mit.backup)
+    expect((await b.settings.get(SETTINGS_ID))!.bank).toEqual(bank)
+  })
+
+  it('Bankverbindung (#104): eine ungültige IBAN in der Datei wird abgelehnt', async () => {
+    const a = fresh()
+    await populate(a)
+    await createStore(a).patch('settings', SETTINGS_ID, {
+      bank: { holder: '', street: '', zip: '', town: '', country: 'CH', iban: 'keine-iban' },
+    })
+    const parsed = parseBackup(JSON.stringify(await exportBackup(a)))
+    expect(parsed.ok).toBe(false)
+  })
+
   it('Dateiname mit Datum', () => {
     expect(backupFileName(new Date(2026, 9, 3))).toBe('studibudget-backup-2026-10-03.json')
   })

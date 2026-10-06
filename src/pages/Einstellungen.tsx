@@ -5,6 +5,7 @@ import { SubNav } from '../components/SubNav'
 import { useSubNav, type SubNavItem } from '../lib/useSubNav'
 import { useSettings } from '../data/hooks'
 import { BackupSection } from './einstellungen/BackupSection'
+import { BankSection } from './einstellungen/BankSection'
 import { InstallSection } from './einstellungen/InstallSection'
 import { ResetSection } from './einstellungen/ResetSection'
 import {
@@ -131,6 +132,7 @@ export function Einstellungen() {
           <PersonsSection settings={settings} />
           <CarsSection settings={settings} />
           <SemesterSection settings={settings} />
+          <BankSection settings={settings} />
         </>
       )}
       {settings && tab === 'darstellung' && (

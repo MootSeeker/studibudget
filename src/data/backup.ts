@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import { isValidSwissIban } from '../domain/iban'
 import type { StudiBudgetDB } from './db'
 import { storeFor, SYNCED_TABLES, type Store, type SyncedTable } from './store'
 
@@ -49,6 +50,17 @@ const schemas = {
     backupReminderDays: z.union([z.literal(0), z.literal(7), z.literal(14), z.literal(30)]),
     lastBackupAt: z.string().nullable(),
     onboardingDone: z.boolean(),
+    // Bankverbindung für Rechnungen (#104): optional, damit alte Backups gültig bleiben
+    bank: z
+      .object({
+        holder: z.string().max(70),
+        street: z.string().max(70),
+        zip: z.string().max(16),
+        town: z.string().max(35),
+        country: z.enum(['CH', 'LI']),
+        iban: z.string().refine((v) => v === '' || isValidSwissIban(v)),
+      })
+      .optional(),
   }),
   persons: z.object({ ...common, name: name(60), active: z.boolean() }),
   areas: z.object({ ...common, name: name(60), order: z.number().int(), hidden: z.boolean() }),

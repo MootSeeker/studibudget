@@ -4,6 +4,7 @@ import { describe, expect, it } from 'vitest'
 import { generateDek } from '../crypto/keys'
 import { encryptRecord } from '../crypto/records'
 import { StudiBudgetDB } from '../data/db'
+import { defaultSettings, SETTINGS_ID } from '../data/seed'
 import { createStore } from '../data/store'
 import type { Transaction } from '../domain/types'
 import { SyncEngine } from './engine'
@@ -142,6 +143,33 @@ describe('Sync', () => {
       .join('')
     expect(stored).not.toContain('geheime')
     expect(JSON.stringify([...server.rows.values()])).not.toContain('Notiz')
+  })
+
+  it('Bankverbindung (#104, AK-6): die IBAN liegt nie im Klartext auf dem Server und kommt auf dem anderen Gerät an', async () => {
+    const server = new FakeServer()
+    const dek = await generateDek()
+    const a = await device(server, dek)
+    const b = await device(server, dek, () => 2_000_000)
+    const bank = {
+      holder: 'Streng Geheim',
+      street: 'Geheimweg 1',
+      zip: '8000',
+      town: 'Zürich',
+      country: 'CH' as const,
+      iban: 'CH9300762011623852957',
+    }
+    await a.store.put('settings', { ...defaultSettings('CH', 'wg', false), bank })
+    await a.engine.syncNow()
+    const wire = JSON.stringify([...server.rows.values()])
+    const decoded = [...server.rows.values()]
+      .map((r) => Buffer.from(r.ciphertext, 'base64').toString('latin1'))
+      .join('')
+    for (const secret of ['CH9300762011623852957', 'Geheim', 'Zürich', 'Geheimweg']) {
+      expect(wire).not.toContain(secret)
+      expect(decoded).not.toContain(secret)
+    }
+    await b.engine.syncNow()
+    expect((await b.db.settings.get(SETTINGS_ID))?.bank).toEqual(bank)
   })
 
   it('Datensätze mit falschem Schlüssel werden übersprungen, der Rest wird übernommen', async () => {

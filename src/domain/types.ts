@@ -24,6 +24,17 @@ export interface Semester {
   endMonth: number
 }
 
+/** Bankverbindung für Rechnungen (Schweiz und Liechtenstein). Alle Angaben sind freiwillig; Leeres ist ''. */
+export interface BankDetails {
+  holder: string
+  street: string
+  zip: string
+  town: string
+  country: 'CH' | 'LI'
+  /** Normalisiert: ohne Leerzeichen, Grossbuchstaben (siehe domain/iban.ts). */
+  iban: string
+}
+
 export interface Settings extends Synced {
   country: Country
   living: Living
@@ -35,6 +46,8 @@ export interface Settings extends Synced {
   backupReminderDays: 0 | 7 | 14 | 30
   lastBackupAt: string | null
   onboardingDone: boolean
+  /** Optional, damit alte Daten und Backups gültig bleiben. */
+  bank?: BankDetails
 }
 
 export interface Person extends Synced {
