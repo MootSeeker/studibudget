@@ -31,6 +31,27 @@ const gitCommand = (name) => new RegExp(`^git(?:\\s+-\\S+(?:\\s+[^-\\s]\\S*)?)*\
 const afterGit = (name) =>
   segments.map((s) => s.match(gitCommand(name))?.[1]).filter((rest) => rest !== undefined)
 
+const gitRefExists = (ref) =>
+  spawnSync('git', ['show-ref', '--verify', '--quiet', ref]).status === 0
+
+/**
+ * Überträgt `git push <rest>` nur Tags? Ja bei `--tags` ohne weitere Refspecs oder wenn jede genannte Refspec ein
+ * vorhandener lokaler Tag ist, der nicht zugleich ein Branch gleichen Namens ist.
+ */
+const pushesOnlyTags = (rest) => {
+  const args = rest.trim().split(/\s+/).filter(Boolean)
+  const positional = args.filter((a) => !a.startsWith('-'))
+  if (args.includes('--tags')) return positional.length <= 1
+  const refspecs = positional.slice(1) // das erste ist das Ziel (origin)
+  return (
+    refspecs.length > 0 &&
+    refspecs.every((r) => {
+      const name = r.replace(/^refs\/tags\//, '')
+      return gitRefExists(`refs/tags/${name}`) && !gitRefExists(`refs/heads/${name}`)
+    })
+  )
+}
+
 const pushes = afterGit('push')
 const commits = afterGit('commit')
 const writesGitHub = segments.some((s) => /^gh\s+(?:pr|issue)\s+(?:create|edit|comment)\b/.test(s))
@@ -59,9 +80,14 @@ if (pushes.length) {
     if (/(^|\s|:)(main|master)(\s|$)/.test(rest))
       block('Nicht auf main pushen, Branch und Pull Request nutzen.')
   }
-  const branch = spawnSync('git', ['branch', '--show-current'], { encoding: 'utf8' }).stdout.trim()
-  if (['main', 'master'].includes(branch))
-    block('Aktueller Branch ist main: zuerst einen Themen-Branch anlegen.')
+  // Ein Push, der nur vorhandene Tags überträgt (Release), berührt keinen Branch und ist auch von main aus erlaubt.
+  if (!pushes.every(pushesOnlyTags)) {
+    const branch = spawnSync('git', ['branch', '--show-current'], {
+      encoding: 'utf8',
+    }).stdout.trim()
+    if (['main', 'master'].includes(branch))
+      block('Aktueller Branch ist main: zuerst einen Themen-Branch anlegen.')
+  }
 }
 
 if (commits.length || writesGitHub) {
