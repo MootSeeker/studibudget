@@ -2,7 +2,7 @@
 typ: referenz
 bereich: betrieb
 status: aktiv
-aktualisiert: 2026-10-05
+aktualisiert: 2026-10-06
 repo-quelle:
   - .github/workflows/deploy.yml
   - docs/start-checkliste.md
@@ -21,7 +21,7 @@ tags:
 - **Supabase-Gratisstufe:** pausiert nach längerer Inaktivität; die App läuft lokal weiter, synchronisiert aber nicht.
 - **Auth-Mails:** Standardversand begrenzt, vor dem Start eigener SMTP ([[Offene Punkte]]).
 - **Weitere Workflows:** `mutation.yml` (Mutationstests, montags 02:00 UTC und auf Abruf, rund 3 Stunden) und `referenzbilder.yml` (Referenzbilder der visuellen Regression erzeugen, auf Abruf).
-- **Pflicht-Checks:** Es gibt keinen Branch-Schutz; vor dem Merge müssen alle Jobs grün sein (Vereinbarung).
+- **Pflicht-Checks:** Es gibt keinen Branch-Schutz; vor dem Merge müssen alle Jobs grün sein (Vereinbarung). Ausnahmen: **Draft-PRs** lassen die CI aus (sie läuft, sobald der PR «ready for review» ist) und Änderungen nur an `vault/**`, `docs/**`, `CLAUDE.md` und `.claude/**` lösen keine CI aus. Vor dem Merge eines Code-PRs also erst aus dem Draft nehmen und die CI abwarten.
 - **Releases:** `v1.0.0` (2026-10-04), `v1.1.0` und `v1.2.0` (2026-10-05), jeweils Tag plus GitHub-Release mit den Notizen aus `CHANGELOG.md`. Ablauf: Version per PR anheben (`npm version … --no-git-tag-version`), nach dem Merge Tag auf den Merge-Commit setzen.
 - **CI-Zwischenspeicher:** Docker-Images des lokalen Supabase (Tar im Actions-Cache, Schlüssel aus Lock-Datei und `supabase/config.toml`) und Playwright-Browser; Wirkung noch zu messen ([[Offene Punkte]], #62). Kosten: keine, das Repo ist öffentlich.
 - **Actions** laufen auf Node 24 (checkout 7, setup-node 7, cache 6, upload-artifact 7, download-artifact 8, pages 5). Verbleibende `punycode`-/`Buffer()`-Hinweise stammen aus `deploy-pages` und `download-artifact`, nicht aus unserem Code.

@@ -19,6 +19,7 @@
     "test:db": "vitest run --project db",
     "check:build": "node scripts/check-build.mjs",
     "check:launch": "node scripts/check-launch.mjs",
+    "check:vault": "node scripts/check-vault.mjs",
     "test:slow": "vitest run --project slow",
     "test:prop": "vitest run --project unit --tags-filter property",
     "test:mutation": "stryker run",
