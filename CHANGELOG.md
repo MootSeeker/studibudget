@@ -5,6 +5,8 @@ die Versionen folgen [Semantic Versioning](https://semver.org/lang/de/).
 
 ## [Unreleased]
 
+## [1.3.0] – 2026-10-06
+
 ### Hinzugefügt
 
 - Betragsfelder verstehen einfache Rechnungen mit `+`, `-`, `*`, `/`, Klammern und Prozent, zum Beispiel `3500*60%`.
@@ -20,9 +22,6 @@ die Versionen folgen [Semantic Versioning](https://semver.org/lang/de/).
   Reiter «Kategorien» (#84).
 - Einstellungen: gegliedert in die Reiter Haushalt, Darstellung, Daten und Konto (#84).
 - Eingabe: die Buchungsliste klappt ihre Bereiche ein, wenn ein Monat mehr als 15 Buchungen hat (#84).
-
-### Geändert
-
 - CI: GitHub-Actions auf Versionen mit Node 24 gehoben (checkout 7, setup-node 7, cache 6, upload-artifact 7,
   download-artifact 8, upload-pages-artifact 5, deploy-pages 5); das beseitigt die Node-20-Warnung und die
   `punycode`/`url.parse`-Hinweise.
@@ -30,6 +29,8 @@ die Versionen folgen [Semantic Versioning](https://semver.org/lang/de/).
   über `overrides` auf aktuelle Versionen; `npm audit` meldet keine Schwachstellen mehr.
 - Lint: alle elf Warnungen behoben (Monatsnamen und `saveSettings` in eigene Dateien, `useNow` statt `new Date()` beim
   Zeichnen, kein `setState` im Effekt der Anmeldung).
+- Entwicklung: Node-Version steht in `.nvmrc` (24), `engines` verlangt mindestens 24.15; die CI liest die Version von dort (#100).
+- Entwicklung: Issue-Formulare mit Akzeptanzkriterien, Pull-Request-Vorlage, `CLAUDE.md` mit Arbeitsablauf, Reviewer-Agent und Skills sowie ein leichter Doku-Workflow; Draft-PRs und reine Doku-Änderungen lösen die schwere CI nicht aus (#90 bis #99).
 
 ## [1.2.0] – 2026-10-05
 
@@ -109,7 +110,8 @@ Erste Veröffentlichung.
 - Fixkosten-Vorlagen, Intervalle, Rückstellungs-Hinweis, mehrere Autos, responsives Layout.
 - Datenschutzerklärung und Impressum.
 
-[Unreleased]: https://github.com/MootSeeker/studibudget/compare/v1.2.0...HEAD
+[Unreleased]: https://github.com/MootSeeker/studibudget/compare/v1.3.0...HEAD
+[1.3.0]: https://github.com/MootSeeker/studibudget/compare/v1.2.0...v1.3.0
 [1.2.0]: https://github.com/MootSeeker/studibudget/compare/v1.1.0...v1.2.0
 [1.1.0]: https://github.com/MootSeeker/studibudget/compare/v1.0.0...v1.1.0
 [1.0.0]: https://github.com/MootSeeker/studibudget/releases/tag/v1.0.0
