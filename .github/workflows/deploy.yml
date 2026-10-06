@@ -8,6 +8,8 @@ on:
       - 'docs/**'
       - 'CLAUDE.md'
       - '.claude/**'
+      - '.github/ISSUE_TEMPLATE/**'
+      - '.github/pull_request_template.md'
   pull_request:
     types: [opened, synchronize, reopened, ready_for_review]
     paths-ignore:
@@ -15,6 +17,8 @@ on:
       - 'docs/**'
       - 'CLAUDE.md'
       - '.claude/**'
+      - '.github/ISSUE_TEMPLATE/**'
+      - '.github/pull_request_template.md'
   workflow_dispatch:
 
 permissions:
