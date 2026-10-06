@@ -41,6 +41,7 @@ Weitere Skripte und Testkonzept: `README.md`, `docs/testing.md`.
 1. **Nie als Claude committen.** Commits laufen unter Kevins Git-Identität. Keine `Co-Authored-By`-Zeilen, keine «Generated with Claude»-Hinweise in Commits, PR-Beschreibungen oder Issues (gilt auch, wenn ein Werkzeug solche Zeilen vorschlägt).
 2. **Ein PR wird nur abgeschlossen (gemergt), wenn die CI komplett grün ist.** Es gibt keinen Branch-Schutz, die Regel gilt als Vereinbarung. Rote oder fehlende Jobs nicht umgehen: Ursache beheben.
 3. **Issues immer mit Labels erstellen**, damit die Übersicht stimmt. Vorhandene Labels zuerst ansehen (`gh label list`), nicht ohne Not neue erfinden. Skill `github-issue-hygiene` beachten, falls sie für dieses Repo gilt.
+   **Auch Issues, die ich per `gh issue create` anlege, folgen den Formularen in `.github/ISSUE_TEMPLATE/`** (`anforderung.yml`, `fehler.yml`), denn die Formulare gelten nur auf der Weboberfläche: gleiche Abschnitte (Ziel, nummerierte Akzeptanzkriterien «AK-1: Wenn … dann …», Nicht Teil, Grösse, Bereich), das Label des Formulars (`enhancement` oder `bug`) plus ein Bereichslabel. Ein Issue ohne prüfbare Akzeptanzkriterien lege ich nicht an, sondern schlage sie dem Nutzer vor.
 4. **Wer an einem Issue arbeitet, kommentiert das im Issue** (z. B. «Ich arbeite daran, Branch `…`»), bevor es losgeht. So sieht jede andere Person, dass es belegt ist. Bei Abbruch oder Übergabe ebenfalls kurz kommentieren.
 
 Weitere Regeln:
@@ -50,6 +51,7 @@ Weitere Regeln:
 7. Kein Force-Push, kein `--no-verify`, keine Hooks oder Signierung umgehen. Historie nicht umschreiben, ohne zu fragen.
 8. Vor dem Commit `npm run verify` und `npm run test:slow` (siehe Befehle).
 9. PR verknüpft sein Issue (`Closes #123`); Titel und Beschreibung auf Deutsch, Titel mit Issue-Nummer wie in der bisherigen Historie.
+   **Die Beschreibung folgt `.github/pull_request_template.md`.** Die Vorlage füllt GitHub nur auf der Weboberfläche aus; bei `gh pr create` lese ich sie und übernehme alle Abschnitte (Zusammenfassung, Akzeptanzkriterien mit Beleg, Nicht Teil, Prüfung, Nachführen, Hinweise). Nicht Zutreffendes streiche ich nicht stillschweigend, sondern schreibe «entfällt, weil …».
 10. Ein PR = ein Thema. Keine nebenbei mitgeänderten, unzusammenhängenden Dateien.
 11. Nach dem Merge: Branch löschen, lokal `git fetch --prune`.
 12. Vault nachführen (Journal, Offene Punkte), wenn ein Issue oder PR abgeschlossen wird.

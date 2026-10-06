@@ -13,7 +13,7 @@ Voraussetzung: `npm run verify` und `npm run test:slow` waren lokal grün. Sonst
    - `CHANGELOG.md` unter `[Unreleased]`, wenn sich für Nutzende etwas ändert (mit Issue-Nummer).
    - Vault: Journal von heute in `vault/60 Journal/`, `vault/10 Projekt/Offene Punkte.md` und, falls vorhanden, die Notiz in `vault/50 Issues/`. Bei jeder Notiz `aktualisiert` nachziehen. `npm run check:vault` muss grün sein.
 2. **Commit** ohne Claude-Kennzeichnung (Regel 1), Nachricht auf Deutsch mit Issue-Nummer wie in der bisherigen Historie. Dann den Branch mit Upstream pushen (`-u origin HEAD`).
-3. **PR als Draft öffnen** (`gh pr create --draft`): Titel mit Issue-Nummer, Beschreibung mit `Closes #$ARGUMENTS`, gleiche Labels wie das Issue. Als Draft läuft die schwere CI noch nicht (siehe `vault/40 Betrieb/Betrieb.md`).
+3. **PR als Draft öffnen** (`gh pr create --draft`): Titel mit Issue-Nummer, Beschreibung nach `.github/pull_request_template.md` (mit `Closes #$ARGUMENTS`), gleiche Labels wie das Issue. Als Draft läuft die schwere CI noch nicht (siehe `vault/40 Betrieb/Betrieb.md`).
 4. **Reviewer** (nur bei Grösse Mittel und Gross; bei Klein überspringen): Subagent `reviewer` mit Issue-Nummer und PR-Nummer aufrufen. Sage ihm, dass der PR ein Draft ist und die CI erst nach der Freigabe läuft, damit er sie nicht bewertet.
    - **NACHARBEIT:** Befunde beheben, Schritt 1 und 2 wiederholen, Reviewer erneut. Höchstens zwei Runden, danach den Nutzer fragen.
    - **BEREIT:** weiter.
