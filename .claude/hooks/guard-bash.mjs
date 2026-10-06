@@ -1,4 +1,7 @@
 // PreToolUse (Bash): setzt die Git-Regeln aus CLAUDE.md technisch durch.
+// Geprüft werden nur echte Befehle: Heredoc-Körper und Text in Anführungszeichen zählen nicht als Befehl,
+// sonst schlägt der Wächter bei Dateiinhalten und Beschreibungen an. Die Claude-Kennzeichnung wird dagegen
+// im ganzen Befehl gesucht, weil Commit-Nachrichten oft in Anführungszeichen oder Heredocs stehen.
 import { readFileSync } from 'node:fs'
 import { spawnSync } from 'node:child_process'
 
@@ -10,25 +13,47 @@ const block = (reason) => {
   process.exit(2)
 }
 
-const isPush = /\bgit\s+(?:-\S+\s+)*push\b/.test(cmd)
-const isCommit = /\bgit\s+(?:-\S+\s+)*commit\b/.test(cmd)
-const writesGitHub = /\bgh\s+(?:pr|issue)\s+(?:create|edit|comment)\b/.test(cmd)
+// Heredoc-Körper entfernen (die Zeile mit << bleibt), danach Anführungszeichen-Inhalt leeren
+const skeleton = cmd
+  .replace(/<<-?[ \t]*(['"]?)(\w+)\1([^\n]*)\n[\s\S]*?\n[ \t]*\2(?!\w)/g, '$3')
+  .replace(/'[^']*'/g, "''")
+  .replace(/"(?:[^"\\]|\\.)*"/g, '""')
 
-if ((isCommit || isPush) && /--no-verify\b/.test(cmd))
-  block('Hooks überspringen ist nicht erlaubt.')
-if (isCommit && /--no-gpg-sign\b/.test(cmd)) block('Signierung darf nicht umgangen werden.')
+// Einzelne Befehle: getrennt an &&, ||, ;, | und Zeilenumbruch; führende Variablen und Klammern abschneiden
+const segments = skeleton.split(/&&|\|\||[;|\n]/).map((s) =>
+  s
+    .trim()
+    .replace(/^(?:\w+=\S*\s+)+/, '')
+    .replace(/^[({]\s*/, ''),
+)
 
-if (isPush) {
-  if (/(\s--force\b|\s--force-with-lease\b|\s-f\b|\s\+\S+)/.test(cmd))
-    block('Force-Push ist nicht erlaubt.')
-  if (/(\s|:)(main|master)(\s|$)/.test(cmd))
-    block('Nicht auf main pushen, Branch und Pull Request nutzen.')
+const gitCommand = (name) => new RegExp(`^git(?:\\s+-\\S+(?:\\s+[^-\\s]\\S*)?)*\\s+${name}\\b(.*)$`)
+const afterGit = (name) =>
+  segments.map((s) => s.match(gitCommand(name))?.[1]).filter((rest) => rest !== undefined)
+
+const pushes = afterGit('push')
+const commits = afterGit('commit')
+const writesGitHub = segments.some((s) => /^gh\s+(?:pr|issue)\s+(?:create|edit|comment)\b/.test(s))
+
+for (const rest of [...pushes, ...commits]) {
+  if (/(^|\s)--no-verify(\s|$)/.test(rest)) block('Hooks überspringen ist nicht erlaubt.')
+}
+if (commits.some((rest) => /(^|\s)--no-gpg-sign(\s|$)/.test(rest)))
+  block('Signierung darf nicht umgangen werden.')
+
+if (pushes.length) {
+  for (const rest of pushes) {
+    if (/(^|\s)(--force(-with-lease)?(=\S+)?|-[a-zA-Z]*f[a-zA-Z]*|\+\S+)(\s|$)/.test(rest))
+      block('Force-Push ist nicht erlaubt.')
+    if (/(^|\s|:)(main|master)(\s|$)/.test(rest))
+      block('Nicht auf main pushen, Branch und Pull Request nutzen.')
+  }
   const branch = spawnSync('git', ['branch', '--show-current'], { encoding: 'utf8' }).stdout.trim()
   if (['main', 'master'].includes(branch))
     block('Aktueller Branch ist main: zuerst einen Themen-Branch anlegen.')
 }
 
-if (isCommit || writesGitHub) {
+if (commits.length || writesGitHub) {
   if (
     /co-authored-by/i.test(cmd) ||
     /generated with\s*\[?claude/i.test(cmd) ||
