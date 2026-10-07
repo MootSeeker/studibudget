@@ -7,6 +7,7 @@ die Versionen folgen [Semantic Versioning](https://semver.org/lang/de/).
 
 ### Hinzugefügt
 
+- Community-Standards: `CODE_OF_CONDUCT.md`, `CONTRIBUTING.md`, `SECURITY.md` und `ACCESSIBILITY.md`.
 - Einstellungen: neuer Abschnitt «Bankverbindung» im Reiter «Haushalt» mit Kontoinhaber/in, Adresse und IBAN (Schweiz
   oder Liechtenstein, mit Prüfsumme). Alle Angaben sind freiwillig; sie werden verschlüsselt synchronisiert und stehen
   im unverschlüsselten Backup. Grundlage für Rechnungen aus dem Ausgleich (#104, Teil von #65).
