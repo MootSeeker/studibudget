@@ -1,4 +1,7 @@
+import { readFileSync } from 'node:fs'
+import axe from 'axe-core'
 import { render, screen } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import { MemoryRouter, Route, Routes } from 'react-router'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { db } from '../data/db'
@@ -89,4 +92,44 @@ describe('Rechnung', () => {
     ;(await screen.findByRole('button', { name: /Drucken oder als PDF/ })).click()
     expect(print).toHaveBeenCalled()
   })
+
+  it('Navigation und Knöpfe fehlen im Ausdruck, die Seite ist auf A4 eingestellt (AK-6)', async () => {
+    const id = await setup(true)
+    renderAt(id)
+    const bar = (await screen.findByRole('button', { name: /Drucken oder als PDF/ })).parentElement!
+    expect(bar.className).toContain('print:hidden')
+    const css = readFileSync('src/index.css', 'utf8')
+    expect(css).toMatch(/@media print\s*{[^}]*@page\s*{[^}]*size:\s*A4/s)
+    const layout = readFileSync('src/components/Layout.tsx', 'utf8')
+    expect(layout.match(/print:hidden/g)!.length).toBeGreaterThanOrEqual(4)
+  })
+
+  it('ist mit der Tastatur bedienbar (AK-8)', async () => {
+    const id = await setup(true)
+    const print = vi.spyOn(window, 'print').mockImplementation(() => {})
+    renderAt(id)
+    await screen.findByText('Miete')
+    const user = userEvent.setup()
+    await user.tab()
+    expect(screen.getByRole('link', { name: 'Zurück zum Ausgleich' })).toHaveFocus()
+    await user.tab()
+    expect(screen.getByRole('button', { name: /Drucken oder als PDF/ })).toHaveFocus()
+    await user.keyboard('{Enter}')
+    expect(print).toHaveBeenCalled()
+  })
+
+  it.each([true, false])(
+    'hat keine axe-Verstösse (Bankverbindung: %s) (AK-8)',
+    async (withBank) => {
+      const id = await setup(withBank)
+      const { container } = renderAt(id)
+      await screen.findByText('Miete')
+      // Kontraste kann jsdom nicht berechnen; die übrigen Regeln (WCAG A/AA) gelten.
+      const result = await axe.run(container, {
+        runOnly: ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa'],
+        rules: { 'color-contrast': { enabled: false } },
+      })
+      expect(result.violations.map((v) => v.id)).toEqual([])
+    },
+  )
 })
