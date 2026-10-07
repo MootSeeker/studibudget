@@ -1,7 +1,7 @@
 ---
 typ: hub
 bereich: meta
-aktualisiert: 2026-10-06
+aktualisiert: 2026-10-07
 tags:
   - typ/hub
 ---
@@ -26,4 +26,4 @@ Dieser Vault hält das Wissen _um_ den Code: Entscheide, Betrieb, Issue-Kontext,
 | Qualitätssicherung und Zeitfehler | [[Tests und Zeitfehler]] |
 | Betrieb: Supabase, Deploy, Start | [[Betrieb]] |
 | Entscheide | [[Entscheid - Kassensicht beim Ausgleich]], [[Entscheid - Offline-first und Ende-zu-Ende]], [[Entscheid - Vorlagen statt Budget im Intervall]], [[Entscheid - Reiter statt langer Seiten]] |
-| Verlauf | [[2026-10-04]], [[2026-10-05]], [[2026-10-06]] |
+| Verlauf | [[2026-10-04]], [[2026-10-05]], [[2026-10-06]], [[2026-10-07]] |

@@ -63,3 +63,10 @@ body {
     'Segoe UI',
     sans-serif;
 }
+
+@media print {
+  @page {
+    size: A4;
+    margin: 15mm;
+  }
+}

@@ -68,16 +68,16 @@ export function Layout() {
     `rounded-md px-3 py-3 text-sm md:py-2 ${isActive ? 'bg-accent text-accent-text' : 'hover:bg-surface'}`
 
   return (
-    <div className="flex min-h-screen flex-col md:flex-row">
+    <div className="flex min-h-screen flex-col md:flex-row print:block">
       <button
         type="button"
-        className="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-30 focus:rounded-md focus:bg-accent focus:px-4 focus:py-2 focus:text-accent-text"
+        className="print:hidden sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-30 focus:rounded-md focus:bg-accent focus:px-4 focus:py-2 focus:text-accent-text"
         onClick={() => main.current?.focus()}
       >
         Zum Inhalt springen
       </button>
 
-      <header className="sticky top-0 z-10 flex items-center justify-between border-b border-border bg-bg px-4 py-2 md:hidden">
+      <header className="sticky top-0 z-10 flex items-center justify-between border-b border-border bg-bg px-4 py-2 md:hidden print:hidden">
         <span className="text-lg font-bold">StudiBudget</span>
         <button
           ref={mobileToggle}
@@ -94,7 +94,7 @@ export function Layout() {
       <nav
         id="hauptnavigation"
         aria-label="Hauptnavigation"
-        className={`${menuOpen ? 'flex' : 'hidden'} flex-col gap-1 border-b border-border p-3 ${collapsed ? 'md:hidden' : 'md:flex'} md:sticky md:top-0 md:h-screen md:w-56 md:shrink-0 md:overflow-y-auto md:border-r md:border-b-0 lg:w-60`}
+        className={`print:hidden ${menuOpen ? 'flex' : 'hidden'} flex-col gap-1 border-b border-border p-3 ${collapsed ? 'md:hidden' : 'md:flex'} md:sticky md:top-0 md:h-screen md:w-56 md:shrink-0 md:overflow-y-auto md:border-r md:border-b-0 lg:w-60`}
       >
         <span className="hidden px-3 py-2 text-lg font-bold md:mb-2 md:block">StudiBudget</span>
         {pages.map((p) => (
@@ -134,7 +134,7 @@ export function Layout() {
         </div>
       </nav>
 
-      <main ref={main} tabIndex={-1} className="min-w-0 flex-1 p-4 outline-none md:p-8">
+      <main ref={main} tabIndex={-1} className="min-w-0 flex-1 p-4 outline-none md:p-8 print:p-0">
         {collapsed && (
           <button
             type="button"
@@ -146,7 +146,9 @@ export function Layout() {
             Menü einblenden
           </button>
         )}
-        <BackupReminder />
+        <div className="print:hidden">
+          <BackupReminder />
+        </div>
         <Outlet />
       </main>
     </div>
