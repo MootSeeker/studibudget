@@ -13,7 +13,7 @@ tags:
 # Offene Punkte
 
 Offene GitHub-Issues (Stand 2026-10-06): #48 (Analyse `records_seq`), #65 (Ausgleichsrechnungen mit QR; aufgeteilt in #104 Bankverbindung, #105 Druckansicht, #106 QR-Code),
-#72 (CI-Artefakte aufs NAS), #76 (Synchronisation von Informationen), #104 bis #106 (siehe #65; #104 als PR in Arbeit). Offen ist
+#72 (CI-Artefakte aufs NAS), #76 (Synchronisation von Informationen), #104 bis #106 (siehe #65; #104 erledigt, #105 als PR in Arbeit). Offen ist
 ausserdem der **öffentliche Start**. Die vollständige Liste steht in `docs/start-checkliste.md`; hier der Stand:
 
 ## Blocker (Kevin)

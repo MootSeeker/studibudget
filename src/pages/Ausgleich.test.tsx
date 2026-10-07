@@ -95,6 +95,20 @@ describe('Salden', () => {
     ).not.toBeInTheDocument()
   })
 
+  it('«Rechnung erstellen» gibt es nur bei positivem Saldo (AK-1)', async () => {
+    const [anna, ben] = [await personId('Anna'), await personId('Ben')]
+    await book(6000, 'me', ['me', anna]) // Anna +30
+    await book(4000, ben, ['me', ben]) // Ben −20
+    await setup()
+    await waitFor(() =>
+      expect(within(card('Anna')).getByRole('link', { name: /Rechnung/ })).toHaveAttribute(
+        'href',
+        `/ausgleich/rechnung/${anna}`,
+      ),
+    )
+    expect(within(card('Ben')).queryByRole('link', { name: /Rechnung/ })).not.toBeInTheDocument()
+  })
+
   it('Partner/in mit 60/40: sie schuldet mir ihren Anteil', async () => {
     await onboard({ ...wg, living: 'partner', persons: ['Mia'], partnerSharePct: 60 })
     const mia = await personId('Mia')

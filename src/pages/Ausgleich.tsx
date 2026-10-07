@@ -225,6 +225,15 @@ export function Ausgleich() {
                   >
                     {statement(p.id, c)}
                   </p>
+                  {c > 0 && (
+                    <Link
+                      className="mr-4 text-sm text-accent underline"
+                      to={`/ausgleich/rechnung/${p.id}`}
+                      aria-label={`Rechnung für ${p.name} erstellen`}
+                    >
+                      Rechnung erstellen
+                    </Link>
+                  )}
                   {c !== 0 && (
                     <button
                       className="text-sm text-accent underline"

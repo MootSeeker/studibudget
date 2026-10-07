@@ -11,6 +11,9 @@ die Versionen folgen [Semantic Versioning](https://semver.org/lang/de/).
 - Einstellungen: neuer Abschnitt «Bankverbindung» im Reiter «Haushalt» mit Kontoinhaber/in, Adresse und IBAN (Schweiz
   oder Liechtenstein, mit Prüfsumme). Alle Angaben sind freiwillig; sie werden verschlüsselt synchronisiert und stehen
   im unverschlüsselten Backup. Grundlage für Rechnungen aus dem Ausgleich (#104, Teil von #65).
+- Ausgleich: bei positivem Saldo der Knopf «Rechnung erstellen». Die Rechnung listet die Positionen und bereits erfasste
+  Zahlungen, nennt das Total und deine Bankverbindung und lässt sich als A4-Druckansicht drucken oder als PDF speichern
+  (#105, Teil von #65).
 
 ## [1.3.0] – 2026-10-06
 

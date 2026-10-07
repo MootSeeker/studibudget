@@ -4,6 +4,7 @@ import { Layout } from './components/Layout'
 import { Budget } from './pages/Budget'
 import { LegalPage } from './legal/LegalPage'
 import { Ausgleich } from './pages/Ausgleich'
+import { Rechnung } from './pages/Rechnung'
 import { Konten } from './pages/Konten'
 import { Statistik } from './pages/Statistik'
 import { Monat } from './pages/Monat'
@@ -37,6 +38,7 @@ export default function App() {
               element={PAGE_ELEMENTS[p.path] ?? <Platzhalter titel={p.label} />}
             />
           ))}
+          <Route path="/ausgleich/rechnung/:personId" element={<Rechnung />} />
           <Route path="/datenschutz" element={PAGE_ELEMENTS['/datenschutz']} />
           <Route path="/impressum" element={PAGE_ELEMENTS['/impressum']} />
         </Route>
