@@ -14,7 +14,12 @@ Voraussetzung: `npm run verify` und `npm run test:slow` waren lokal grün. Sonst
    - Vault: Journal von heute in `vault/60 Journal/`, `vault/10 Projekt/Offene Punkte.md` und, falls vorhanden, die Notiz in `vault/50 Issues/`. Bei jeder Notiz `aktualisiert` nachziehen. `npm run check:vault` muss grün sein.
 2. **Commit** ohne Claude-Kennzeichnung (Regel 1), Nachricht auf Deutsch mit Issue-Nummer wie in der bisherigen Historie. Dann den Branch mit Upstream pushen (`-u origin HEAD`).
 3. **PR als Draft öffnen** (`gh pr create --draft`): Titel mit Issue-Nummer, Beschreibung nach `.github/pull_request_template.md` (mit `Closes #$ARGUMENTS`), gleiche Labels wie das Issue. Als Draft läuft die schwere CI noch nicht (siehe `vault/40 Betrieb/Betrieb.md`).
-4. **Reviewer** (nur bei Grösse Mittel und Gross; bei Klein überspringen): Subagent `reviewer` mit Issue-Nummer und PR-Nummer aufrufen. Sage ihm, dass der PR ein Draft ist und die CI erst nach der Freigabe läuft, damit er sie nicht bewertet.
+4. **Reviewer** (nur bei Grösse Mittel und Gross; bei Klein überspringen): Subagent `reviewer` aufrufen und ihm mitgeben:
+   - Issue-Nummer und PR-Nummer,
+   - den Plan-Kommentar (`## Plan`) aus dem Issue als Text,
+   - das Ergebnis des letzten lokalen Testlaufs, grün oder rot pro Befehl (`verify`, `test:slow`).
+
+   **Modell:** Trägt das Issue das Label `sync` oder ändert der Diff Dateien in `src/crypto/` oder `src/sync/` (`gh pr diff <PR> --name-only`), dann den `reviewer` mit dem Modell `opus` aufrufen; sonst ohne Modellangabe (Sonnet aus dem Frontmatter).
    - **NACHARBEIT:** Befunde beheben, Schritt 1 und 2 wiederholen, Reviewer erneut. Höchstens zwei Runden, danach den Nutzer fragen.
    - **BEREIT:** weiter.
 5. **Freigeben:** `gh pr ready <PR>`. Jetzt startet die volle CI.
