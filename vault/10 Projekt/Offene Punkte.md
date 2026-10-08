@@ -12,7 +12,7 @@ tags:
 
 # Offene Punkte
 
-Offene GitHub-Issues (Stand 2026-10-08): #48 (Analyse `records_seq`), #72 (CI-Artefakte aufs NAS), #120 (IBAN-Meldung; PR in Arbeit), #121 (QR-Code von der Banking-App nicht akzeptiert), #76 (Synchronisation von Informationen), #111 (CI-Sammelstatus, Zeitfehler-Wächter, Referenzbilder), #112 und #113 (Konten: Zeitdarstellung, Verlauf-Chart).
+Offene GitHub-Issues (Stand 2026-10-08): #48 (Analyse `records_seq`), #72 (CI-Artefakte aufs NAS), #121 (QR-Code von der Banking-App nicht akzeptiert; PR in Arbeit, Scan mit echter IBAN steht aus), #76 (Synchronisation von Informationen), #111 (CI-Sammelstatus, Zeitfehler-Wächter, Referenzbilder), #112 und #113 (Konten: Zeitdarstellung, Verlauf-Chart).
 Offen ist ausserdem der **öffentliche Start**. Die vollständige Liste steht in `docs/start-checkliste.md`; hier der Stand:
 
 ## Blocker (Kevin)

@@ -183,5 +183,25 @@ describe('Rechnung', () => {
       expect(screen.queryByRole('region', { name: 'Zahlteil' })).toBeNull()
       expect(screen.getByText(/nichts zu zahlen/)).toBeInTheDocument()
     })
+
+    it('AK-4 (#121): bei der Beispiel-IBAN steht ein Hinweis, der nicht gedruckt wird; bei anderer IBAN nicht', async () => {
+      const id = await setup(true)
+      renderAt(id)
+      const note = await screen.findByText(/Beispiel-IBAN/)
+      expect(note.className).toContain('print:hidden')
+      expect(screen.getByRole('region', { name: 'Zahlteil' })).toBeInTheDocument()
+    })
+
+    it('AK-4 (#121): eine andere IBAN löst keinen Hinweis aus', async () => {
+      const id = await setup(true)
+      const s = (await db.settings.toArray())[0]
+      await store.put('settings', {
+        ...s,
+        bank: { ...s.bank!, iban: 'CH5604835012345678009' },
+      } as never)
+      renderAt(id)
+      await screen.findByRole('region', { name: 'Zahlteil' })
+      expect(screen.queryByText(/Beispiel-IBAN/)).toBeNull()
+    })
   })
 })

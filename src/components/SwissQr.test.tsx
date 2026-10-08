@@ -1,4 +1,5 @@
 import { render } from '@testing-library/react'
+import jsQR from 'jsqr'
 import qrcode from 'qrcode-generator'
 import { describe, expect, it, vi } from 'vitest'
 import { SwissQr } from './SwissQr'
@@ -42,5 +43,34 @@ describe('SwissQr', () => {
     render(<SwissQr payload={PAYLOAD} label="QR-Code" />)
     expect(f).not.toHaveBeenCalled()
     vi.unstubAllGlobals()
+  })
+
+  it.each([
+    ['ohne Umlaute', PAYLOAD.replace('Zürich', 'Zuerich')],
+    [
+      'mit Umlauten (UTF-8)',
+      'SPC\n0200\n1\nCH9300762011623852957\nS\nMüller Café AG\nBärenstrasse\n3\n8000\nZürich\nCH',
+    ],
+  ])('AK-2 (#121): ein Decoder liest den Payload zurück, %s', (_n, payload) => {
+    const { container } = render(<SwissQr payload={payload} label="QR-Code" />)
+    const mods = container.querySelector('svg')!.getAttribute('data-modules')!.split(',')
+    const n = Math.sqrt(mods.length)
+    const scale = 6
+    const quiet = 4
+    const size = (n + quiet * 2) * scale
+    const rgba = new Uint8ClampedArray(size * size * 4).fill(255)
+    for (let r = 0; r < n; r++)
+      for (let c = 0; c < n; c++) {
+        if (mods[r * n + c] !== '1') continue
+        for (let y = 0; y < scale; y++)
+          for (let x = 0; x < scale; x++) {
+            const i = (((r + quiet) * scale + y) * size + (c + quiet) * scale + x) * 4
+            rgba[i] = rgba[i + 1] = rgba[i + 2] = 0
+          }
+      }
+    const code = jsQR(rgba, size, size)
+    expect(code).not.toBeNull()
+    // Der Standard verlangt UTF-8 (Zeichensatz 1): die Bytes, nicht nur die Zeichen, müssen stimmen
+    expect(new TextDecoder().decode(new Uint8Array(code!.binaryData))).toBe(payload)
   })
 })
