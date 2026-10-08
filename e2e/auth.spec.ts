@@ -7,7 +7,7 @@ import {
   einstellungen,
 } from './support/fixtures'
 import { kontoExistiert, kontoLoeschen, neueAdresse, PASSWORT } from './support/konto'
-import { linkAusMail, mailAbwarten } from './support/mail'
+import { linkAusMail, linkOhneToken, mailAbwarten } from './support/mail'
 
 test('Registrierung: Schlüssel sichern, Mail bestätigen, anmelden', async ({ page }) => {
   const email = neueAdresse('neu')
@@ -60,8 +60,16 @@ test('Passwort vergessen: Link aus der Mail, Wiederherstellungsschlüssel, neues
   await expect(page.getByText('ist ein Link unterwegs')).toBeVisible()
 
   const mail = await mailAbwarten(konto.email)
-  await page.goto(linkAusMail(mail.text))
-  await expect(page.getByRole('heading', { name: 'Neues Passwort festlegen' })).toBeVisible()
+  const link = linkAusMail(mail.text)
+  await page.goto(link)
+  // Bei einem Ausfall (#116) sollen Link und Zielseite im CI-Protokoll stehen, ohne Token.
+  try {
+    await expect(page.getByRole('heading', { name: 'Neues Passwort festlegen' })).toBeVisible()
+  } catch (fehler) {
+    throw new Error(
+      `Link ${linkOhneToken(link)} führte zu ${linkOhneToken(page.url())}\n${String(fehler)}`,
+    )
+  }
 
   // Falscher Schlüssel scheitert, der richtige setzt das neue Passwort
   await page.getByLabel('Wiederherstellungsschlüssel').fill('AAAA-BBBB-CCCC-DDDD-EEEE-FFFF-GG')
