@@ -36,7 +36,9 @@ export function isValidSwissIban(iban: string): boolean {
 export function ibanProblem(input: string): string | null {
   const iban = normalizeIban(input)
   if (!iban) return 'Die IBAN fehlt.'
-  if (!/^[0-9A-Z]+$/.test(iban)) return 'Eine IBAN enthält nur Buchstaben und Ziffern.'
+  // Vor dem Grossschreiben prüfen: «ß» würde sonst zu «SS» und die Zeichenzahl stimmte nicht mehr.
+  if (!/^[0-9A-Za-z]+$/.test(input.replace(/\s+/g, '')))
+    return 'Eine IBAN enthält nur Buchstaben und Ziffern.'
   if (!/^(CH|LI)/.test(iban))
     return 'Es gelten nur Schweizer und Liechtensteiner IBAN (sie beginnen mit CH oder LI).'
   if (iban.length !== 21) return `Die IBAN hat ${iban.length} Zeichen, erwartet sind 21.`

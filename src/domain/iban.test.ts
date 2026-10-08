@@ -62,6 +62,7 @@ describe('ibanProblem (Issue #120)', () => {
     ['zu lang', 'CH93 0076 2011 6238 5295 77', /22 Zeichen.*21/],
     ['deutsche IBAN', 'DE89 3704 0044 0532 0130 00', /Schweiz.*Liechtenstein/],
     ['Sonderzeichen', 'CH93 0076 2011 6238 529-7', /Buchstaben und Ziffern/],
+    ['Sonderzeichen ß (würde zu SS)', 'CH93 0076 2011 6238 5295 ß', /Buchstaben und Ziffern/],
     ['leer', '   ', /fehlt/],
   ])('AK-1: nennt den Grund: %s', (_n, iban, grund) => {
     expect(ibanProblem(iban)).toMatch(grund)
