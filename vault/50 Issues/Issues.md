@@ -9,7 +9,7 @@ tags:
 
 # Issues
 
-Stand 2026-10-08. Repo: github.com/MootSeeker/studibudget/issues. Offen: #48, #62, #65, #72, #76, #111 bis #113 (siehe [[Offene Punkte]]).
+Stand 2026-10-08. Repo: github.com/MootSeeker/studibudget/issues. Offen: #48, #62, #72, #76, #111 bis #113 (siehe [[Offene Punkte]]).
 
 | # | Titel | Umsetzung | PR |
 | --- | --- | --- | --- |
@@ -48,6 +48,7 @@ Weitere Bausteine der Test-Suite: Stryker #58 (PR #59), E2E #60 (PR #61), zwei G
 | 84 | Ewiges Scrollen | Reiter, einklappbare Bereiche, Einstellungen in Reitern | #85 |
 | 104 | Bankverbindung | Einstellungen, IBAN CH/LI mit Prüfsumme | #107 |
 | 105 | Rechnung mit Positionen | Druckansicht `/ausgleich/rechnung/:personId` | #108 |
+| 65 | Ausgleichsrechnungen | Sammel-Issue, geschlossen am 2026-10-08; Teile #104 bis #106 | – |
 | 106 | Swiss QR Code | Zahlteil unter der Rechnung, Typ S, Zahlungspflichtiger leer | #114 |
 
 Weitere Änderungen ohne Issue: Version 1.2.0 (#82), CI-Warnungen und veraltete Pakete (#83), PWA-Test-Fix (#75).
