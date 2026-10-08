@@ -14,6 +14,10 @@ describe('Zeitfehler-Wächter', () => {
     expect(findeZeitstellen(text).map((s) => s.zeile)).toEqual([2, 3])
   })
 
+  it('AK-2: erkennt auch Schreibweisen mit Leerzeichen', () => {
+    expect(findeZeitstellen('new Date ()\nDate.now ( )\nDate . now()')).toHaveLength(3)
+  })
+
   it('AK-2: new Date("2026-01-01") und Date.UTC sind erlaubt (feste Zeit)', () => {
     expect(findeZeitstellen("new Date('2026-01-01')\nDate.UTC(2026, 0, 1)\nnew Date(0)")).toEqual(
       [],

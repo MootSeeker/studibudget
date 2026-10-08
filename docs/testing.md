@@ -73,7 +73,8 @@ mit dieser Anleitung. Nach einer gewollten Änderung der Oberfläche:
 Der Job `ci-gesamt` im Workflow «Deploy» ist nur grün, wenn jeder Pflichtjob (`statisch`, `unit`, `langsam`, `datenbank`,
 `e2e`, `build`) grün ist; rot, abgebrochen und übersprungen zählen als Fehler. `gh pr checks` zeigt ihn als eigene Zeile.
 Wer einen Pflichtjob ergänzt, trägt ihn in `needs` von `ci-gesamt` ein (`src/test/ci.test.ts` prüft das). Reine
-Doku-Änderungen lösen nur den Workflow «Doku» aus, dort gibt es `ci-gesamt` nicht.
+Doku-Änderungen lösen nur den Workflow «Doku» aus, dort gibt es `ci-gesamt` nicht; dessen Prüfungen (format, links, vault, geheimnisse,
+`claude-konfiguration`) laufen auch in gemischten PRs und zählen nicht zu `ci-gesamt`.
 
 ## Zeitregeln für Tests
 

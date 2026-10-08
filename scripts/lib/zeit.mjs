@@ -3,7 +3,7 @@
 import { readdirSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
 
-const ECHTE_UHR = /\bnew Date\(\)|\bDate\.now\(\)/
+const ECHTE_UHR = /\bnew Date\s*\(\s*\)|\bDate\s*\.\s*now\s*\(\s*\)/
 const FESTE_UHR = /\bsetSystemTime\b/
 
 /** Zeilen (ab 1) mit Zugriff auf die echte Uhr; Kommentarzeilen zählen nicht. */
@@ -16,7 +16,7 @@ export function findeZeitstellen(text) {
 
 /**
  * Prüft Dateien `{ pfad, text }` gegen die Ausnahmen `{ datei, grund }`; liefert die Verstösse als Sätze.
- * Eine Datei mit `setSystemTime` gilt als fest, eine Ausnahme braucht eine Begründung und muss noch nötig sein.
+ * Eine Datei mit `setSystemTime` gilt als fest (grob: die Prüfung gilt je Datei, nicht je Test), eine Ausnahme braucht eine Begründung und muss noch nötig sein.
  */
 export function pruefeZeit(dateien, ausnahmen) {
   const probleme = []

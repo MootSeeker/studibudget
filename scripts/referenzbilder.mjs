@@ -11,7 +11,13 @@ const git = (...a) => execFileSync('git', a, { encoding: 'utf8' }).trim()
 const gh = (...a) => execFileSync('gh', a, { encoding: 'utf8' })
 
 const branch = process.argv[2] ?? git('rev-parse', '--abbrev-ref', 'HEAD')
-const headSha = git('rev-parse', branch === 'HEAD' ? 'HEAD' : `origin/${branch}`)
+if (branch === 'HEAD') {
+  console.error(
+    'Kein Branch ausgecheckt (losgelöster HEAD). Gib den Branch an: npm run referenzbilder -- <Branch>',
+  )
+  process.exit(1)
+}
+const headSha = git('rev-parse', `origin/${branch}`)
 const runs = JSON.parse(
   gh(
     'run',
