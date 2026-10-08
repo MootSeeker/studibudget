@@ -63,4 +63,4 @@ Releases: Version per PR anheben (`npm version … --no-git-tag-version`), nach 
 
 ## Arbeitsablauf (Spec-getrieben)
 
-Issues sind die Anforderung (Formular mit nummerierten Akzeptanzkriterien). `/issue-bearbeiten <Nr>` führt durch den Ablauf: Plan mit Testliste (`plan-schreiben`), Tests zuerst, Umsetzung, `verify`, dann `/pr-abschliessen <Nr>` mit dem Subagenten `reviewer` (Haiku). Die Grösse im Issue steuert den Aufwand: Klein ohne Plan und Reviewer, Mittel mit beidem, Gross zusätzlich mit Rückfrage nach dem Plan.
+Issues sind die Anforderung (Formular mit nummerierten Akzeptanzkriterien). `/issue-bearbeiten <Nr>` führt durch den Ablauf: Plan mit Testliste (`plan-schreiben`), Tests zuerst, Umsetzung, `verify`, dann `/pr-abschliessen <Nr>` mit dem Subagenten `reviewer` (Sonnet, Opus bei Crypto und Sync; siehe `vault/30 Entscheide/Entscheid - Reviewer mit Sonnet.md`). Die Grösse im Issue steuert den Aufwand: Klein ohne Plan und Reviewer, Mittel mit beidem, Gross zusätzlich mit Rückfrage nach dem Plan.
