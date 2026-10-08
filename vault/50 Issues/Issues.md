@@ -9,7 +9,7 @@ tags:
 
 # Issues
 
-Stand 2026-10-08. Repo: github.com/MootSeeker/studibudget/issues. Offen: #48, #62, #72, #76, #111 bis #113 (siehe [[Offene Punkte]]).
+Stand 2026-10-08. Repo: github.com/MootSeeker/studibudget/issues. Offen: #48, #62, #72, #76, #112, #113, #126 (siehe [[Offene Punkte]]).
 
 | # | Titel | Umsetzung | PR |
 | --- | --- | --- | --- |
@@ -50,6 +50,7 @@ Weitere Bausteine der Test-Suite: Stryker #58 (PR #59), E2E #60 (PR #61), zwei G
 | 105 | Rechnung mit Positionen | Druckansicht `/ausgleich/rechnung/:personId` | #108 |
 | 65 | Ausgleichsrechnungen | Sammel-Issue, geschlossen am 2026-10-08; Teile #104 bis #106 | – |
 | 116 | Instabiler WebKit-Test «Passwort vergessen» | geschlossen ohne Ursache (`not planned`): Fehlermeldung zeigt Link und Zielseite, neueste Mail; bei neuer Rötung neues Issue | #118 |
+| 111 | CI-Sammelstatus, Zeitfehler-Wächter, Referenzbilder | `ci-gesamt`, `check:zeit` (je Test), `npm run referenzbilder`, Hinweis bei Bildunterschied; Branch-Schutz offen (Doku-Läufe) | #125 |
 | 120 | IBAN-Meldung | `ibanProblem` nennt den Grund, Hinweis auf die geltende IBAN; eine Blockade des Felds war nicht nachstellbar | #122 |
 | 121 | QR-Code von der Banking-App nicht akzeptiert | UTF-8-Kodierung (Fehler der Bibliothek), `validateQrPayload`, Rücklesetest mit `jsqr`, Warnung bei der Beispiel-IBAN; Scan mit echter IBAN steht aus | #123 |
 | 106 | Swiss QR Code | Zahlteil unter der Rechnung, Typ S, Zahlungspflichtiger leer | #114 |
