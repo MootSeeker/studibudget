@@ -7,6 +7,8 @@ die Versionen folgen [Semantic Versioning](https://semver.org/lang/de/).
 
 ### Hinzugefügt
 
+- Rechnung: Zahlteil mit Swiss QR Code (Empfangsschein und Zahlteil, A4) für die Schweiz (CHF), wenn eine gültige
+  Bankverbindung hinterlegt ist und ein Betrag offen ist. Der Code entsteht im Browser, ohne Netzwerkzugriff (#106, Teil von #65).
 - Community-Standards: `CODE_OF_CONDUCT.md`, `CONTRIBUTING.md`, `SECURITY.md` und `ACCESSIBILITY.md`.
 - Einstellungen: neuer Abschnitt «Bankverbindung» im Reiter «Haushalt» mit Kontoinhaber/in, Adresse und IBAN (Schweiz
   oder Liechtenstein, mit Prüfsumme). Alle Angaben sind freiwillig; sie werden verschlüsselt synchronisiert und stehen
