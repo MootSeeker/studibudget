@@ -26,7 +26,7 @@ Offen ist ausserdem der **öffentliche Start**. Die vollständige Liste steht in
 
 - [x] Baustein 1 bis 13; Ausgangswert der Mutationstests 82,26 %, `break` = 80
 - [ ] Mutationstests: überlebende Mutanten in `src/data/hooks.ts` (134, von keinem Unit-Test erfasst), `period.ts`, `monthView.ts`
-- [ ] E2E-Test «Passwort vergessen» (WebKit, `e2e/auth.spec.ts`) wurde am 2026-10-08 einmal rot und im Wiederholungslauf grün: instabil? Issue #116.
+- [ ] E2E-Test «Passwort vergessen» (WebKit, `e2e/auth.spec.ts`) ist instabil (Issue #116): in CI einmal rot (Überschrift nach dem Mail-Link fehlt), lokal in WebKit 2 von rund 190 Läufen rot, beide direkt nach der Browser-Installation und an anderer Stelle (nach dem Setzen des neuen Passworts). Mit mehr Last nicht herbeizuführen. Bei der nächsten Rötung Trace und Fehlermeldung (Link und Zielseite) sichern, bevor aufgeräumt wird.
 - [ ] CI schneller machen (#62): Cache-Wirkung messen; falls `docker load` nicht schneller ist als der Download, Image-Cache entfernen
 
 ## Tests auf echten Geräten
