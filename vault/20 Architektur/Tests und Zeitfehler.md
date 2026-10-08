@@ -2,7 +2,7 @@
 typ: referenz
 bereich: qualitaet
 status: aktiv
-aktualisiert: 2026-10-05
+aktualisiert: 2026-10-08
 repo-quelle:
   - docs/entscheidungen.md
   - vitest.slow.config.ts
@@ -27,6 +27,7 @@ IndexedDB geladen waren. Einmal steckte dahinter ein echter Fehler (Änderungen 
   (`expect(…).not.toBeInTheDocument()` ohne Warten besteht zufällig oder scheitert zufällig).
 - Mehrere zusammengehörige Prüfungen in ein `waitFor` setzen.
 - Vor dem Commit `verify` und `test:slow` ausführen; bei Verdacht mit `SLOW_DB=250` und mehreren parallelen Läufen stressen.
+- Die echte Uhr nie ungeschützt lesen: `npm run check:zeit` (in `verify`) meldet `new Date()` und `Date.now()` in Tests ohne `vi.setSystemTime`; Ausnahmen mit Begründung in `scripts/zeit-ausnahmen.json` (#111, Details in `docs/testing.md`).
 - Ein PR-Lauf, der rot war, nicht als Zufall abtun, auch wenn `main` danach grün ist.
 
 ## Test-Aufbau (seit Baustein 1 bis 12)
@@ -50,3 +51,7 @@ IndexedDB geladen waren. Einmal steckte dahinter ein echter Fehler (Änderungen 
 - **axe:** prüft alle Reiter und aufgeklappte Bereiche; aktive Reiter brauchen ausreichenden Kontrast (Vollfarbe `bg-accent text-accent-text`).
 - **Auf- und Zuklapp-Zustand** liegt in `localStorage`; `src/test/setup.ts` leert ihn nach jedem Test.
 - **Lint:** `oxlint` ohne Warnungen halten (`Date` beim Zeichnen über `useNow`, keine Konstanten aus Komponentendateien exportieren).
+
+## CI-Sammelstatus und Referenzbilder (#111)
+
+Der Job `ci-gesamt` fasst die Pflichtjobs zusammen und bereitet einen Branch-Schutz vor (den schaltet Kevin ein). Bildunterschiede im E2E-Lauf zeigen in der Zusammenfassung eine Anleitung; `npm run referenzbilder` übernimmt das Ergebnis des Workflows «Referenzbilder» nach `e2e/referenz/`, committet wird von Hand. Warum Zusammenfassung statt PR-Kommentar: die Berechtigungen der Workflows bleiben bei `contents: read`.

@@ -1,0 +1,14 @@
+[
+  {
+    "datei": "src/auth/flows.db.test.ts",
+    "grund": "Date.now() dient nur als eindeutige Laufkennung für Testkonten, nicht als Zeitlogik."
+  },
+  {
+    "datei": "src/sync/rls.db.test.ts",
+    "grund": "Date.now() dient nur als eindeutige Laufkennung für Testkonten, nicht als Zeitlogik."
+  },
+  {
+    "datei": "src/sync/engine.db.test.ts",
+    "grund": "Date.now() dient nur als eindeutige Laufkennung für Testkonten, nicht als Zeitlogik."
+  }
+]

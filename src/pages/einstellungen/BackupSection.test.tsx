@@ -61,7 +61,10 @@ beforeEach(() => {
     clicked.push({ download: this.download })
   })
 })
-afterEach(() => vi.restoreAllMocks())
+afterEach(() => {
+  vi.restoreAllMocks()
+  vi.useRealTimers()
+})
 
 describe('Backup herunterladen', () => {
   it('erzeugt eine JSON-Datei mit Datum im Namen, merkt sich den Zeitpunkt und zeigt ihn an', async () => {
@@ -211,6 +214,8 @@ describe('Erinnerung ans Backup', () => {
   })
 
   it('nicht ohne Daten, nicht bei ausgeschalteter Erinnerung, nicht bei frischem Backup', async () => {
+    vi.useFakeTimers({ toFake: ['Date'] }) // nur die Uhr; Timer bleiben echt (waitFor)
+    vi.setSystemTime(new Date('2026-10-15T12:00:00'))
     await seed()
     const { unmount } = renderReminder()
     await new Promise((r) => setTimeout(r, 100))
@@ -229,6 +234,8 @@ describe('Erinnerung ans Backup', () => {
   })
 
   it('nennt das Alter, wenn das letzte Backup zu alt ist', async () => {
+    vi.useFakeTimers({ toFake: ['Date'] }) // nur die Uhr; Timer bleiben echt (waitFor)
+    vi.setSystemTime(new Date('2026-10-15T12:00:00'))
     await seed([{ note: 'x' }])
     await setSettings({
       backupReminderDays: 7,
