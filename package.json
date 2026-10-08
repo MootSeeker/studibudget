@@ -19,6 +19,7 @@
     "test:watch": "vitest --project unit",
     "format": "prettier --write .",
     "verify": "npm run lint && npm run typecheck && npm run check:zeit && npm run test:coverage && npm run build && npm run check:build",
+    "verify:kurz": "node scripts/verify-kurz.mjs",
     "test:db": "vitest run --project db",
     "check:build": "node scripts/check-build.mjs",
     "check:launch": "node scripts/check-launch.mjs",

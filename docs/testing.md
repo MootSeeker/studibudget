@@ -24,6 +24,12 @@ npm run verify       # Lint, Typen, Tests mit Coverage, Build, Build-Prüfung
 npm run test:slow    # Zeitfehler
 ```
 
+`npm run verify:kurz` führt beides nacheinander aus und gibt höchstens 30 Zeilen aus: eine pro Schritt, rote Tests mit
+erster Meldungszeile. Dazu kommen zwei Zusatzprüfungen auf den Zeilen, die gegenüber `main` hinzugekommen sind:
+«Leitplanken» (scharfes S, Claude-Kennzeichnung; Ausnahmen in `scripts/verify-kurz-ausnahmen.json`) und mit
+`-- --plan <Datei>` «Plan» (nur Dateien aus dem Plan geändert, geplante Tests vorhanden; Format in
+`.claude/skills/plan-schreiben/SKILL.md`). Gedacht für Agenten, die einen knappen Bericht brauchen.
+
 `test:db` und `test:e2e` brauchen Docker und `npx supabase start`. Ohne Docker laufen sie nur in der CI.
 
 ## Konventionen

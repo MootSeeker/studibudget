@@ -1,0 +1,6 @@
+[
+  {
+    "datei": "src/test/verifyKurz.test.ts",
+    "grund": "Testdaten der Prüfung selbst: enthält absichtlich das scharfe S und Claude-Kennzeichnungen."
+  }
+]

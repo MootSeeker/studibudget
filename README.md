@@ -61,6 +61,7 @@ npm run dev
 | Befehl                  | Zweck                                                                                                               |
 | ----------------------- | ------------------------------------------------------------------------------------------------------------------- |
 | `npm run verify`        | Lint, Typen, Tests mit Coverage, Build und Build-Prüfung (Definition von «fertig»)                                  |
+| `npm run verify:kurz`   | `verify` und `test:slow` mit knappem Bericht (höchstens 30 Zeilen), plus Leitplanken und Abgleich mit dem Plan      |
 | `npm test`              | Unit-Tests (Vitest)                                                                                                 |
 | `npm run test:slow`     | Alle Tests mit künstlich verlangsamter Datenbank: findet Zeitfehler, die sonst nur auf langsamen Rechnern auftreten |
 | `npm run test:prop`     | Eigenschaftsbasierte Tests (fast-check)                                                                             |

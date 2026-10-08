@@ -24,6 +24,21 @@ Format (die Überschrift `## Plan` ist wichtig, der Reviewer sucht danach):
 **Risiken / Fragen:** nur, was den Nutzer betrifft (Schema, Sync, Rückwärtsverträglichkeit).
 ```
 
+Am Ende des Plans steht ein **maschinenlesbarer Block**, den `npm run verify:kurz -- --plan <Datei>` liest (siehe `scripts/lib/verify-kurz.mjs`). Ein Codeblock mit der Sprache `plan-dateien` enthält jede Datei, die neu ist oder geändert wird, ein Pfad pro Zeile. Ein Codeblock mit der Sprache `plan-tests` (freiwillig) enthält geplante Tests als `Datei :: Testname`, mit dem Namen genau so, wie er im Test steht. `CHANGELOG.md` und `vault/` müssen nicht in die Liste. Beispiel:
+
+````
+```plan-dateien
+src/domain/beispiel.ts
+src/domain/beispiel.test.ts
+```
+
+```plan-tests
+src/domain/beispiel.test.ts :: AK-1: rundet auf ganze Rappen
+```
+````
+
+`verify:kurz` meldet rot, wenn der Diff gegenüber `main` eine Datei ausserhalb der Liste ändert oder ein Test aus `plan-tests` in seiner Datei fehlt. Die Plan-Datei aus dem Scratchpad bleibt dafür liegen.
+
 Regeln:
 
 - **Jedes AK hat mindestens einen Test.** Ein AK, das sich nicht testen lässt, wird im Plan als «Sichtprüfung» mit Begründung markiert.
