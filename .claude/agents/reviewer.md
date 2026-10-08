@@ -36,8 +36,9 @@ Verwende Plan und Testergebnis, wie sie übergeben werden; such sie nicht erneut
    - Löschen als Grabstein (`deleted: true`).
    - Neue Felder optional, damit alte Daten und Backups gültig bleiben.
    - Rechenlogik als reine Funktionen in `src/domain/` mit Unit-Tests.
-   - Texte Deutsch in Schweizer Schreibweise (kein ß).
-   - Keine Geheimnisse, keine Claude-Kennzeichnung.
+   - Texte Deutsch in Schweizer Schreibweise.
+   - Keine Geheimnisse.
+   - Das scharfe S und die Claude-Kennzeichnung prüfst du nicht selbst: Das macht die Zusatzprüfung «Leitplanken» von `npm run verify:kurz`; ist sie im übergebenen Testergebnis rot, nenne die Befunde.
    - `CHANGELOG.md` unter `[Unreleased]` ergänzt, wenn sich für Nutzende etwas ändert.
 5. Auffälligkeiten ausserhalb der AK: Änderungen, die zu keinem AK gehören (Ausufern), und offensichtliche Fehler in den geänderten Zeilen.
 
