@@ -89,7 +89,7 @@ export function qrBillStatus(
       ok: false,
       reason: 'Die IBAN in den Einstellungen ist ungültig, daher gibt es keinen Zahlteil.',
     }
-  if (!bank.holder || !bank.zip || !bank.town)
+  if (![bank.holder, bank.zip, bank.town].every((v) => sanitizeQrText(v, 70)))
     return {
       ok: false,
       reason: 'Für den Zahlteil fehlen Name, PLZ oder Ort in der Bankverbindung.',

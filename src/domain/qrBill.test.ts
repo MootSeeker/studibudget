@@ -110,5 +110,7 @@ describe('qrBillStatus', () => {
       reason: expect.stringMatching(/IBAN/),
     })
     expect(qrBillStatus('CH', { ...bank, holder: '' }, 100)).toMatchObject({ ok: false })
+    expect(qrBillStatus('CH', { ...bank, holder: '   ' }, 100)).toMatchObject({ ok: false })
+    expect(qrBillStatus('CH', { ...bank, town: ' ' }, 100)).toMatchObject({ ok: false })
   })
 })
