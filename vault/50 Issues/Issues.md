@@ -9,7 +9,7 @@ tags:
 
 # Issues
 
-Stand 2026-10-08. Repo: github.com/MootSeeker/studibudget/issues. Offen: #48, #62, #72, #76, #111 bis #113 (siehe [[Offene Punkte]]).
+Stand 2026-10-08. Repo: github.com/MootSeeker/studibudget/issues. Offen: #48, #62, #72, #76, #111 bis #113, #116 (siehe [[Offene Punkte]]).
 
 | # | Titel | Umsetzung | PR |
 | --- | --- | --- | --- |

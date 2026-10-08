@@ -12,7 +12,7 @@ tags:
 
 # Offene Punkte
 
-Offene GitHub-Issues (Stand 2026-10-08): #48 (Analyse `records_seq`), #72 (CI-Artefakte aufs NAS), #76 (Synchronisation von Informationen), #111 (CI-Sammelstatus, Zeitfehler-Wächter, Referenzbilder), #112 und #113 (Konten: Zeitdarstellung, Verlauf-Chart).
+Offene GitHub-Issues (Stand 2026-10-08): #48 (Analyse `records_seq`), #72 (CI-Artefakte aufs NAS), #76 (Synchronisation von Informationen), #116 (instabiler WebKit-Test), #111 (CI-Sammelstatus, Zeitfehler-Wächter, Referenzbilder), #112 und #113 (Konten: Zeitdarstellung, Verlauf-Chart).
 Offen ist ausserdem der **öffentliche Start**. Die vollständige Liste steht in `docs/start-checkliste.md`; hier der Stand:
 
 ## Blocker (Kevin)
@@ -26,7 +26,7 @@ Offen ist ausserdem der **öffentliche Start**. Die vollständige Liste steht in
 
 - [x] Baustein 1 bis 13; Ausgangswert der Mutationstests 82,26 %, `break` = 80
 - [ ] Mutationstests: überlebende Mutanten in `src/data/hooks.ts` (134, von keinem Unit-Test erfasst), `period.ts`, `monthView.ts`
-- [ ] E2E-Test «Passwort vergessen» (WebKit, `e2e/auth.spec.ts`) wurde am 2026-10-08 einmal rot und im Wiederholungslauf grün: instabil? Beobachten, bei Wiederholung Issue anlegen.
+- [ ] E2E-Test «Passwort vergessen» (WebKit, `e2e/auth.spec.ts`) wurde am 2026-10-08 einmal rot und im Wiederholungslauf grün: instabil? Issue #116.
 - [ ] CI schneller machen (#62): Cache-Wirkung messen; falls `docker load` nicht schneller ist als der Download, Image-Cache entfernen
 
 ## Tests auf echten Geräten
