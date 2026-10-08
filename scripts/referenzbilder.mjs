@@ -17,7 +17,18 @@ if (branch === 'HEAD') {
   )
   process.exit(1)
 }
-const headSha = git('rev-parse', `origin/${branch}`)
+// Der aktuelle Branch zählt mit seinem lokalen Stand (ein nicht gepushter Commit macht den Lauf «veraltet»),
+// ein anderer mit dem Stand auf dem Server.
+let headSha
+try {
+  headSha =
+    branch === git('rev-parse', '--abbrev-ref', 'HEAD')
+      ? git('rev-parse', 'HEAD')
+      : git('rev-parse', `origin/${branch}`)
+} catch {
+  console.error(`Der Branch ${branch} ist unbekannt (git fetch ausgeführt? Branch gepusht?).`)
+  process.exit(1)
+}
 const runs = JSON.parse(
   gh(
     'run',
