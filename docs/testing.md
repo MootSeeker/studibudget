@@ -79,7 +79,7 @@ Doku-Änderungen lösen nur den Workflow «Doku» aus, dort gibt es `ci-gesamt` 
 ## Zeitregeln für Tests
 
 `npm run check:zeit` (Teil von `verify`) lässt Tests scheitern, die `new Date()` oder `Date.now()` ohne feste Uhr
-verwenden: Datei und Zeile stehen in der Meldung. Zulässig sind eine Datei mit `vi.setSystemTime` (dazu
+verwenden: Datei und Zeile stehen in der Meldung. Zulässig ist eine feste Uhr im selben Test oder dateiweit vor dem ersten Test bzw. in `beforeEach`/`beforeAll` (`vi.setSystemTime`; dazu
 `vi.useFakeTimers({ toFake: ['Date'] })`, damit `waitFor` und Timer echt bleiben; danach `vi.useRealTimers()`) oder ein
 Eintrag mit Begründung in `scripts/zeit-ausnahmen.json`. Nicht mehr nötige Ausnahmen meldet das Skript ebenfalls.
 

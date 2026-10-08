@@ -10,5 +10,9 @@
   {
     "datei": "src/sync/engine.db.test.ts",
     "grund": "Date.now() dient nur als eindeutige Laufkennung für Testkonten, nicht als Zeitlogik."
+  },
+  {
+    "datei": "src/test/zeit.test.ts",
+    "grund": "Testdaten für den Wächter selbst: Zeichenketten mit Uhr-Aufrufen, kein echter Zugriff auf die Uhr."
   }
 ]

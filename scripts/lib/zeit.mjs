@@ -14,17 +14,42 @@ export function findeZeitstellen(text) {
     .filter((z) => !z.text.trim().startsWith('//') && ECHTE_UHR.test(z.text))
 }
 
+/** Beginn eines Tests (`it(`, `test(` auch mit `.only`/`.each`-Zusätzen). */
+const TEST_BEGINN = /^\s*(it|test)\b/
+
+/**
+ * Stellen ohne feste Uhr: Eine feste Uhr gilt für den Test, in dem sie steht (zwischen Testbeginn und Treffer), oder für
+ * die ganze Datei, wenn sie vor dem ersten Test steht oder in einem `beforeEach`/`beforeAll` gesetzt wird.
+ */
+function ungeschuetzt(text) {
+  const zeilen = text.split('\n')
+  const ersterTest = zeilen.findIndex((z) => TEST_BEGINN.test(z))
+  const dateiweit =
+    zeilen.some((z, i) => FESTE_UHR.test(z) && (ersterTest === -1 || i < ersterTest)) ||
+    zeilen.some(
+      (z, i) =>
+        FESTE_UHR.test(z) &&
+        /^\s*before(Each|All)\b/.test(zeilen.slice(Math.max(0, i - 3), i + 1).join('\n')),
+    )
+  if (dateiweit) return []
+  return findeZeitstellen(text).filter((s) => {
+    let beginn = s.zeile - 1
+    while (beginn > 0 && !TEST_BEGINN.test(zeilen[beginn])) beginn--
+    return !zeilen.slice(beginn, s.zeile).some((z) => FESTE_UHR.test(z))
+  })
+}
+
 /**
  * Prüft Dateien `{ pfad, text }` gegen die Ausnahmen `{ datei, grund }`; liefert die Verstösse als Sätze.
- * Eine Datei mit `setSystemTime` gilt als fest (grob: die Prüfung gilt je Datei, nicht je Test), eine Ausnahme braucht eine Begründung und muss noch nötig sein.
+ * Eine Datei mit `setSystemTime` gilt als fest (je Test; dateiweit nur vor dem ersten Test oder in beforeEach/beforeAll), eine Ausnahme braucht eine Begründung und muss noch nötig sein.
  */
 export function pruefeZeit(dateien, ausnahmen) {
   const probleme = []
   const ausnahme = new Map(ausnahmen.map((a) => [a.datei, a]))
   const gebraucht = new Set()
   for (const { pfad, text } of dateien) {
-    const stellen = findeZeitstellen(text)
-    if (stellen.length === 0 || FESTE_UHR.test(text)) continue
+    const stellen = ungeschuetzt(text)
+    if (stellen.length === 0) continue
     const a = ausnahme.get(pfad)
     if (a) {
       gebraucht.add(pfad)

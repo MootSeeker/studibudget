@@ -36,6 +36,35 @@ describe('Zeitfehler-Wächter', () => {
     expect(pruefeZeit([{ pfad: 'src/x.test.ts', text }], [])).toEqual([])
   })
 
+  it('AK-2: die feste Uhr gilt je Test: ein anderer Test derselben Datei ohne feste Uhr wird gemeldet', () => {
+    const text = [
+      "it('fest', () => {",
+      "  vi.setSystemTime(new Date('2026-10-08'))",
+      '  const a = new Date()',
+      '})',
+      "it('ungeschützt', () => {",
+      '  const b = new Date()',
+      '})',
+    ].join('\n')
+    const p = pruefeZeit([{ pfad: 'src/x.test.ts', text }], [])
+    expect(p).toHaveLength(1)
+    expect(p[0]).toContain('src/x.test.ts:6')
+  })
+
+  it('AK-2: eine feste Uhr in beforeEach oder vor dem ersten Test gilt für die ganze Datei', () => {
+    const vorher = "vi.setSystemTime(new Date('2026-10-08'))\nit('a', () => {\n  new Date()\n})"
+    const inBeforeEach = [
+      'beforeEach(() => {',
+      "  vi.setSystemTime(new Date('2026-10-08'))",
+      '})',
+      "it('a', () => {",
+      '  new Date()',
+      '})',
+    ].join('\n')
+    expect(pruefeZeit([{ pfad: 'src/a.test.ts', text: vorher }], [])).toEqual([])
+    expect(pruefeZeit([{ pfad: 'src/b.test.ts', text: inBeforeEach }], [])).toEqual([])
+  })
+
   it('AK-2: eine begründete Ausnahme ist zulässig, eine ohne Begründung ein Fehler', () => {
     const datei = [{ pfad: 'src/x.db.test.ts', text: 'const run = Date.now()' }]
     expect(pruefeZeit(datei, [{ datei: 'src/x.db.test.ts', grund: 'Laufkennung' }])).toEqual([])
