@@ -12,9 +12,9 @@ tags:
 
 # Offene Punkte
 
-Offene GitHub-Issues (Stand 2026-10-06): #48 (Analyse `records_seq`), #65 (Ausgleichsrechnungen mit QR; aufgeteilt in #104 Bankverbindung, #105 Druckansicht, #106 QR-Code),
-#72 (CI-Artefakte aufs NAS), #76 (Synchronisation von Informationen), #104 bis #106 (siehe #65; #104 und #105 erledigt, #106 als PR in Arbeit; offen: Scanprobe mit Banking-App). Offen ist
-ausserdem der **öffentliche Start**. Die vollständige Liste steht in `docs/start-checkliste.md`; hier der Stand:
+Offene GitHub-Issues (Stand 2026-10-08): #48 (Analyse `records_seq`), #65 (Ausgleichsrechnungen; alle Teile #104, #105, #106 sind umgesetzt, das Sammel-Issue schliesst Kevin),
+#72 (CI-Artefakte aufs NAS), #76 (Synchronisation von Informationen), #111 (CI-Sammelstatus, Zeitfehler-Wächter, Referenzbilder), #112 und #113 (Konten: Zeitdarstellung, Verlauf-Chart).
+Offen ist ausserdem der **öffentliche Start**. Die vollständige Liste steht in `docs/start-checkliste.md`; hier der Stand:
 
 ## Blocker (Kevin)
 
@@ -27,10 +27,12 @@ ausserdem der **öffentliche Start**. Die vollständige Liste steht in `docs/sta
 
 - [x] Baustein 1 bis 13; Ausgangswert der Mutationstests 82,26 %, `break` = 80
 - [ ] Mutationstests: überlebende Mutanten in `src/data/hooks.ts` (134, von keinem Unit-Test erfasst), `period.ts`, `monthView.ts`
+- [ ] E2E-Test «Passwort vergessen» (WebKit, `e2e/auth.spec.ts`) wurde am 2026-10-08 einmal rot und im Wiederholungslauf grün: instabil? Beobachten, bei Wiederholung Issue anlegen.
 - [ ] CI schneller machen (#62): Cache-Wirkung messen; falls `docker load` nicht schneller ist als der Download, Image-Cache entfernen
 
 ## Tests auf echten Geräten
 
+- [ ] Rechnung (#105, #106): Zahlteil drucken und den Swiss QR Code mit einer echten Banking-App scannen; Layout des Zahlteils (Schriftgrössen, Kreuz) von Hand prüfen.
 - [ ] Offline-Start und Installation (der Service Worker liess sich in der Entwicklungsumgebung nicht ausführen).
 - [ ] Zweites Gerät: Sync, Offline-Buchung, Passwort vergessen mit Wiederherstellungsschlüssel, Backup einspielen.
 - [ ] Neues Layout (Issue #17) und die Reiter (#84) bei Handy-, Tablet- und Desktop-Breite ansehen: über Tests und Referenzbilder abgesichert, nicht von Hand geprüft.
