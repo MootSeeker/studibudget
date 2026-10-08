@@ -59,11 +59,29 @@ npm run test:slow    # Zeitfehler
 ## Referenzbilder erneuern
 
 Die Referenzbilder in `e2e/referenz/` sind nur auf dem CI-Runner verbindlich (Schrift und Rasterung weichen auf anderen
-Systemen ab). Nach einer gewollten Änderung der Oberfläche:
+Systemen ab). Schlägt in der CI der Bildvergleich fehl, steht in der Zusammenfassung des Jobs `e2e (chromium)` ein Hinweis
+mit dieser Anleitung. Nach einer gewollten Änderung der Oberfläche:
 
-1. Auf GitHub unter Actions den Workflow **Referenzbilder** auf dem Branch starten.
-2. Das Artefakt `referenzbilder` herunterladen und `e2e/referenz/` damit ersetzen.
-3. Die Bilder im Diff ansehen, dann committen.
+1. Auf GitHub unter Actions den Workflow **Referenzbilder** auf dem Branch starten und das Ende abwarten.
+2. Lokal `npm run referenzbilder` ausführen (oder `npm run referenzbilder -- <Branch>`). Das Skript lädt das Artefakt des
+   letzten erfolgreichen Laufs mit der GitHub-CLI `gh` und ersetzt `e2e/referenz/`. Es warnt, wenn der Lauf nicht zum
+   aktuellen Stand des Branches gehört; dann den Workflow nach dem letzten Push neu starten.
+3. Die Bilder im Diff ansehen, dann committen und pushen. Die CI committet nie selbst.
+
+## Sammelstatus der CI
+
+Der Job `ci-gesamt` im Workflow «Deploy» ist nur grün, wenn jeder Pflichtjob (`statisch`, `unit`, `langsam`, `datenbank`,
+`e2e`, `build`) grün ist; rot, abgebrochen und übersprungen zählen als Fehler. `gh pr checks` zeigt ihn als eigene Zeile.
+Wer einen Pflichtjob ergänzt, trägt ihn in `needs` von `ci-gesamt` ein (`src/test/ci.test.ts` prüft das). Reine
+Doku-Änderungen lösen nur den Workflow «Doku» aus, dort gibt es `ci-gesamt` nicht; dessen Prüfungen (format, links, vault, geheimnisse,
+`claude-konfiguration`) laufen auch in gemischten PRs und zählen nicht zu `ci-gesamt`.
+
+## Zeitregeln für Tests
+
+`npm run check:zeit` (Teil von `verify`) lässt Tests scheitern, die `new Date()` oder `Date.now()` ohne feste Uhr
+verwenden: Datei und Zeile stehen in der Meldung. Zulässig ist eine feste Uhr im selben Test oder dateiweit vor dem ersten Test bzw. in `beforeEach`/`beforeAll` (`vi.setSystemTime`; dazu
+`vi.useFakeTimers({ toFake: ['Date'] })`, damit `waitFor` und Timer echt bleiben; danach `vi.useRealTimers()`) oder ein
+Eintrag mit Begründung in `scripts/zeit-ausnahmen.json`. Nicht mehr nötige Ausnahmen meldet das Skript ebenfalls.
 
 ## Lokal mit Supabase arbeiten
 

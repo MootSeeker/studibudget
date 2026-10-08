@@ -22,7 +22,10 @@ beforeEach(async () => {
     budgets: {},
   })
 })
-afterEach(() => vi.restoreAllMocks())
+afterEach(() => {
+  vi.restoreAllMocks()
+  vi.useRealTimers()
+})
 
 async function setup() {
   const user = userEvent.setup()
@@ -246,6 +249,8 @@ describe('Eingabe-Seite', () => {
   }
 
   it('Fixkosten lassen sich auch für einen künftigen Monat buchen', async () => {
+    vi.useFakeTimers({ toFake: ['Date'] }) // nur die Uhr; Timer bleiben echt (waitFor)
+    vi.setSystemTime(new Date('2026-10-15T12:00:00'))
     await makeTemplate('miete', 80000)
     const { user } = await setup()
     await user.click(screen.getByRole('button', { name: 'Nächster Monat' }))
@@ -298,6 +303,8 @@ describe('Eingabe-Seite', () => {
   })
 
   it('bis 15 Buchungen sind die Bereiche offen, darüber starten sie eingeklappt', async () => {
+    vi.useFakeTimers({ toFake: ['Date'] }) // nur die Uhr; Timer bleiben echt (waitFor)
+    vi.setSystemTime(new Date('2026-10-15T12:00:00'))
     const miete = (await db.categories.toArray()).find((c) => c.catalogKey === 'miete')!
     const monat = new Date()
     const datum = `${monat.getFullYear()}-${String(monat.getMonth() + 1).padStart(2, '0')}-01`

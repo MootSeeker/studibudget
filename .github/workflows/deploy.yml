@@ -118,6 +118,26 @@ jobs:
       - run: npx playwright install --with-deps ${{ matrix.browser }}
       # Ein Wackler (erst beim zweiten Versuch grün) gilt als Fehler.
       - run: npx playwright test --project=${{ matrix.browser }} --fail-on-flaky-tests
+      # Nur Chromium: Referenzbilder gibt es nur dafür (e2e/visuell.spec.ts überspringt andere Browser).
+      # Ein Bildunterschied heisst meist: Die Oberfläche hat sich gewollt geändert und die Referenzbilder müssen neu entstehen.
+      - name: Hinweis zu den Referenzbildern
+        if: ${{ failure() && matrix.browser == 'chromium' }}
+        run: |
+          if find test-results -name '*-diff.png' | grep -q .; then
+            {
+              echo '### Referenzbilder erneuern?'
+              echo
+              echo 'Der Vergleich mit den Referenzbildern ist fehlgeschlagen (Unterschiede im Artefakt `bericht-e2e-chromium`).'
+              echo 'Wenn sich die Oberfläche gewollt geändert hat:'
+              echo
+              echo '1. Unter Actions den Workflow **Referenzbilder** auf diesem Branch starten.'
+              echo '2. Lokal `npm run referenzbilder` ausführen (übernimmt das Ergebnis nach `e2e/referenz/`).'
+              echo '3. Bilder im Diff ansehen, committen und pushen.'
+              echo
+              echo 'Details: `docs/testing.md`, Abschnitt «Referenzbilder erneuern».'
+            } >> "$GITHUB_STEP_SUMMARY"
+            echo "::error title=Referenzbilder::Bildvergleich fehlgeschlagen. Workflow «Referenzbilder» starten, dann npm run referenzbilder (siehe Zusammenfassung)."
+          fi
       - uses: actions/upload-artifact@v7
         if: ${{ !cancelled() }}
         with:
@@ -161,9 +181,28 @@ jobs:
           merge-multiple: true
       - run: node scripts/test-summary.mjs
 
+  # Ein einziger Status für alle Pflichtjobs (später für den Branch-Schutz). Neue Pflichtjobs hier in `needs` eintragen;
+  # src/test/ci.test.ts prüft das. Grün nur, wenn jeder Pflichtjob grün ist (nicht rot, abgebrochen oder übersprungen).
+  ci-gesamt:
+    if: ${{ always() && github.event.pull_request.draft != true }}
+    needs: [statisch, unit, langsam, datenbank, e2e, build]
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      ERGEBNISSE: ${{ join(needs.*.result, ' ') }}
+    steps:
+      - run: |
+          echo "Ergebnisse: $ERGEBNISSE"
+          for r in $ERGEBNISSE; do
+            if [ "$r" != "success" ]; then
+              echo "::error::Ein Pflichtjob ist nicht grün (Ergebnis: $r; möglich sind failure, cancelled, skipped)."
+              exit 1
+            fi
+          done
+
   deploy:
     if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
-    needs: [statisch, unit, langsam, datenbank, e2e, build]
+    needs: [ci-gesamt]
     runs-on: ubuntu-latest
     permissions:
       pages: write
