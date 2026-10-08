@@ -5,6 +5,10 @@ die Versionen folgen [Semantic Versioning](https://semver.org/lang/de/).
 
 ## [Unreleased]
 
+### Behoben
+
+- Rechnung: Der QR-Code kodierte Umlaute (zum Beispiel «Zürich», «Müller») nicht als UTF-8, wie es die QR-Rechnung verlangt; eine Banking-App konnte solche Codes nicht richtig lesen. Der Inhalt wird jetzt vor der Anzeige gegen den Standard geprüft. Bei der Beispiel-IBAN aus der Dokumentation warnt die Rechnung, dass der Zahlteil nicht bezahlbar ist (#121).
+
 ### Geändert
 
 - Bankverbindung: Die Meldung bei einer abgelehnten IBAN nennt jetzt den Grund (Prüfsumme, Länge mit Zeichenzahl, Land, Zeichen), und das Formular zeigt, welche IBAN bis zum Speichern weiterhin auf der Rechnung steht (#120).

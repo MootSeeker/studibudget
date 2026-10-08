@@ -15,10 +15,12 @@
 | @playwright/test                        | Ende-zu-Ende-Tests und Bildvergleich (Chromium, WebKit)         |
 | @axe-core/playwright                    | Barrierefreiheitsprüfung nach WCAG 2.0 bis 2.2                  |
 | qrcode-generator                        | Swiss QR Code auf der Rechnung (#106)                           |
+| jsqr (dev)                              | Liest den erzeugten QR-Code im Test zurück (#121)               |
 
 `qrcode-generator` (ohne eigene Abhängigkeiten, wenige kB im Bündel) erzeugt die QR-Matrix im Browser mit Fehlerkorrektur M,
 ohne Netzwerkzugriff; die Content-Security-Policy bleibt unverändert. Zeichnen (SVG, Schweizer Kreuz) und Inhalt (SPC 0200,
-Adresstyp S) sind eigener Code.
+Adresstyp S) sind eigener Code. Die Bibliothek kodiert standardmässig ein Byte pro Zeichen; wir setzen UTF-8 (die QR-Rechnung
+verlangt Zeichensatz 1), sonst würden Umlaute falsch gelesen. `jsqr` (nur Test) liest die Matrix zurück und belegt das.
 
 Krypto läuft ausschliesslich über die eingebaute Web Crypto API, es gibt keine Krypto-Bibliothek.
 

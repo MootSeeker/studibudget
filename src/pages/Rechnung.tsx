@@ -11,7 +11,7 @@ import type { BankDetails } from '../domain/types'
 import { formatIban } from '../domain/iban'
 import { buildInvoice } from '../domain/invoice'
 import { formatMoney } from '../domain/money'
-import { buildQrPayload, qrBillStatus } from '../domain/qrBill'
+import { buildQrPayload, isExampleIban, qrBillStatus, validateQrPayload } from '../domain/qrBill'
 import { SwissQr } from '../components/SwissQr'
 
 const day = (date: string) => `${date.slice(8, 10)}.${date.slice(5, 7)}.${date.slice(0, 4)}`
@@ -47,6 +47,8 @@ export function Rechnung() {
   const invoice = buildInvoice(personId, txs, settlements, categories)
   const bank = settings.bank
   const qr = qrBillStatus(settings.country, bank, invoice.totalCents)
+  const qrPayload = qr.ok ? buildQrPayload(qr.bank, invoice.totalCents) : ''
+  const qrProblems = qr.ok ? validateQrPayload(qrPayload) : []
   // Fehlt nur die Bankverbindung, sagt das schon der Hinweis oben.
   const qrHint = !qr.ok && !(settings.country === 'CH' && !bank) ? qr.reason : undefined
 
@@ -71,6 +73,24 @@ export function Rechnung() {
         </p>
       )}
 
+      {qr.ok && isExampleIban(qr.bank.iban) && (
+        <p
+          role="note"
+          className="rounded-md border border-border bg-surface p-3 text-sm print:hidden"
+        >
+          Das ist die Beispiel-IBAN aus der Dokumentation der Banken, keine echte Kontonummer. Eine
+          Zahlung mit diesem Zahlteil kann nicht ankommen. Trage deine eigene IBAN in den
+          Einstellungen ein.
+        </p>
+      )}
+      {qrProblems.length > 0 && (
+        <p
+          role="note"
+          className="rounded-md border border-border bg-surface p-3 text-sm print:hidden"
+        >
+          Der Zahlteil kann nicht erstellt werden: {qrProblems.join(' ')}
+        </p>
+      )}
       {qrHint && (
         <p
           role="note"
@@ -151,7 +171,7 @@ export function Rechnung() {
         </table>
       </article>
 
-      {qr.ok && (
+      {qr.ok && qrProblems.length === 0 && (
         <section
           aria-label="Zahlteil"
           className="flex h-[105mm] w-[210mm] max-w-full border-t border-dashed border-black bg-white p-[5mm] text-black print:fixed print:bottom-0 print:left-0 print:max-w-none print:border-t print:break-inside-avoid"
@@ -166,10 +186,7 @@ export function Rechnung() {
             <h2 className="text-[11pt] font-bold">Zahlteil</h2>
             <div className="flex gap-[5mm]">
               <div>
-                <SwissQr
-                  payload={buildQrPayload(qr.bank, invoice.totalCents)}
-                  label="Swiss QR Code zur Zahlung"
-                />
+                <SwissQr payload={qrPayload} label="Swiss QR Code zur Zahlung" />
                 <Amount cents={invoice.totalCents} />
               </div>
               <div>

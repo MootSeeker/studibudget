@@ -1,6 +1,13 @@
 import fc from 'fast-check'
 import { describe, expect, it } from 'vitest'
-import { buildQrPayload, qrBillStatus, sanitizeQrText, splitStreet } from './qrBill'
+import {
+  buildQrPayload,
+  isExampleIban,
+  qrBillStatus,
+  sanitizeQrText,
+  splitStreet,
+  validateQrPayload,
+} from './qrBill'
 import type { BankDetails } from './types'
 
 const bank: BankDetails = {
@@ -112,5 +119,67 @@ describe('qrBillStatus', () => {
     expect(qrBillStatus('CH', { ...bank, holder: '' }, 100)).toMatchObject({ ok: false })
     expect(qrBillStatus('CH', { ...bank, holder: '   ' }, 100)).toMatchObject({ ok: false })
     expect(qrBillStatus('CH', { ...bank, town: ' ' }, 100)).toMatchObject({ ok: false })
+  })
+})
+
+describe('validateQrPayload (Issue #121)', () => {
+  const gut = buildQrPayload(bank, 210000)
+  const lines = () => gut.split('\n')
+  const mit = (i: number, wert: string) =>
+    lines()
+      .map((l, k) => (k === i ? wert : l))
+      .join('\n')
+
+  it('AK-1: ein gültiger Payload hat keine Verstösse', () => {
+    expect(validateQrPayload(gut)).toEqual([])
+    expect(lines()).toHaveLength(31)
+  })
+
+  it.each([
+    ['Kopfzeile', mit(0, 'XXX'), /SPC/],
+    ['Version', mit(1, '0100'), /Version/],
+    ['Zeichensatz', mit(2, '2'), /Zeichensatz/],
+    ['IBAN-Prüfsumme', mit(3, 'CH9400762011623852957'), /IBAN/],
+    ['Adresstyp', mit(4, 'K'), /Adresstyp/],
+    ['leerer Name', mit(5, ''), /Name/],
+    ['leerer Ort', mit(9, ''), /Ort/],
+    ['Land', mit(10, 'Schweiz'), /Land/],
+    ['Betrag ohne Nachkommastellen', mit(18, '2100'), /Betrag/],
+    ['Betrag mit Komma', mit(18, '21,00'), /Betrag/],
+    ['Betrag null', mit(18, '0.00'), /Betrag/],
+    ['Währung', mit(19, 'EUR'), /Währung/],
+    ['Referenzart', mit(27, 'QRR'), /Referenz/],
+    ['Schlusszeichen', mit(30, 'EPX'), /EPD/],
+    ['Zeilenzahl', gut + '\nZusatz\nNoch mehr\nUnd mehr\nUnd mehr', /Zeilen/],
+    ['zu lang', mit(5, 'N'.repeat(71)), /70/],
+    ['unerlaubtes Zeichen', mit(5, 'Anna 😀'), /Zeichen/],
+  ])('AK-1: erkennt %s', (_n, payload, grund) => {
+    expect(validateQrPayload(payload).join(' ')).toMatch(grund)
+  })
+
+  it('AK-1: jeder aus gültigen Angaben gebaute Payload besteht die Prüfung', () => {
+    fc.assert(
+      fc.property(
+        fc.string({ minLength: 1, maxLength: 120 }),
+        fc.string({ maxLength: 120 }),
+        fc.string({ minLength: 1, maxLength: 40 }),
+        fc.string({ minLength: 1, maxLength: 40 }),
+        fc.integer({ min: 1, max: 99999999999 }),
+        (holder, street, zip, town, cents) => {
+          const b = { ...bank, holder, street, zip, town }
+          if (qrBillStatus('CH', b, cents).ok)
+            expect(validateQrPayload(buildQrPayload(b, cents))).toEqual([])
+        },
+      ),
+    )
+  })
+})
+
+describe('isExampleIban (Issue #121)', () => {
+  it('AK-4: erkennt die Beispiel-IBAN aus der Dokumentation, mit und ohne Leerzeichen', () => {
+    expect(isExampleIban('CH9300762011623852957')).toBe(true)
+    expect(isExampleIban('ch93 0076 2011 6238 5295 7')).toBe(true)
+    expect(isExampleIban('LI21088100002324013AA')).toBe(true)
+    expect(isExampleIban('CH5604835012345678009')).toBe(false)
   })
 })

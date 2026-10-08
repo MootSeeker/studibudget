@@ -1,5 +1,9 @@
 import qrcode from 'qrcode-generator'
 
+// Die Bibliothek kodiert standardmässig ein Byte pro Zeichen; die QR-Rechnung verlangt UTF-8 (Zeichensatz 1, Issue #121).
+const utf8 = new TextEncoder()
+qrcode.stringToBytes = (s: string) => Array.from(utf8.encode(s))
+
 /** Seitenlänge des QR-Codes und des Schweizer Kreuzes in mm (Swiss Implementation Guidelines QR-Rechnung). */
 const SIZE = 46
 const CROSS = 7
