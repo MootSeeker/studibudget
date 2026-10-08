@@ -28,3 +28,21 @@ function checksumOk(iban: string): boolean {
 export function isValidSwissIban(iban: string): boolean {
   return /^(CH|LI)\d{2}[0-9A-Z]{17}$/.test(iban) && checksumOk(iban)
 }
+
+/**
+ * Warum ist die Eingabe keine gültige Schweizer oder Liechtensteiner IBAN? `null`, wenn sie gültig ist (Issue #120).
+ * Normalisiert vorher selbst; die Gründe sind nach Nutzen für die Korrektur geordnet.
+ */
+export function ibanProblem(input: string): string | null {
+  const iban = normalizeIban(input)
+  if (!iban) return 'Die IBAN fehlt.'
+  if (!/^[0-9A-Z]+$/.test(iban)) return 'Eine IBAN enthält nur Buchstaben und Ziffern.'
+  if (!/^(CH|LI)/.test(iban))
+    return 'Es gelten nur Schweizer und Liechtensteiner IBAN (sie beginnen mit CH oder LI).'
+  if (iban.length !== 21) return `Die IBAN hat ${iban.length} Zeichen, erwartet sind 21.`
+  if (!isValidSwissIban(iban))
+    return /^(CH|LI)\d{2}/.test(iban)
+      ? 'Die Prüfsumme der IBAN stimmt nicht: wahrscheinlich ein Tippfehler.'
+      : 'Nach CH oder LI folgen zwei Ziffern.'
+  return null
+}

@@ -127,4 +127,76 @@ describe('Bankverbindung in den Einstellungen (Issue #104)', () => {
     expect(hinweis).toHaveTextContent(/nur verschlüsselt synchronisiert/)
     expect(hinweis).toHaveTextContent(/Backup-Datei stehen sie unverschlüsselt/)
   })
+
+  describe('Falsch eingegebene IBAN (Issue #120)', () => {
+    it('AK-1: die Meldung nennt den Grund und die Zahl der Zeichen', async () => {
+      const user = await setup()
+      await user.type(screen.getByLabelText('IBAN'), 'CH78 9325 3212 9847 3647 3')
+      await speichern(user)
+      expect(await screen.findByRole('alert')).toHaveTextContent(/Prüfsumme/)
+      await user.clear(screen.getByLabelText('IBAN'))
+      await user.type(screen.getByLabelText('IBAN'), 'CH93 0076 2011 6238 5295')
+      await speichern(user)
+      expect(await screen.findByRole('alert')).toHaveTextContent(/20 Zeichen.*21/)
+    })
+
+    it(
+      'AK-2 (regression): nach der Ablehnung bleibt das Feld bearbeitbar, ein zweiter Versuch speichert',
+      { tags: ['regression'] },
+      async () => {
+        const user = await setup()
+        await user.type(screen.getByLabelText('IBAN'), 'CH78 9325 3212 9847 3647 3')
+        await speichern(user)
+        await screen.findByRole('alert')
+        expect(screen.getByLabelText('IBAN')).toBeEnabled()
+        expect(screen.getByLabelText('IBAN')).not.toHaveAttribute('readonly')
+        await user.type(screen.getByLabelText('IBAN'), '{Backspace}{Backspace}')
+        await user.clear(screen.getByLabelText('IBAN'))
+        await user.type(screen.getByLabelText('IBAN'), 'CH93 0076 2011 6238 5295 7')
+        await speichern(user)
+        await waitFor(async () => expect((await saved())?.iban).toBe('CH9300762011623852957'))
+        expect(screen.queryByRole('alert')).not.toBeInTheDocument()
+      },
+    )
+
+    it('AK-3: IBAN leeren und speichern gelingt, der Rest bleibt', async () => {
+      const user = await setup()
+      await user.type(screen.getByLabelText('Kontoinhaber/in'), 'Anna Muster')
+      await user.type(screen.getByLabelText('IBAN'), 'CH93 0076 2011 6238 5295 7')
+      await speichern(user)
+      await waitFor(async () => expect((await saved())?.iban).toBe('CH9300762011623852957'))
+      await user.clear(screen.getByLabelText('IBAN'))
+      await speichern(user)
+      await waitFor(async () => expect((await saved())?.iban).toBe(''))
+      expect((await saved())?.holder).toBe('Anna Muster')
+      expect(screen.queryByRole('alert')).not.toBeInTheDocument()
+    })
+
+    it('AK-4: bei abweichender Eingabe steht, welche IBAN auf der Rechnung gilt', async () => {
+      // Die Seite bekommt die gespeicherten Einstellungen als Eigenschaft: erst eine IBAN speichern, dann rendern.
+      await db.settings.update(SETTINGS_ID, {
+        bank: {
+          holder: 'Anna Muster',
+          street: '',
+          zip: '',
+          town: '',
+          country: 'CH',
+          iban: 'CH9300762011623852957',
+        },
+      })
+      const user = await setup()
+      // Eingabe entspricht der gespeicherten IBAN: kein Hinweis
+      expect(screen.queryByTestId('bank-iban-gilt')).not.toBeInTheDocument()
+      await user.clear(screen.getByLabelText('IBAN'))
+      await user.type(screen.getByLabelText('IBAN'), 'CH78 9325 3212 9847 3647 3')
+      expect(screen.getByTestId('bank-iban-gilt')).toHaveTextContent('CH93 0076 2011 6238 5295 7')
+      await speichern(user) // abgelehnt: der Hinweis bleibt
+      await screen.findByRole('alert')
+      expect(screen.getByTestId('bank-iban-gilt')).toBeInTheDocument()
+      // Zurück auf die gespeicherte IBAN (andere Schreibweise): kein Hinweis mehr
+      await user.clear(screen.getByLabelText('IBAN'))
+      await user.type(screen.getByLabelText('IBAN'), 'ch93 0076 2011 6238 5295 7')
+      expect(screen.queryByTestId('bank-iban-gilt')).not.toBeInTheDocument()
+    })
+  })
 })

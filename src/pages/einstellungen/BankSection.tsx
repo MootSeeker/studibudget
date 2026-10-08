@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { buttonClass, Field, inputClass } from '../../auth/ui'
 import { buildBank } from '../../domain/bank'
-import { formatIban } from '../../domain/iban'
+import { formatIban, normalizeIban } from '../../domain/iban'
 import type { Settings } from '../../domain/types'
 import { saveSettings } from './saveSettings'
 import { Section } from './Sections'
@@ -17,6 +17,9 @@ export function BankSection({ settings }: { settings: Settings }) {
   const [iban, setIban] = useState(bank ? formatIban(bank.iban) : '')
   const [error, setError] = useState<string | null>(null)
   const [saved, setSaved] = useState(false)
+
+  // Solange eine andere IBAN eingegeben als gespeichert ist, gilt auf der Rechnung noch die gespeicherte (Issue #120)
+  const gilt = bank?.iban && normalizeIban(iban) !== bank.iban ? bank.iban : null
 
   async function save() {
     setSaved(false)
@@ -65,6 +68,11 @@ export function BankSection({ settings }: { settings: Settings }) {
         required={false}
         hint="Schweizer oder Liechtensteiner IBAN, zum Beispiel CH93 0076 2011 6238 5295 7."
       />
+      {gilt && (
+        <p data-testid="bank-iban-gilt" className="text-sm text-muted">
+          Gespeichert ist noch {formatIban(gilt)}; diese IBAN steht weiterhin auf der Rechnung.
+        </p>
+      )}
       {error && (
         <p role="alert" className="text-sm text-red-600">
           {error}
