@@ -118,6 +118,7 @@ jobs:
       - run: npx playwright install --with-deps ${{ matrix.browser }}
       # Ein Wackler (erst beim zweiten Versuch grün) gilt als Fehler.
       - run: npx playwright test --project=${{ matrix.browser }} --fail-on-flaky-tests
+      # Nur Chromium: Referenzbilder gibt es nur dafür (e2e/visuell.spec.ts überspringt andere Browser).
       # Ein Bildunterschied heisst meist: Die Oberfläche hat sich gewollt geändert und die Referenzbilder müssen neu entstehen.
       - name: Hinweis zu den Referenzbildern
         if: ${{ failure() && matrix.browser == 'chromium' }}
