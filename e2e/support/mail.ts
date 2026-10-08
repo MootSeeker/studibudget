@@ -6,6 +6,19 @@ interface MailKopf {
   ID: string
   To: { Address: string }[]
   Subject: string
+  Created: string
+}
+
+/** Die neueste Mail an `an` (Gross-/Kleinschreibung egal), unabhängig von der Reihenfolge der Liste. */
+export function neuesteMail<T extends MailKopf>(messages: T[], an: string): T | undefined {
+  return messages
+    .filter((x) => x.To.some((t) => t.Address.toLowerCase() === an.toLowerCase()))
+    .sort((a, b) => Date.parse(b.Created) - Date.parse(a.Created))[0]
+}
+
+/** Link ohne Token-Werte, damit er in Fehlermeldungen und CI-Protokollen stehen darf. */
+export function linkOhneToken(link: string): string {
+  return link.replace(/\b(token|access_token|refresh_token|code)=[^&#\s]*/g, '$1=…')
 }
 
 /** Wartet auf die neueste Mail an `an` (Mailpit-API des lokalen Supabase) und gibt den Text zurück. */
@@ -18,7 +31,7 @@ export async function mailAbwarten(
     const res = await fetch(`${base}/api/v1/messages`)
     if (res.ok) {
       const { messages } = (await res.json()) as { messages: MailKopf[] }
-      const m = messages.find((x) => x.To.some((t) => t.Address.toLowerCase() === an.toLowerCase()))
+      const m = neuesteMail(messages, an)
       if (m) {
         const voll = (await (await fetch(`${base}/api/v1/message/${m.ID}`)).json()) as {
           Text: string
