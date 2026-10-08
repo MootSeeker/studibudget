@@ -12,7 +12,7 @@ import { defaultSemesters } from '../domain/period'
 import { buildSharedEqual } from '../domain/split'
 import { Rechnung } from './Rechnung'
 
-async function setup(withBank: boolean) {
+async function setup(withBank: boolean, country: 'CH' | 'DE' = 'CH') {
   await db.wipe()
   await completeOnboarding(db, {
     country: 'CH',
@@ -50,6 +50,10 @@ async function setup(withBank: boolean) {
       },
     } as never)
   }
+  if (country !== 'CH') {
+    const s = (await db.settings.toArray())[0]
+    await store.put('settings', { ...s, country } as never)
+  }
   return anna.id
 }
 const renderAt = (id: string) =>
@@ -70,8 +74,8 @@ describe('Rechnung', () => {
     expect(await screen.findByText('Miete')).toBeInTheDocument()
     expect(screen.getByRole('row', { name: /Total/ }).textContent).toMatch(/1.?000\.00/)
     expect(screen.getByText(/An: Anna/)).toBeInTheDocument()
-    expect(screen.getByText(/Kevin Muster/)).toBeInTheDocument()
-    expect(screen.getByText(/CH93 0076 2011 6238 5295 7/)).toBeInTheDocument()
+    expect(screen.getAllByText(/Kevin Muster/).length).toBeGreaterThan(0)
+    expect(screen.getAllByText(/CH93 0076 2011 6238 5295 7/).length).toBeGreaterThan(0)
   })
 
   it('zeigt ohne Bankverbindung einen Hinweis mit Link und ändert keine Daten', async () => {
@@ -132,4 +136,52 @@ describe('Rechnung', () => {
       expect(result.violations.map((v) => v.id)).toEqual([])
     },
   )
+
+  describe('Zahlteil mit Swiss QR Code (Issue #106)', () => {
+    it('AK-1: zeigt Empfangsschein und Zahlteil mit Währung, Betrag, Konto, Zahlbar an und durch', async () => {
+      const id = await setup(true)
+      const { container } = renderAt(id)
+      const part = await screen.findByRole('region', { name: 'Zahlteil' })
+      expect(container.querySelector('svg[role="img"]')).not.toBeNull()
+      expect(part.textContent).toContain('Empfangsschein')
+      expect(part.textContent).toContain('CH93 0076 2011 6238 5295 7')
+      expect(part.textContent).toContain('Kevin Muster')
+      expect(part.textContent).toMatch(/Zahlbar durch[\s\S]*Anna/)
+      expect(part.textContent).toContain('CHF')
+      expect(part.textContent).toMatch(/1.?000\.00/)
+    })
+
+    it('AK-5: bei Deutschland (EUR) kein Zahlteil, Hinweis nennt den Grund', async () => {
+      const id = await setup(true, 'DE')
+      renderAt(id)
+      await screen.findByText('Miete')
+      expect(screen.queryByRole('region', { name: 'Zahlteil' })).toBeNull()
+      expect(screen.getByText(/nur für die Schweiz/)).toBeInTheDocument()
+    })
+
+    it('AK-5: ohne Bankverbindung kein Zahlteil, der Hinweis auf die Einstellungen bleibt', async () => {
+      const id = await setup(false)
+      renderAt(id)
+      await screen.findByText('Miete')
+      expect(screen.queryByRole('region', { name: 'Zahlteil' })).toBeNull()
+      expect(screen.getByText(/noch keine Bankverbindung/)).toBeInTheDocument()
+    })
+
+    it('AK-4: bei Saldo 0 oder negativ kein Zahlteil', async () => {
+      const id = await setup(true)
+      await store.put('settlements', {
+        id: newId(),
+        deleted: false,
+        date: '2026-10-02',
+        personId: id,
+        direction: 'ich_erhalte',
+        amountCents: 100000,
+        note: '',
+      } as never)
+      renderAt(id)
+      await screen.findByText('Miete')
+      expect(screen.queryByRole('region', { name: 'Zahlteil' })).toBeNull()
+      expect(screen.getByText(/nichts zu zahlen/)).toBeInTheDocument()
+    })
+  })
 })

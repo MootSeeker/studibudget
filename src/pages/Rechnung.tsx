@@ -7,9 +7,12 @@ import {
   useSettings,
   useSettlements,
 } from '../data/hooks'
+import type { BankDetails } from '../domain/types'
 import { formatIban } from '../domain/iban'
 import { buildInvoice } from '../domain/invoice'
 import { formatMoney } from '../domain/money'
+import { buildQrPayload, qrBillStatus } from '../domain/qrBill'
+import { SwissQr } from '../components/SwissQr'
 
 const day = (date: string) => `${date.slice(8, 10)}.${date.slice(5, 7)}.${date.slice(0, 4)}`
 const todayIso = () => {
@@ -43,6 +46,9 @@ export function Rechnung() {
   const money = (c: number) => formatMoney(c, settings.country)
   const invoice = buildInvoice(personId, txs, settlements, categories)
   const bank = settings.bank
+  const qr = qrBillStatus(settings.country, bank, invoice.totalCents)
+  // Fehlt nur die Bankverbindung, sagt das schon der Hinweis oben.
+  const qrHint = !qr.ok && !(settings.country === 'CH' && !bank) ? qr.reason : undefined
 
   return (
     <section className="max-w-3xl space-y-6 print:max-w-none">
@@ -62,6 +68,15 @@ export function Rechnung() {
             Einstellungen
           </Link>{' '}
           ein, damit sie auf der Rechnung steht.
+        </p>
+      )}
+
+      {qrHint && (
+        <p
+          role="note"
+          className="rounded-md border border-border bg-surface p-3 text-sm print:hidden"
+        >
+          {qrHint}
         </p>
       )}
 
@@ -135,6 +150,74 @@ export function Rechnung() {
           </tfoot>
         </table>
       </article>
+
+      {qr.ok && (
+        <section
+          aria-label="Zahlteil"
+          className="flex h-[105mm] w-[210mm] max-w-full border-t border-dashed border-black bg-white p-[5mm] text-black print:fixed print:bottom-0 print:left-0 print:max-w-none print:border-t print:break-inside-avoid"
+        >
+          <div className="w-[62mm] border-r border-dashed border-black pr-[5mm] text-[8pt] leading-tight">
+            <h2 className="text-[11pt] font-bold">Empfangsschein</h2>
+            <PaymentParty title="Konto / Zahlbar an" bank={qr.bank} />
+            <PaymentParty title="Zahlbar durch" name={person.name} />
+            <Amount cents={invoice.totalCents} small />
+          </div>
+          <div className="flex-1 pl-[5mm] text-[8pt] leading-tight">
+            <h2 className="text-[11pt] font-bold">Zahlteil</h2>
+            <div className="flex gap-[5mm]">
+              <div>
+                <SwissQr
+                  payload={buildQrPayload(qr.bank, invoice.totalCents)}
+                  label="Swiss QR Code zur Zahlung"
+                />
+                <Amount cents={invoice.totalCents} />
+              </div>
+              <div>
+                <PaymentParty title="Konto / Zahlbar an" bank={qr.bank} />
+                <PaymentParty title="Zahlbar durch" name={person.name} />
+              </div>
+            </div>
+          </div>
+        </section>
+      )}
     </section>
+  )
+}
+
+function PaymentParty({ title, bank, name }: { title: string; bank?: BankDetails; name?: string }) {
+  return (
+    <div className="mt-2">
+      <h3 className="font-bold">{title}</h3>
+      {bank ? (
+        <p>
+          {formatIban(bank.iban)}
+          <br />
+          {bank.holder}
+          <br />
+          {bank.street}
+          <br />
+          {bank.zip} {bank.town}
+        </p>
+      ) : (
+        <p>{name}</p>
+      )}
+    </div>
+  )
+}
+
+function Amount({ cents, small }: { cents: number; small?: boolean }) {
+  return (
+    <div className={`mt-2 flex gap-6 ${small ? '' : 'text-[10pt]'}`}>
+      <p>
+        <b>Währung</b>
+        <br />
+        CHF
+      </p>
+      <p>
+        <b>Betrag</b>
+        <br />
+        {formatMoney(cents, 'CH').replace(/^CHF\s?/, '')}
+      </p>
+    </div>
   )
 }

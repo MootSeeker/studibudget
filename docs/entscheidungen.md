@@ -14,6 +14,11 @@
 | @stryker-mutator/core, vitest-runner    | Mutationstests (wöchentlich, nicht in der PR-CI)                |
 | @playwright/test                        | Ende-zu-Ende-Tests und Bildvergleich (Chromium, WebKit)         |
 | @axe-core/playwright                    | Barrierefreiheitsprüfung nach WCAG 2.0 bis 2.2                  |
+| qrcode-generator                        | Swiss QR Code auf der Rechnung (#106)                           |
+
+`qrcode-generator` (ohne eigene Abhängigkeiten, wenige kB im Bündel) erzeugt die QR-Matrix im Browser mit Fehlerkorrektur M,
+ohne Netzwerkzugriff; die Content-Security-Policy bleibt unverändert. Zeichnen (SVG, Schweizer Kreuz) und Inhalt (SPC 0200,
+Adresstyp S) sind eigener Code.
 
 Krypto läuft ausschliesslich über die eingebaute Web Crypto API, es gibt keine Krypto-Bibliothek.
 
