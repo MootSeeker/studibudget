@@ -12,7 +12,7 @@ tags:
 
 # Offene Punkte
 
-Offene GitHub-Issues (Stand 2026-10-08): #48 (Analyse `records_seq`), #72 (CI-Artefakte aufs NAS), #121 (QR-Code von der Banking-App nicht akzeptiert; PR in Arbeit, Scan mit echter IBAN steht aus), #76 (Synchronisation von Informationen), #111 (CI-Sammelstatus, Zeitfehler-Wächter, Referenzbilder), #112 und #113 (Konten: Zeitdarstellung, Verlauf-Chart).
+Offene GitHub-Issues (Stand 2026-10-08): #48 (Analyse `records_seq`), #72 (CI-Artefakte aufs NAS), #76 (Synchronisation von Informationen), #111 (CI-Sammelstatus, Zeitfehler-Wächter, Referenzbilder), #112 und #113 (Konten: Zeitdarstellung, Verlauf-Chart).
 Offen ist ausserdem der **öffentliche Start**. Die vollständige Liste steht in `docs/start-checkliste.md`; hier der Stand:
 
 ## Blocker (Kevin)
@@ -31,7 +31,7 @@ Offen ist ausserdem der **öffentliche Start**. Die vollständige Liste steht in
 
 ## Tests auf echten Geräten
 
-- [ ] Rechnung (#105, #106): Zahlteil drucken und den Swiss QR Code mit einer echten Banking-App scannen; Layout des Zahlteils (Schriftgrössen, Kreuz) von Hand prüfen.
+- [ ] Rechnung (#105, #106, #121): Zahlteil drucken und den Swiss QR Code mit einer echten Banking-App scannen, mit **echter IBAN** (nicht der Beispiel-IBAN) und einem Umlaut in Name oder Ort; Layout des Zahlteils (Schriftgrössen, Kreuz) von Hand prüfen. Lehnt die App ihn weiter ab, die genaue Meldung festhalten und ein neues Issue anlegen (#121 ist geschlossen, AK-3 war nur teilweise belegt).
 - [ ] Offline-Start und Installation (der Service Worker liess sich in der Entwicklungsumgebung nicht ausführen).
 - [ ] Zweites Gerät: Sync, Offline-Buchung, Passwort vergessen mit Wiederherstellungsschlüssel, Backup einspielen.
 - [ ] Neues Layout (Issue #17) und die Reiter (#84) bei Handy-, Tablet- und Desktop-Breite ansehen: über Tests und Referenzbilder abgesichert, nicht von Hand geprüft.
