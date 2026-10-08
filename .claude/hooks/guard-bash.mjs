@@ -54,6 +54,13 @@ const pushesOnlyTags = (rest) => {
 
 const pushes = afterGit('push')
 const commits = afterGit('commit')
+
+// Subagent «umsetzer» (#128): führt nur den Plan aus; Commit, Push und GitHub macht die Hauptsitzung.
+if (
+  input.agent_type === 'umsetzer' &&
+  (pushes.length || commits.length || segments.some((s) => /^gh\b/.test(s)))
+)
+  block('Der Umsetzer committet, pusht und schreibt nicht auf GitHub; das macht die Hauptsitzung.')
 const writesGitHub = segments.some((s) => /^gh\s+(?:pr|issue)\s+(?:create|edit|comment)\b/.test(s))
 
 // Nicht auf die CI warten (Regel 2): der Nutzer meldet das Ergebnis. Ein einmaliges `gh pr checks` bleibt erlaubt.

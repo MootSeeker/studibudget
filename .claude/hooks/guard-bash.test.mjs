@@ -43,6 +43,19 @@ const cases = [
   [0, `cat > datei.md ${HEREDOC('EOF', 'Danach git push origin main und git commit --no-verify')}`],
   [0, 'grep -rn "git push --force" docs'],
   [0, 'gh pr create --title "Wächter für git push auf main" --body "Blockiert --no-verify"'],
+  // Subagent «umsetzer» (#128): kein Commit, kein Push, kein gh; dritter Eintrag = agent_type
+  [2, 'git commit -m x', 'umsetzer'],
+  [2, 'git push -u origin HEAD', 'umsetzer'],
+  [2, 'git -C . commit -m x', 'umsetzer'],
+  [2, 'gh issue view 1', 'umsetzer'],
+  [2, 'npm test && gh pr view 1', 'umsetzer'],
+  [0, 'npm test', 'umsetzer'],
+  [0, 'git status && git diff', 'umsetzer'],
+  [0, 'echo "git commit ist verboten"', 'umsetzer'],
+  [0, 'git commit -m x', 'planer'],
+  [0, 'gh issue view 1', 'planer'],
+  [0, 'git commit -m x'],
+  [0, 'gh issue view 1'],
 ]
 
 // Fälle auf dem Hauptzweig: nur Tag-Pushes (Release) sind erlaubt
@@ -78,9 +91,12 @@ git('branch', 'gleichnamig')
 
 let failed = 0
 const run = (list, label) => {
-  for (const [want, command] of list) {
+  for (const [want, command, agentType] of list) {
     const r = spawnSync('node', [guard], {
-      input: JSON.stringify({ tool_input: { command } }),
+      input: JSON.stringify({
+        tool_input: { command },
+        ...(agentType ? { agent_id: 'a1', agent_type: agentType } : {}),
+      }),
       encoding: 'utf8',
       cwd: repo,
     })
@@ -88,7 +104,7 @@ const run = (list, label) => {
     if (!ok) failed++
     console.log(
       ok ? 'OK  ' : 'FAIL',
-      `[${label}] erwartet ${want}, war ${r.status}:`,
+      `[${label}${agentType ? `, ${agentType}` : ''}] erwartet ${want}, war ${r.status}:`,
       command.split('\n')[0],
     )
   }
