@@ -25,6 +25,11 @@ describe('Zeitfehler-Wächter', () => {
     ).toHaveLength(3)
   })
 
+  it('AK-2: erkennt auch Date() ohne new', () => {
+    expect(findeZeitstellen('const s = Date()\nconst t = String( Date ( ) )')).toHaveLength(2)
+    expect(findeZeitstellen('const d = Date.UTC(2026, 0, 1)\nconst x = myDate()')).toEqual([])
+  })
+
   it('AK-2: new Date("2026-01-01") und Date.UTC sind erlaubt (feste Zeit)', () => {
     expect(findeZeitstellen("new Date('2026-01-01')\nDate.UTC(2026, 0, 1)\nnew Date(0)")).toEqual(
       [],

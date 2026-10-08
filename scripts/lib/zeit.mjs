@@ -3,8 +3,8 @@
 import { readdirSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
 
-// Echte Uhr: `new Date` ohne Argument (mit oder ohne Klammern) und jede Erwähnung von `Date.now` (auch als Referenz).
-const ECHTE_UHR = /\bnew\s+Date\b(?!\s*\(\s*[^\s)])|\bDate\s*\.\s*now\b/
+// Echte Uhr: `new Date` ohne Argument (mit oder ohne Klammern), `Date()` ohne `new` und jede Erwähnung von `Date.now`.
+const ECHTE_UHR = /\bnew\s+Date\b(?!\s*\(\s*[^\s)])|(?<![\w.$])Date\s*\(\s*\)|\bDate\s*\.\s*now\b/
 const FESTE_UHR = /\bsetSystemTime\b/
 
 /** Zeilen (ab 1) mit Zugriff auf die echte Uhr; Kommentarzeilen zählen nicht. */
