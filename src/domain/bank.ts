@@ -1,4 +1,4 @@
-import { isValidSwissIban, normalizeIban } from './iban'
+import { ibanProblem, normalizeIban } from './iban'
 import type { BankDetails } from './types'
 
 /** Eingabe aus dem Formular: reiner Text, nichts ist geprüft. */
@@ -39,11 +39,7 @@ export function buildBank(input: BankInput): BankResult {
     if (bank[key].length > LIMITS[key])
       return { ok: false, error: `${LABELS[key]}: höchstens ${LIMITS[key]} Zeichen.` }
   }
-  if (bank.iban && !isValidSwissIban(bank.iban))
-    return {
-      ok: false,
-      error:
-        'Die IBAN ist ungültig. Es gelten nur Schweizer und Liechtensteiner IBAN mit 21 Zeichen.',
-    }
+  const problem = bank.iban ? ibanProblem(bank.iban) : null
+  if (problem) return { ok: false, error: problem }
   return { ok: true, bank }
 }

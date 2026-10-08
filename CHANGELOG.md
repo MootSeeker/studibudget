@@ -5,6 +5,10 @@ die Versionen folgen [Semantic Versioning](https://semver.org/lang/de/).
 
 ## [Unreleased]
 
+### Geändert
+
+- Bankverbindung: Die Meldung bei einer abgelehnten IBAN nennt jetzt den Grund (Prüfsumme, Länge mit Zeichenzahl, Land, Zeichen), und das Formular zeigt, welche IBAN bis zum Speichern weiterhin auf der Rechnung steht (#120).
+
 ### Hinzugefügt
 
 - Rechnung: Zahlteil mit Swiss QR Code (Empfangsschein und Zahlteil, A4) für die Schweiz (CHF), wenn eine gültige
