@@ -115,8 +115,10 @@ export function pruefeLeitplanken(zeilen, ausnahmen) {
   return befunde
 }
 
+// Bei einem Nachtrag steht ein neuer Block unter dem alten: Es gilt der letzte (Issue #136, plan-schreiben).
 function block(text, art) {
-  const treffer = text.match(new RegExp('```' + art + '[^\\n]*\\n([\\s\\S]*?)```'))
+  const muster = new RegExp('```' + art + '[^\\n]*\\n([\\s\\S]*?)```', 'g')
+  const treffer = [...text.matchAll(muster)].at(-1)
   if (!treffer) return null
   return treffer[1]
     .split('\n')
