@@ -12,7 +12,7 @@ tags:
 
 # Offene Punkte
 
-Offene GitHub-Issues (Stand 2026-10-09): #48 (Analyse `records_seq`), #72 (CI-Artefakte aufs NAS), #76 (Synchronisation von Informationen), #136 (`verify:kurz` liest den ersten statt den letzten Plan-Block), #112 und #113 (Konten: Zeitdarstellung, Verlauf-Chart).
+Offene GitHub-Issues (Stand 2026-10-09): #48 (Analyse `records_seq`), #72 (CI-Artefakte aufs NAS), #76 (Synchronisation von Informationen), #112 und #113 (Konten: Zeitdarstellung, Verlauf-Chart).
 Offen ist ausserdem der **öffentliche Start**. Die vollständige Liste steht in `docs/start-checkliste.md`; hier der Stand:
 
 ## Pilot Agenten-Ablauf (#128)
