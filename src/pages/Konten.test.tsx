@@ -1,15 +1,15 @@
 import { fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { beforeEach, describe, expect, it } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { db } from '../data/db'
 import { completeOnboarding } from '../data/onboarding'
 import { newId } from '../data/seed'
 import { store } from '../data/store'
-import { addMonths, currentMonth, defaultSemesters } from '../domain/period'
+import { addMonths, defaultSemesters } from '../domain/period'
 import { Konten } from './Konten'
 
 const norm = (s: string | null) => (s ?? '').replace(/\s/g, ' ').replace('’', "'")
-const NOW = currentMonth()
+const NOW = '2026-10' // feste Uhr in beforeEach: 15. Oktober 2026 (Herbstsemester 2026/27)
 const MONTHS = [
   'Januar',
   'Februar',
@@ -27,6 +27,8 @@ const MONTHS = [
 const name = (m: string) => `${MONTHS[Number(m.slice(5, 7)) - 1]} ${m.slice(0, 4)}`
 
 beforeEach(async () => {
+  vi.useFakeTimers({ toFake: ['Date'] }) // nur die Uhr; Timer bleiben echt (waitFor)
+  vi.setSystemTime(new Date('2026-10-15T12:00:00'))
   await db.wipe()
   await completeOnboarding(db, {
     country: 'CH',
@@ -38,6 +40,8 @@ beforeEach(async () => {
     budgets: {},
   })
 })
+
+afterEach(() => vi.useRealTimers())
 
 async function setup() {
   const user = userEvent.setup()
@@ -170,6 +174,109 @@ describe('Konten', () => {
     )
     expect((await db.accountBalances.toArray()).every((b) => b.deleted)).toBe(true)
   })
+})
+
+describe('Zeitraum (Issue #112)', () => {
+  const kontoPrivat = async (user: ReturnType<typeof userEvent.setup>) => {
+    await user.type(screen.getByLabelText('Neues Konto'), 'Privat')
+    await user.click(screen.getByRole('button', { name: 'Hinzufügen' }))
+    await screen.findByLabelText('Name Konto Privat')
+  }
+  const monate = () =>
+    Array.from(
+      screen
+        .getByRole('region', { name: 'Kontostände pro Monatsende' })
+        .querySelectorAll('tbody th'),
+    ).map((th) => th.textContent)
+
+  it('AK-1 (#112): Auswahl Zeitraum hat genau sechs Einträge', async () => {
+    const user = await setup()
+    expect(screen.queryByLabelText('Zeitraum')).not.toBeInTheDocument()
+    await kontoPrivat(user)
+    const select = screen.getByLabelText('Zeitraum')
+    expect(
+      within(select)
+        .getAllByRole('option')
+        .map((o) => o.textContent),
+    ).toEqual(['Semester', 'Halbjahr', 'Year to date', 'Jahr', '5 Jahre', 'Max. Aufnahme'])
+  })
+
+  it('AK-5 (#112): beim ersten Öffnen ist Semester gewählt', async () => {
+    const user = await setup()
+    await kontoPrivat(user)
+    expect(screen.getByLabelText('Zeitraum')).toHaveDisplayValue('Semester')
+    expect(
+      screen.getByText('Herbstsemester 2026/27 · August 2026 bis Januar 2027'),
+    ).toBeInTheDocument()
+    expect(monate()).toEqual([
+      'August 2026',
+      'September 2026',
+      'Oktober 2026',
+      'November 2026',
+      'Dezember 2026',
+      'Januar 2027',
+    ])
+  })
+
+  it('AK-2 (#112): Tabelle und Verlauf zeigen die Monate des gewählten Zeitraums', async () => {
+    const user = await setup()
+    await kontoPrivat(user)
+    await user.selectOptions(screen.getByLabelText('Zeitraum'), '5 Jahre')
+    setBalance('Privat', '2024-03', '100')
+    setBalance('Privat', NOW, '200')
+    await waitFor(() =>
+      expect(screen.getByLabelText(`Stand Privat ${name('2024-03')}`)).toHaveValue('100.00'),
+    )
+    await waitFor(() =>
+      expect(screen.getByLabelText(`Stand Privat ${name(NOW)}`)).toHaveValue('200.00'),
+    )
+    const faelle: [string, string, string, number][] = [
+      ['Semester', 'August 2026', 'Januar 2027', 6],
+      ['Halbjahr', 'Juli 2026', 'Dezember 2026', 6],
+      ['Year to date', 'Januar 2026', 'Oktober 2026', 10],
+      ['Jahr', 'Januar 2026', 'Dezember 2026', 12],
+      ['5 Jahre', 'November 2021', 'Oktober 2026', 60],
+      ['Max. Aufnahme', 'März 2024', 'Oktober 2026', 32],
+    ]
+    for (const [eintrag, von, bis, anzahl] of faelle) {
+      await user.selectOptions(screen.getByLabelText('Zeitraum'), eintrag)
+      const m = monate()
+      expect(m, eintrag).toHaveLength(anzahl)
+      expect(m[0], eintrag).toBe(von)
+      expect(m[anzahl - 1], eintrag).toBe(bis)
+      expect(
+        screen.getByLabelText(`Vermögensverlauf pro Monatsende, ${von} bis ${bis}`),
+      ).toBeInTheDocument()
+    }
+  })
+
+  it(
+    'AK-3 (#112): Pfeile verschieben den Zeitraum ohne doppelte oder fehlende Monate',
+    { tags: ['regression'] },
+    async () => {
+      const user = await setup()
+      await kontoPrivat(user)
+      await user.click(screen.getByRole('button', { name: 'Vorheriger Zeitraum' }))
+      expect(
+        screen.getByText('Frühjahrssemester 2026 · Februar 2026 bis Juli 2026'),
+      ).toBeInTheDocument()
+      expect(monate()).toHaveLength(6)
+      await user.click(screen.getByRole('button', { name: 'Nächster Zeitraum' }))
+      await user.click(screen.getByRole('button', { name: 'Nächster Zeitraum' }))
+      expect(
+        screen.getByText('Frühjahrssemester 2027 · Februar 2027 bis Juli 2027'),
+      ).toBeInTheDocument()
+      await user.selectOptions(screen.getByLabelText('Zeitraum'), 'Year to date')
+      expect(screen.getByText('Year to date · Januar 2026 bis Oktober 2026')).toBeInTheDocument()
+      await user.click(screen.getByRole('button', { name: 'Vorheriger Zeitraum' }))
+      expect(screen.getByText('Year to date · März 2025 bis Dezember 2025')).toBeInTheDocument()
+      expect(monate()).toHaveLength(10)
+      await user.selectOptions(screen.getByLabelText('Zeitraum'), '5 Jahre')
+      await user.click(screen.getByRole('button', { name: 'Vorheriger Zeitraum' }))
+      expect(screen.getByText('5 Jahre · November 2016 bis Oktober 2021')).toBeInTheDocument()
+      expect(monate()).toHaveLength(60)
+    },
+  )
 })
 
 describe('Sparziele', () => {
