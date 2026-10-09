@@ -63,4 +63,12 @@ Releases: Version per PR anheben (`npm version … --no-git-tag-version`), nach 
 
 ## Arbeitsablauf (Spec-getrieben)
 
-Issues sind die Anforderung (Formular mit nummerierten Akzeptanzkriterien). `/issue-bearbeiten <Nr>` führt durch den Ablauf: Plan mit Testliste (`plan-schreiben`), Tests zuerst, Umsetzung, `verify`, dann `/pr-abschliessen <Nr>` mit dem Subagenten `reviewer` (Sonnet, Opus bei Crypto und Sync; siehe `vault/30 Entscheide/Entscheid - Reviewer mit Sonnet.md`). Die Grösse im Issue steuert den Aufwand: Klein ohne Plan und Reviewer, Mittel mit beidem, Gross zusätzlich mit Rückfrage nach dem Plan.
+Issues sind die Anforderung (Formular mit nummerierten Akzeptanzkriterien). **Sitzungen dafür mit Sonnet starten.** `/issue-bearbeiten <Nr>` führt durch den Ablauf bis zum Draft-PR, `/pr-abschliessen <Nr>` schliesst ab. Die Grösse im Issue steuert den Aufwand: Klein ohne Plan und Reviewer (die Hauptsitzung setzt selbst um), Mittel mit Plan, Trockenlauf und Reviewer, Gross zusätzlich mit Rückfrage nach dem Plan.
+
+Rollen bei Mittel und Gross (Begründung: `vault/30 Entscheide/Entscheid - Rollen der Modelle im Agenten-Ablauf.md`):
+
+- **Hauptsitzung (Sonnet)** steuert nur: ruft Subagenten auf, leitet ihre Meldungen unverändert weiter, zählt Runden, committet, öffnet den PR, fragt den Nutzer. Kein Code, keine inhaltlichen Entscheide.
+- **`planer` (Opus)** schreibt den Plan nach `plan-schreiben` und entscheidet alle Rückfragen (Trockenlauf, «PLAN UNKLAR», wiederholtes Rot, NACHARBEIT).
+- **`umsetzer` (Haiku)** führt den Plan wörtlich aus, Tests zuerst; der Git-Wächter sperrt für ihn Commit, Push und `gh`.
+- **`npm run verify:kurz -- --plan <Datei>`** prüft Tests, Leitplanken und die Einhaltung des Plans.
+- **`reviewer` (Sonnet, Opus bei Crypto und Sync)** prüft die AK vor der Freigabe.
