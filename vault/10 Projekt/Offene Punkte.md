@@ -12,7 +12,7 @@ tags:
 
 # Offene Punkte
 
-Offene GitHub-Issues (Stand 2026-10-09): #48 (Analyse `records_seq`), #72 (CI-Artefakte aufs NAS), #76 (Synchronisation von Informationen), #112 (Konten: Zeitdarstellung).
+Offene GitHub-Issues (Stand 2026-10-09): #48 (Analyse `records_seq`), #72 (CI-Artefakte aufs NAS), #76 (Synchronisation von Informationen).
 Offen ist ausserdem der **öffentliche Start**. Die vollständige Liste steht in `docs/start-checkliste.md`; hier der Stand:
 
 ## Pilot Agenten-Ablauf (#128)
@@ -23,6 +23,7 @@ Sitzung mit Sonnet starten, `/issue-bearbeiten <Nr>` mit 2–3 Issues der Gröss
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | #126 | 2 Aufrufe, 84 k + 94 k Tokens (24 + 8 Werkzeugaufrufe) | Trockenlauf 70 k + 62 k, Umsetzen 44 k (24 Aufrufe) | 2 Aufrufe: 43 k (NACHARBEIT, nur formal: AK-2/AK-3 damals offen, CHANGELOG-Begründung), danach BEREIT | offen | 2 (Trockenlauf: Befehl für den Rot-Lauf fehlte; Reviewer-NACHARBEIT, vom Planer ohne Codeänderung beschieden) | 1 | 1 (nur formal) |
 | #113 | 1 Aufruf, 120 k Tokens (29 Werkzeugaufrufe) | Trockenlauf 103 k, Umsetzen 93 k (43 Aufrufe) | 2 Aufrufe: 30 k (NACHARBEIT, nur fehlende Referenzbilder), danach BEREIT | offen | 0 | 1 | 1 (nur formal) |
+| #112 | 1 Aufruf, 130 k Tokens (32 Werkzeugaufrufe) | Trockenlauf 72 k, Umsetzen 79 k (27 Aufrufe) | offen | nicht getrennt messbar | 0 | 1 | offen |
 
 - Zusätzlich messen: wie viel die Hauptsitzung für PR-Beschreibung, Journal und CHANGELOG braucht (Entscheid über einen Agenten `schreiber`).
 - Vergleich: ein ähnlich grosses Issue mit dem früheren Ablauf, sonst der Probelauf an #120 (PR #133).

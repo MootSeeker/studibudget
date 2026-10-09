@@ -57,6 +57,7 @@ Weitere Bausteine der Test-Suite: Stryker #58 (PR #59), E2E #60 (PR #61), zwei G
 | 126 | Bildtest «Konto» instabil | Testadressen fester Länge (`e2e/support/adresse.ts`, 34 Zeichen), neue Bilder, Workflow «Referenzbilder» mit `wiederholungen` als Beleg | #135 |
 | 137 | oxlint-Warnung: ungenutzter Import | `join` aus `scripts/lib/referenzbilder.mjs` entfernt | – |
 | 113 | Verlauf-Chart der Konten | `accountSeries`, `WealthChart` mit Linie pro Konto, Legende mit Kästchen, Gesamtlinie dicker; Serienfarben 3 bis 6 | – |
+| 112 | Zeitdarstellung in der Kontenübersicht | Dropdown «Zeitraum» (`wealthPeriod` in `src/domain/wealthPeriod.ts`), Pfeile springen um einen Zeitraum | – |
 | 136 | `verify:kurz` liest den ersten Plan-Block | `block()` in `scripts/lib/verify-kurz.mjs` nimmt den letzten Block, wie `plan-schreiben` es verlangt | – |
 
 Weitere Änderungen ohne Issue: Version 1.2.0 (#82), CI-Warnungen und veraltete Pakete (#83), PWA-Test-Fix (#75).

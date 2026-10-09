@@ -14,9 +14,15 @@ import {
   useSettings,
 } from '../data/hooks'
 import { formatMoney, parseAmount } from '../domain/money'
-import { addMonths, currentMonth, monthOf, monthRange } from '../domain/period'
+import { currentMonth, monthOf, monthRange } from '../domain/period'
 import { goalBalance, neededPerMonth } from '../domain/goals'
 import { accountSeries, enteredBalance, wealthByMonth } from '../domain/wealth'
+import {
+  firstBalanceMonth,
+  WEALTH_PERIODS,
+  wealthPeriod,
+  type WealthPeriodKind,
+} from '../domain/wealthPeriod'
 import type { Account, AccountKind, Country, Goal } from '../domain/types'
 
 const ops = createAccountOps(db)
@@ -182,7 +188,8 @@ export function Konten() {
   const balances = useAccountBalances()
   const goals = useAllGoals()
   const txs = useAllTransactions()
-  const [end, setEnd] = useState(currentMonth())
+  const [kind, setKind] = useState<WealthPeriodKind>('semester')
+  const [step, setStep] = useState(0)
   const [error, setError] = useState<string | null>(null)
   const [showArchived, setShowArchived] = useState(false)
   const [accName, setAccName] = useState('')
@@ -196,7 +203,8 @@ export function Konten() {
   const country = settings.country
   const money = (c: number) => formatMoney(c, country)
   const now = currentMonth()
-  const months = monthRange(addMonths(end, -11), end)
+  const period = wealthPeriod(kind, now, step, settings.semesters, firstBalanceMonth(balances))
+  const months = monthRange(period.from, period.to)
   const wealth = wealthByMonth(accounts, balances, months)
   const series = accountSeries(accounts, balances, months)
 
@@ -348,25 +356,45 @@ export function Konten() {
 
       {accounts.length > 0 && (
         <div className="space-y-4 rounded-xl border border-border bg-surface p-4">
-          <div className="flex items-center justify-between">
+          <div className="flex flex-wrap items-center justify-between gap-2">
             <h2 className="text-lg font-semibold">Stände am Monatsende</h2>
-            <div className="flex items-center gap-2">
+            <div className="flex flex-wrap items-center gap-2">
+              <label className="flex items-center gap-2 text-sm">
+                <span className="font-medium">Zeitraum</span>
+                <select
+                  className="rounded-md border border-control bg-surface px-2 py-1"
+                  value={kind}
+                  onChange={(e) => {
+                    setKind(e.target.value as WealthPeriodKind)
+                    setStep(0)
+                  }}
+                >
+                  {WEALTH_PERIODS.map((p) => (
+                    <option key={p.value} value={p.value}>
+                      {p.label}
+                    </option>
+                  ))}
+                </select>
+              </label>
               <button
                 className="rounded-md border border-border px-3 py-1"
-                aria-label="Frühere Monate"
-                onClick={() => setEnd(addMonths(end, -6))}
+                aria-label="Vorheriger Zeitraum"
+                onClick={() => setStep(step - 1)}
               >
                 ◀
               </button>
               <button
                 className="rounded-md border border-border px-3 py-1"
-                aria-label="Spätere Monate"
-                onClick={() => setEnd(addMonths(end, 6))}
+                aria-label="Nächster Zeitraum"
+                onClick={() => setStep(step + 1)}
               >
                 ▶
               </button>
             </div>
           </div>
+          <p className="text-sm text-muted" aria-live="polite">
+            {period.label} · {monthName(period.from)} bis {monthName(period.to)}
+          </p>
           <p className="text-sm text-muted">
             Ein leeres Feld heisst «unbekannt», nicht 0. Schulden trägst du als geschuldeten Betrag
             ein, er wird vom Vermögen abgezogen.
