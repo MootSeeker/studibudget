@@ -7,6 +7,7 @@ die Versionen folgen [Semantic Versioning](https://semver.org/lang/de/).
 
 ### Behoben
 
+- Sync: Gleichzeitige Pushes eines Nutzers können beim Pull keine Datensätze mehr überspringen (Advisory-Lock in `push_records`, neue Migration, #48).
 - Ausgleich: «Wer schuldet wem?» zeigt den Saldo bis Ende des gewählten Monats; bisher blieb er beim Monatswechsel auf dem Gesamtstand, sodass bereits bezahlte Schulden weiter angezeigt wurden. «Ausgleichen» rechnet weiter mit dem Stand von heute (#76).
 - Konten und Sparziele: Die Tabelle «Stände am Monatsende» und der Verlauf lassen sich über ein Dropdown «Zeitraum» wählen (Semester, Halbjahr, Year to date, Jahr, 5 Jahre, Max. Aufnahme). Die Pfeile springen um genau einen Zeitraum weiter, ohne Monate zu überspringen oder doppelt zu zeigen; bisher zeigte die Seite immer 12 Monate und verschob sich um 6 (#112).
 - Rechnung: Der QR-Code kodierte Umlaute (zum Beispiel «Zürich», «Müller») nicht als UTF-8, wie es die QR-Rechnung verlangt; eine Banking-App konnte solche Codes nicht richtig lesen. Der Inhalt wird jetzt vor der Anzeige gegen den Standard geprüft. Bei der Beispiel-IBAN aus der Dokumentation warnt die Rechnung, dass der Zahlteil nicht bezahlbar ist (#121).
