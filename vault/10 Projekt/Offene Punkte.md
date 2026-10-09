@@ -12,8 +12,12 @@ tags:
 
 # Offene Punkte
 
-Offene GitHub-Issues (Stand 2026-10-09): #48 (Analyse `records_seq`), #72 (CI-Artefakte aufs NAS), #76 (Synchronisation von Informationen).
+Offene GitHub-Issues (Stand 2026-10-09): #48 (Analyse `records_seq`), #72 (CI-Artefakte aufs NAS), #76 (Synchronisation von Informationen), #145 (Idee: KI-Konnektor, siehe unten).
 Offen ist ausserdem der **öffentliche Start**. Die vollständige Liste steht in `docs/start-checkliste.md`; hier der Stand:
+
+## Ideen für später (Label «Future / Idee»)
+
+- [ ] **KI-Konnektor (#145):** Ein- und Ausgaben per Claude oder ChatGPT erfassen. Noch nicht eingeplant, Grösse Gross. Hürde ist die Ende-zu-Ende-Verschlüsselung: Der Schlüssel liegt nur beim Nutzer, ein Konnektor kann also nicht serverseitig schreiben (siehe [[Verschlüsselung und Sync]]). Erster Schritt ist eine Analyse mit Entscheid-Notiz (lokaler MCP-Server, verschlüsselter Posteingang mit Bestätigung in der App oder Import-Datei); danach wird das Issue in kleinere aufgeteilt.
 
 ## Pilot Agenten-Ablauf (#128)
 
