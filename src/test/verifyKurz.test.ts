@@ -172,6 +172,31 @@ describe('verify:kurz (#129)', () => {
     })
   })
 
+  it('AK-1 (#136): bei mehreren Blöcken gilt der letzte, für Dateien und Tests', () => {
+    const nachtrag = [
+      PLAN,
+      '## Nachtrag',
+      '```plan-dateien',
+      'src/c.ts',
+      '```',
+      '```plan-tests',
+      'src/c.test.ts :: AK-3: neuer Fall',
+      '```',
+    ].join('\n')
+    expect(lesePlanBlock(nachtrag)).toEqual({
+      dateien: ['src/c.ts'],
+      tests: [{ datei: 'src/c.test.ts', name: 'AK-3: neuer Fall' }],
+    })
+  })
+
+  it('AK-2 (#136): ohne Dateiblock null, ohne Testblock leere Tests', () => {
+    expect(lesePlanBlock('## Plan\nkein Block')).toBeNull()
+    expect(lesePlanBlock('```plan-dateien\nsrc/a.ts\n```')).toEqual({
+      dateien: ['src/a.ts'],
+      tests: [],
+    })
+  })
+
   it('AK-5: Datei ausserhalb der Dateiliste ist rot, CHANGELOG.md und vault/ nicht', () => {
     const inhalt = () =>
       "it('AK-1: rundet auf ganze Rappen')\nit('AK-2: lehnt negative Beträge ab')"
