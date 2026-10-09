@@ -68,7 +68,8 @@ Die Referenzbilder in `e2e/referenz/` sind nur auf dem CI-Runner verbindlich (Sc
 Systemen ab). Schlägt in der CI der Bildvergleich fehl, steht in der Zusammenfassung des Jobs `e2e (chromium)` ein Hinweis
 mit dieser Anleitung. Nach einer gewollten Änderung der Oberfläche:
 
-1. Auf GitHub unter Actions den Workflow **Referenzbilder** auf dem Branch starten und das Ende abwarten.
+1. Auf GitHub unter Actions den Workflow **Referenzbilder** auf dem Branch starten und das Ende abwarten. Ist «wiederholungen»
+   grösser als 0, läuft der Bildtest danach so oft gegen die neuen Bilder (Beleg, dass sie stabil sind).
 2. Lokal `npm run referenzbilder` ausführen (oder `npm run referenzbilder -- <Branch>`). Das Skript lädt das Artefakt des
    letzten erfolgreichen Laufs mit der GitHub-CLI `gh` und ersetzt `e2e/referenz/`. Es warnt, wenn der Lauf nicht zum
    aktuellen Stand des Branches gehört; dann den Workflow nach dem letzten Push neu starten.

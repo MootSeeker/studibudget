@@ -4,6 +4,11 @@ name: Referenzbilder
 # Das Ergebnis liegt als Artefakt «referenzbilder»; den Ordner e2e/referenz ersetzen und einchecken.
 on:
   workflow_dispatch:
+    inputs:
+      wiederholungen:
+        description: 'Bildtest danach so oft gegen die neuen Bilder wiederholen (0: nicht wiederholen)'
+        type: number
+        default: 0
 
 permissions:
   contents: read
@@ -11,7 +16,8 @@ permissions:
 jobs:
   referenzbilder:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    # 60 statt 30 Minuten: 20 Wiederholungen des Bildtests brauchen rund 20 Minuten (Issue #126).
+    timeout-minutes: 60
     env:
       E2E_BROWSER: chromium
     steps:
@@ -25,4 +31,15 @@ jobs:
         with:
           name: referenzbilder
           path: e2e/referenz
+          retention-days: 14
+      # Belegt, dass die neuen Bilder stabil sind (Issue #126). GitHub setzt CI, damit gilt die Worker-Zahl aus
+      # playwright.config.ts wie im Job e2e.
+      - name: Bildtest wiederholen
+        if: ${{ inputs.wiederholungen > 0 }}
+        run: npx playwright test e2e/visuell.spec.ts --project=chromium --repeat-each=${{ inputs.wiederholungen }} --retries=0
+      - uses: actions/upload-artifact@v7
+        if: ${{ failure() && inputs.wiederholungen > 0 }}
+        with:
+          name: bericht-wiederholungen
+          path: test-results
           retention-days: 14

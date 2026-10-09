@@ -1,6 +1,7 @@
 import { createClient, type SupabaseClient } from '@supabase/supabase-js'
 import { createAccountKeys } from '../../src/crypto/keys'
 import { supabaseUmgebung } from './umgebung'
+import { neueAdresse } from './adresse'
 
 export const PASSWORT = 'Mein-langes-Passwort-1'
 
@@ -17,13 +18,6 @@ const sb = supabaseUmgebung()
 export const admin: SupabaseClient = createClient(sb.url, sb.serviceKey, {
   auth: { persistSession: false, autoRefreshToken: false },
 })
-
-let zaehler = 0
-export function neueAdresse(vorname = 'lena'): string {
-  // Prozess-ID und Zufall: Parallele Worker dürfen nie dieselbe Adresse erzeugen.
-  const zufall = Math.random().toString(36).slice(2, 8)
-  return `${vorname}-${Date.now()}-${process.pid}-${++zaehler}-${zufall}@test.local`
-}
 
 /**
  * Legt ein bestätigtes Konto an, ohne Hintertür in der App: Die Schlüssel entstehen in Node mit demselben Code wie im

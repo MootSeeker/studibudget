@@ -49,3 +49,20 @@ describe('CI-Sammelstatus (Issue #111)', () => {
     expect(b).toContain('npm run referenzbilder')
   })
 })
+
+describe('Referenzbilder (Issue #126)', () => {
+  it('AK-3: «Referenzbilder» wiederholt den Bildtest auf Wunsch gegen die neuen Bilder', () => {
+    const wf = readFileSync('.github/workflows/referenzbilder.yml', 'utf8')
+    expect(wf).toMatch(/inputs:\s+wiederholungen:/)
+    expect(wf).toMatch(/if: \$\{\{ inputs\.wiederholungen > 0 \}\}/)
+    const zeile = wf.split('\n').find((z) => z.includes('--repeat-each='))
+    expect(zeile).toContain('e2e/visuell.spec.ts --project=chromium')
+    expect(zeile).toMatch(/--repeat-each=\$\{\{ inputs\.wiederholungen \}\}/)
+    expect(zeile).toContain('--retries=0')
+    // Worker-Zahl kommt aus playwright.config.ts (CI gesetzt), wie im Job e2e; die Bilder werden nicht überschrieben.
+    expect(zeile).not.toContain('--workers')
+    expect(zeile).not.toContain('--update-snapshots')
+    // Erst die Bilder hochladen, dann wiederholen: Das Artefakt entsteht auch, wenn eine Wiederholung scheitert.
+    expect(wf.indexOf('name: referenzbilder')).toBeLessThan(wf.indexOf('--repeat-each='))
+  })
+})
