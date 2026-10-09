@@ -12,7 +12,7 @@ tags:
 
 # Offene Punkte
 
-Offene GitHub-Issues (Stand 2026-10-09): #48 (Analyse `records_seq`), #72 (CI-Artefakte aufs NAS), #76 (Synchronisation von Informationen), #145 (Idee: KI-Konnektor, siehe unten).
+Offene GitHub-Issues (Stand 2026-10-09): #72 (CI-Artefakte aufs NAS), #145 (Idee: KI-Konnektor, siehe unten).
 Offen ist ausserdem der **öffentliche Start**. Die vollständige Liste steht in `docs/start-checkliste.md`; hier der Stand:
 
 ## Ideen für später (Label «Future / Idee»)
@@ -34,6 +34,12 @@ Sitzung mit Sonnet starten, `/issue-bearbeiten <Nr>` mit 2–3 Issues der Gröss
 - Beobachtung: Beide Reviewer-Durchgänge gaben zuerst NACHARBEIT, nur weil Belege erst nach dem Draft-PR entstehen (Referenzbilder aus dem Workflow, Lauf mit Wiederholungen). Jeder zweite Durchgang kostete 30 k bis 43 k Tokens. Vorschlag: den Reviewer erst aufrufen, wenn solche Belege vorliegen, oder im Aufruf klar sagen, was bewusst noch aussteht und nicht als NACHARBEIT zählt.
 - Beobachtung: Der Trockenlauf fand bei #126 eine echte Lücke (Rot-Lauf einer Playwright-Datei ohne lokales Supabase); bei #113 war er ohne Befund.
 - Vergleich: ein ähnlich grosses Issue mit dem früheren Ablauf, sonst der Probelauf an #120 (PR #133).
+
+## Sync
+
+- [ ] Migration `20261009000000_push_records_lock.sql` (#48) auf dem echten Supabase-Projekt einspielen: zuerst `--dry-run`, dann nach Rückfrage bei Kevin. Bis dahin gilt der Lock nur lokal und in der CI.
+- [ ] Test `src/sync/records-seq.db.test.ts` (Reviewer, kleine Schwächen): Ergebnis des zweiten `waitUntil` prüfen, `psql`-Prozess auch bei Fehlschlag vor `hold.release()` beenden, Testnutzer aufräumen.
+- [ ] Referenzbilder `einstellungen-konto-*` weichen beim Lauf des Workflows «Referenzbilder» von den eingecheckten ab (beim PR zu #76 nicht übernommen); bei Gelegenheit prüfen, ob das Bild wirklich instabil ist.
 
 ## Blocker (Kevin)
 
