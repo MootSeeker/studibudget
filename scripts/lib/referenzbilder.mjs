@@ -1,7 +1,6 @@
 // Referenzbilder aus dem Workflow «Referenzbilder» übernehmen (Issue #111). Reine Hilfen, getestet in
 // src/test/referenzbilder.test.ts; aufgerufen von scripts/referenzbilder.mjs.
 import { cpSync, existsSync, mkdirSync, readdirSync, rmSync } from 'node:fs'
-import { join } from 'node:path'
 
 /**
  * Wählt aus den Läufen `[{ databaseId, headSha, conclusion }]` (neueste zuerst) den passenden: erfolgreich und zum
