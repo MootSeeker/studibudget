@@ -52,6 +52,7 @@ Sitzung mit Sonnet starten, `/issue-bearbeiten <Nr>` mit 2–3 Issues der Gröss
 - [ ] Rechnung (#105, #106, #121): Zahlteil drucken und den Swiss QR Code mit einer echten Banking-App scannen, mit **echter IBAN** (nicht der Beispiel-IBAN) und einem Umlaut in Name oder Ort; Layout des Zahlteils (Schriftgrössen, Kreuz) von Hand prüfen. Lehnt die App ihn weiter ab, die genaue Meldung festhalten und ein neues Issue anlegen (#121 ist geschlossen, AK-3 war nur teilweise belegt).
 - [ ] Offline-Start und Installation (der Service Worker liess sich in der Entwicklungsumgebung nicht ausführen).
 - [ ] Zweites Gerät: Sync, Offline-Buchung, Passwort vergessen mit Wiederherstellungsschlüssel, Backup einspielen.
+- [ ] Konten und Sparziele von Hand ansehen (#112, #113): Kopfzeile mit Dropdown «Zeitraum», Pfeilen und Zeitraum-Zeile sowie den Verlauf-Chart mit mehreren Konten (Legende, Kästchen, dickere Gesamtlinie) bei 375, 768 und 1280 Pixel, hell und dunkel. Nur über Tests und eine Testseite mit Beispieldaten (Chart, 375 und 1280) abgesichert; die Seite selbst braucht eine Anmeldung und wurde nicht angesehen.
 - [ ] Neues Layout (Issue #17) und die Reiter (#84) bei Handy-, Tablet- und Desktop-Breite ansehen: über Tests und Referenzbilder abgesichert, nicht von Hand geprüft.
 
 Erledigte Issues: [[Issues]]
