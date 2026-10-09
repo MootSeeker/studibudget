@@ -21,10 +21,13 @@ Sitzung mit Sonnet starten, `/issue-bearbeiten <Nr>` mit 2–3 Issues der Gröss
 
 | Issue | Planer (Opus) | Umsetzer (Haiku) | Reviewer | Hauptsitzung | Nachbesserungen | Umsetzungsrunden | Nacharbeit nach PR |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| #126 | 2 Aufrufe, 84 k + 94 k Tokens (24 + 8 Werkzeugaufrufe) | Trockenlauf 70 k + 62 k, Umsetzen 44 k (24 Aufrufe) | 2 Aufrufe: 43 k (NACHARBEIT, nur formal: AK-2/AK-3 damals offen, CHANGELOG-Begründung), danach BEREIT | offen | 2 (Trockenlauf: Befehl für den Rot-Lauf fehlte; Reviewer-NACHARBEIT, vom Planer ohne Codeänderung beschieden) | 1 | 1 (nur formal) |
-| #113 | 1 Aufruf, 120 k Tokens (29 Werkzeugaufrufe) | Trockenlauf 103 k, Umsetzen 93 k (43 Aufrufe) | 2 Aufrufe: 30 k (NACHARBEIT, nur fehlende Referenzbilder), danach BEREIT | offen | 0 | 1 | 1 (nur formal) |
+| #126 | 2 Aufrufe, 84 k + 94 k Tokens (24 + 8 Werkzeugaufrufe) | Trockenlauf 70 k + 62 k, Umsetzen 44 k (24 Aufrufe) | 2 Aufrufe: 43 k (NACHARBEIT, nur formal: AK-2/AK-3 damals offen, CHANGELOG-Begründung), danach BEREIT | nicht getrennt messbar (siehe unten) | 2 (Trockenlauf: Befehl für den Rot-Lauf fehlte; Reviewer-NACHARBEIT, vom Planer ohne Codeänderung beschieden) | 1 | 1 (nur formal) |
+| #113 | 1 Aufruf, 120 k Tokens (29 Werkzeugaufrufe) | Trockenlauf 103 k, Umsetzen 93 k (43 Aufrufe) | 2 Aufrufe: 30 k (NACHARBEIT, nur fehlende Referenzbilder), danach BEREIT | nicht getrennt messbar (siehe unten) | 0 | 1 | 1 (nur formal) |
 
-- Zusätzlich messen: wie viel die Hauptsitzung für PR-Beschreibung, Journal und CHANGELOG braucht (Entscheid über einen Agenten `schreiber`).
+- Hauptsitzung: Die App liefert keine Tokens pro Issue, nur die Grösse des Kontexts. Am Ende der Sitzung (#126, #136, #137, #113 und drei Vault-PRs, alles in einem Kontext) waren es 211 k von 1 M Tokens, davon 141 k Nachrichten. Das ist die Kontextgrösse, nicht die abgerechnete Menge, und nicht auf ein Issue aufteilbar.
+- Einschätzung zum `schreiber` (geschätzt, nicht gemessen): PR-Beschreibung, Journal und CHANGELOG sind je Issue wenige Absätze, vermutlich 1 k bis 3 k Tokens Ausgabe. Das ist klein gegen einen Planer- oder Umsetzer-Aufruf (40 k bis 120 k). Ein `schreiber` müsste den Kontext erst übergeben bekommen; der Gewinn wäre gering. Vorschlag: keinen `schreiber` einführen. Entscheid bei Kevin.
+- Beobachtung: Beide Reviewer-Durchgänge gaben zuerst NACHARBEIT, nur weil Belege erst nach dem Draft-PR entstehen (Referenzbilder aus dem Workflow, Lauf mit Wiederholungen). Jeder zweite Durchgang kostete 30 k bis 43 k Tokens. Vorschlag: den Reviewer erst aufrufen, wenn solche Belege vorliegen, oder im Aufruf klar sagen, was bewusst noch aussteht und nicht als NACHARBEIT zählt.
+- Beobachtung: Der Trockenlauf fand bei #126 eine echte Lücke (Rot-Lauf einer Playwright-Datei ohne lokales Supabase); bei #113 war er ohne Befund.
 - Vergleich: ein ähnlich grosses Issue mit dem früheren Ablauf, sonst der Probelauf an #120 (PR #133).
 
 ## Blocker (Kevin)
