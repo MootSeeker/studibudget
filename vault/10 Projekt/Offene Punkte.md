@@ -2,7 +2,7 @@
 typ: hub
 bereich: betrieb
 status: offen
-aktualisiert: 2026-10-08
+aktualisiert: 2026-10-09
 repo-quelle:
   - docs/start-checkliste.md
 tags:
@@ -12,8 +12,19 @@ tags:
 
 # Offene Punkte
 
-Offene GitHub-Issues (Stand 2026-10-08): #48 (Analyse `records_seq`), #72 (CI-Artefakte aufs NAS), #76 (Synchronisation von Informationen), #126 (Bildtest «Konto» instabil: Länge der Test-Adresse), #112 und #113 (Konten: Zeitdarstellung, Verlauf-Chart), #128 (Agenten-Ablauf: Planer und Umsetzer; #129 und #130 erledigt). Danach Pilot mit 2–3 echten Issues der Grösse Mittel: Tokens pro Modell, Runden, Nacharbeit.
+Offene GitHub-Issues (Stand 2026-10-09): #48 (Analyse `records_seq`), #72 (CI-Artefakte aufs NAS), #76 (Synchronisation von Informationen), #126 (Bildtest «Konto» instabil: Länge der Test-Adresse), #112 und #113 (Konten: Zeitdarstellung, Verlauf-Chart).
 Offen ist ausserdem der **öffentliche Start**. Die vollständige Liste steht in `docs/start-checkliste.md`; hier der Stand:
+
+## Pilot Agenten-Ablauf (#128)
+
+Sitzung mit Sonnet starten, `/issue-bearbeiten <Nr>` mit 2–3 Issues der Grösse Mittel. Pro Issue festhalten (Tokens und Aufrufe stehen in jeder Rückmeldung eines Subagenten):
+
+| Issue | Planer (Opus) | Umsetzer (Haiku) | Reviewer | Hauptsitzung | Nachbesserungen | Umsetzungsrunden | Nacharbeit nach PR |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| #126 | | | | | | | |
+
+- Zusätzlich messen: wie viel die Hauptsitzung für PR-Beschreibung, Journal und CHANGELOG braucht (Entscheid über einen Agenten `schreiber`).
+- Vergleich: ein ähnlich grosses Issue mit dem früheren Ablauf, sonst der Probelauf an #120 (PR #133).
 
 ## Blocker (Kevin)
 
