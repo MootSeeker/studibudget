@@ -126,24 +126,32 @@ describe('Konten', () => {
     await waitFor(() => expect(screen.getByText('(nicht gezählt)')).toBeInTheDocument())
   })
 
-  it('Vermögensverlauf braucht zwei vollständige Monate, zeigt dann das Diagramm mit Werten', async () => {
+  it('AK-1: Verlauf erscheint mit dem ersten Stand und zeigt Konto- und Gesamtlinie', async () => {
     const user = await setup()
     await user.type(screen.getByLabelText('Neues Konto'), 'Privat')
     await user.click(screen.getByRole('button', { name: 'Hinzufügen' }))
     await screen.findByLabelText('Name Konto Privat')
-    expect(screen.getByText(/mindestens zwei Monate/)).toBeInTheDocument()
+    expect(screen.getByText(/Sobald du einen Stand erfasst hast/)).toBeInTheDocument()
     setBalance('Privat', addMonths(NOW, -1), '1000')
+    await waitFor(() =>
+      expect(screen.queryByText(/Sobald du einen Stand erfasst hast/)).not.toBeInTheDocument(),
+    )
+    expect(screen.getByRole('checkbox', { name: 'Gesamtvermögen' })).toBeChecked()
+    expect(screen.getByRole('checkbox', { name: 'Privat' })).toBeChecked()
     setBalance('Privat', NOW, '1500')
     await waitFor(() =>
-      expect(screen.queryByText(/mindestens zwei Monate/)).not.toBeInTheDocument(),
+      expect(
+        screen.getByRole('img', {
+          name: (n) => norm(n).startsWith(`${name(NOW)}: Gesamtvermögen CHF 1'500.00; Privat CHF`),
+        }),
+      ).toBeInTheDocument(),
     )
-    const pt = screen.getByRole('img', {
-      name: (n) => norm(n).includes(`${name(NOW)}: Gesamtvermögen CHF 1'500.00`),
-    })
-    expect(pt).toBeInTheDocument()
     expect(
       screen.getByRole('img', {
-        name: (n) => norm(n).startsWith(`${name(addMonths(NOW, -2))}: keine Angaben`),
+        name: (n) =>
+          norm(n).startsWith(
+            `${name(addMonths(NOW, -2))}: Gesamtvermögen keine Angaben; Privat keine Angabe`,
+          ),
       }),
     ).toBeInTheDocument()
   })

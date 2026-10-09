@@ -51,3 +51,35 @@ export function wealthByMonth(
     }
   })
 }
+
+export interface AccountSeries {
+  accountId: string
+  name: string
+  /** Zählt das Konto zum Gesamtvermögen (`Account.include`)? */
+  include: boolean
+  /** Stand am Monatsende je Monat in der Reihenfolge von `months`; null heisst «keine Angabe» (Lücke, nicht 0). */
+  values: (number | null)[]
+}
+
+/**
+ * Verlauf pro Konto für den Vermögenschart: ein Eintrag je nicht gelöschtem Konto mit mindestens einem Stand in
+ * `months`, in der Reihenfolge von `accounts`. Nicht gezählte Konten sind dabei und über `include` erkennbar.
+ */
+export function accountSeries(
+  accounts: Account[],
+  balances: AccountBalance[],
+  months: MonthKey[],
+): AccountSeries[] {
+  const live = balances.filter((b) => !b.deleted)
+  return accounts
+    .filter((a) => !a.deleted)
+    .map((a) => ({
+      accountId: a.id,
+      name: a.name,
+      include: a.include,
+      values: months.map(
+        (month) => live.find((b) => b.accountId === a.id && b.month === month)?.amountCents ?? null,
+      ),
+    }))
+    .filter((s) => s.values.some((v) => v !== null))
+}

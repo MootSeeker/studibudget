@@ -16,6 +16,10 @@
   --bad: #b91c1c;
   --series-1: #2a78d6;
   --series-2: #eb6834;
+  --series-3: #0e8a99;
+  --series-4: #8b5cc7;
+  --series-5: #c2407f;
+  --series-6: #2f9e44;
 }
 
 :root[data-theme='dark'] {
@@ -32,6 +36,10 @@
   --bad: #f87171;
   --series-1: #3987e5;
   --series-2: #d95926;
+  --series-3: #2bb3c4;
+  --series-4: #a37ee0;
+  --series-5: #e0609f;
+  --series-6: #40b85a;
 }
 
 @theme inline {

@@ -129,6 +129,8 @@ Der Server speichert nur: E-Mail, verpackte Schlüssel, Datensatz-ID, `hlc`, Lö
   Flächenfarbe, Gitter als dünne durchgezogene Linien. Eine Serie = eine Farbe, ab zwei Serien immer eine Legende.
 - **Farben:** `--series-1` (Blau, Einnahmen) und `--series-2` (Orange, Ausgaben) in hell/dunkel; geprüft mit dem
   Palette-Validator (Abstand auch bei Farbfehlsichtigkeit bestanden). Der Saldo ist eine neutrale Linie in Textfarbe.
+  Vermögensverlauf (Issue #113): «Gesamtvermögen» in `--series-1`, die Konten der Reihe nach in `--series-2` bis `--series-6` (ab dem sechsten Konto wiederholt);
+  die Gesamtlinie ist 4 px dick, solange weitere Linien sichtbar sind. Jede neue Serienfarbe hat mindestens 3:1 zu Fläche und Hintergrund (`src/test/contrast.test.ts`).
 - **Nie nur Farbe/Tooltip:** Jeder Monat ist per Tastatur fokussierbar und hat ein vollständiges `aria-label`; jedes
   Diagramm hat eine Tabellenansicht; Abweichungen im Plan-Ist-Vergleich stehen mit Vorzeichen **und** Wort («drüber»,
   «darunter», «mehr», «weniger»).

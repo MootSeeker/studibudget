@@ -18,7 +18,7 @@ import {
 } from '../data/hooks'
 import { formatMoney } from '../domain/money'
 import { settlementsByMonth } from '../domain/settlement'
-import { wealthByMonth } from '../domain/wealth'
+import { accountSeries, wealthByMonth } from '../domain/wealth'
 import {
   addMonths,
   currentMonth,
@@ -187,7 +187,9 @@ export function Statistik() {
   }
 
   const { totals, key } = stats
-  const wealth = wealthByMonth(accounts, balances, monthRange(range.from, range.to))
+  const wealthMonths = monthRange(range.from, range.to)
+  const wealth = wealthByMonth(accounts, balances, wealthMonths)
+  const series = accountSeries(accounts, balances, wealthMonths)
   const wealthComplete = wealth.filter((w) => w.complete && w.total !== null)
   const wealthChange =
     wealthComplete.length >= 2
@@ -339,22 +341,28 @@ export function Statistik() {
 
       <section className="space-y-3 rounded-xl border border-border bg-surface p-4">
         <h2 className="text-lg font-semibold">Vermögen</h2>
-        {wealthChange === null ? (
+        {series.length === 0 ? (
           <p className="text-sm text-muted">
-            Für den Verlauf brauchst du in diesem Zeitraum mindestens zwei Monate, in denen alle
-            gezählten Konten einen Stand haben. Die Stände erfasst du unter «Konten &amp;
-            Sparziele».
+            In diesem Zeitraum ist kein Kontostand erfasst. Die Stände erfasst du unter «Konten
+            &amp; Sparziele».
           </p>
         ) : (
           <>
-            <p className="text-sm text-muted">
-              Veränderung im Zeitraum:{' '}
-              <strong className={wealthChange < 0 ? 'text-bad' : 'text-ok'}>
-                {wealthChange > 0 ? '+' : ''}
-                {money(wealthChange)}
-              </strong>
-            </p>
-            <WealthChart points={wealth} money={money} />
+            {wealthChange === null ? (
+              <p className="text-sm text-muted">
+                Für die Veränderung im Zeitraum brauchst du mindestens zwei Monate, in denen alle
+                gezählten Konten einen Stand haben.
+              </p>
+            ) : (
+              <p className="text-sm text-muted">
+                Veränderung im Zeitraum:{' '}
+                <strong className={wealthChange < 0 ? 'text-bad' : 'text-ok'}>
+                  {wealthChange > 0 ? '+' : ''}
+                  {money(wealthChange)}
+                </strong>
+              </p>
+            )}
+            <WealthChart points={wealth} accounts={series} money={money} />
           </>
         )}
       </section>
