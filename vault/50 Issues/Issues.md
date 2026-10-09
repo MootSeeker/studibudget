@@ -9,7 +9,7 @@ tags:
 
 # Issues
 
-Stand 2026-10-08. Repo: github.com/MootSeeker/studibudget/issues. Offen: #48, #62, #72, #76, #112, #113, #126 (siehe [[Offene Punkte]]).
+Stand 2026-10-09. Repo: github.com/MootSeeker/studibudget/issues. Offen: #48, #62, #72, #76 (siehe [[Offene Punkte]]).
 
 | # | Titel | Umsetzung | PR |
 | --- | --- | --- | --- |
@@ -55,10 +55,10 @@ Weitere Bausteine der Test-Suite: Stryker #58 (PR #59), E2E #60 (PR #61), zwei G
 | 121 | QR-Code von der Banking-App nicht akzeptiert | UTF-8-Kodierung (Fehler der Bibliothek), `validateQrPayload`, Rücklesetest mit `jsqr`, Warnung bei der Beispiel-IBAN; Scan mit echter IBAN steht aus | #123 |
 | 106 | Swiss QR Code | Zahlteil unter der Rechnung, Typ S, Zahlungspflichtiger leer | #114 |
 | 126 | Bildtest «Konto» instabil | Testadressen fester Länge (`e2e/support/adresse.ts`, 34 Zeichen), neue Bilder, Workflow «Referenzbilder» mit `wiederholungen` als Beleg | #135 |
-| 137 | oxlint-Warnung: ungenutzter Import | `join` aus `scripts/lib/referenzbilder.mjs` entfernt | – |
-| 113 | Verlauf-Chart der Konten | `accountSeries`, `WealthChart` mit Linie pro Konto, Legende mit Kästchen, Gesamtlinie dicker; Serienfarben 3 bis 6 | – |
-| 112 | Zeitdarstellung in der Kontenübersicht | Dropdown «Zeitraum» (`wealthPeriod` in `src/domain/wealthPeriod.ts`), Pfeile springen um einen Zeitraum | – |
-| 136 | `verify:kurz` liest den ersten Plan-Block | `block()` in `scripts/lib/verify-kurz.mjs` nimmt den letzten Block, wie `plan-schreiben` es verlangt | – |
+| 137 | oxlint-Warnung: ungenutzter Import | `join` aus `scripts/lib/referenzbilder.mjs` entfernt | #140 |
+| 113 | Verlauf-Chart der Konten | `accountSeries`, `WealthChart` mit Linie pro Konto, Legende mit Kästchen, Gesamtlinie dicker; Serienfarben 3 bis 6 | #141 |
+| 112 | Zeitdarstellung in der Kontenübersicht | Dropdown «Zeitraum» (`wealthPeriod` in `src/domain/wealthPeriod.ts`), Pfeile springen um einen Zeitraum | #143 |
+| 136 | `verify:kurz` liest den ersten Plan-Block | `block()` in `scripts/lib/verify-kurz.mjs` nimmt den letzten Block, wie `plan-schreiben` es verlangt | #139 |
 
 Weitere Änderungen ohne Issue: Version 1.2.0 (#82), CI-Warnungen und veraltete Pakete (#83), PWA-Test-Fix (#75).
 
