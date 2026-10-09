@@ -21,7 +21,7 @@ Sitzung mit Sonnet starten, `/issue-bearbeiten <Nr>` mit 2–3 Issues der Gröss
 
 | Issue | Planer (Opus) | Umsetzer (Haiku) | Reviewer | Hauptsitzung | Nachbesserungen | Umsetzungsrunden | Nacharbeit nach PR |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| #126 | | | | | | | |
+| #126 | 2 Aufrufe, 84 k + 94 k Tokens (24 + 8 Werkzeugaufrufe) | Trockenlauf 70 k + 62 k, Umsetzen 44 k (24 Aufrufe) | offen (nach Draft-PR) | offen | 1 (Trockenlauf: Befehl für den Rot-Lauf einer Playwright-Datei fehlte) | 1 | offen |
 
 - Zusätzlich messen: wie viel die Hauptsitzung für PR-Beschreibung, Journal und CHANGELOG braucht (Entscheid über einen Agenten `schreiber`).
 - Vergleich: ein ähnlich grosses Issue mit dem früheren Ablauf, sonst der Probelauf an #120 (PR #133).
@@ -39,7 +39,8 @@ Sitzung mit Sonnet starten, `/issue-bearbeiten <Nr>` mit 2–3 Issues der Gröss
 - [ ] Mutationstests: überlebende Mutanten in `src/data/hooks.ts` (134, von keinem Unit-Test erfasst), `period.ts`, `monthView.ts`
 - [ ] E2E-Test «Passwort vergessen» (WebKit, `e2e/auth.spec.ts`) ist instabil (Issue #116, ohne gefundene Ursache geschlossen, bei neuer Rötung neues Issue): in CI einmal rot (Überschrift nach dem Mail-Link fehlt), lokal in WebKit 2 von rund 190 Läufen rot, beide direkt nach der Browser-Installation und an anderer Stelle (nach dem Setzen des neuen Passworts). Mit mehr Last nicht herbeizuführen. Bei der nächsten Rötung Trace und Fehlermeldung (Link und Zielseite) sichern, bevor aufgeräumt wird.
 - [ ] Branch-Schutz (Kevin): `ci-gesamt` deckt nur den Workflow «Deploy» ab. Die Prüfungen aus «Doku» (format, links, vault, geheimnisse, claude-konfiguration) laufen bei Änderungen an Markdown und Doku-Pfaden, auch in gemischten PRs, und sind kein Teil von `ci-gesamt`. Doku-PRs lösen «Deploy» nicht aus, sodass `ci-gesamt` dort fehlt: für den Schutz braucht es einen zweiten Sammelstatus für «Doku» (und eine Antwort auf das Fehlen bei Doku-PRs), sonst blockiert er sie.
-- [ ] Bildtest «Konto» wird sporadisch rot (#126): die Test-Adresse schwankt in der Länge und bricht manchmal um; neue Referenzbilder per Workflow «Referenzbilder» und `npm run referenzbilder`.
+- [ ] Bildtest «Konto» wird sporadisch rot (#126): die Test-Adresse schwankt in der Länge und bricht manchmal um. Fix im PR (feste Länge 34, Wiederholungs-Beleg im Workflow «Referenzbilder»); offen sind die neuen Referenzbilder und die grüne CI.
+- [ ] `scripts/lib/verify-kurz.mjs` (`block()`) liest den ersten statt den letzten Plan-Block einer Art, die Anleitung in `plan-schreiben` sagt das Gegenteil; angleichen (eigenes Issue). Dazu die oxlint-Warnung zu ungenutztem `join` in `scripts/lib/referenzbilder.mjs`.
 - [ ] CI schneller machen (#62): Cache-Wirkung messen; falls `docker load` nicht schneller ist als der Download, Image-Cache entfernen
 
 ## Tests auf echten Geräten

@@ -6,11 +6,12 @@ import {
   syncAbwarten,
   einstellungen,
 } from './support/fixtures'
-import { kontoExistiert, kontoLoeschen, neueAdresse, PASSWORT } from './support/konto'
+import { neueAdresse } from './support/adresse'
+import { kontoExistiert, kontoLoeschen, PASSWORT } from './support/konto'
 import { linkAusMail, linkOhneToken, mailAbwarten } from './support/mail'
 
 test('Registrierung: Schlüssel sichern, Mail bestätigen, anmelden', async ({ page }) => {
-  const email = neueAdresse('neu')
+  const email = neueAdresse()
   try {
     await page.goto('./')
     await page.getByRole('button', { name: 'Neues Konto anlegen' }).click()
