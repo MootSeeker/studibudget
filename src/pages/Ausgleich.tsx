@@ -71,6 +71,7 @@ export function Ausgleich() {
   const bal = balances(txs, settlements)
   const rows = persons.filter((p) => p.active || (bal.get(p.id) ?? 0) !== 0)
   const balanceOf = (id: string) => bal.get(id) ?? 0
+  const monthBal = balances(txs, settlements, month)
 
   const statement = (id: string, cents: number) =>
     cents === 0
@@ -211,7 +212,8 @@ export function Ausgleich() {
         ) : (
           <ul className="grid gap-3 sm:grid-cols-2">
             {rows.map((p) => {
-              const c = balanceOf(p.id)
+              const c = monthBal.get(p.id) ?? 0
+              const total = balanceOf(p.id)
               return (
                 <li key={p.id} className="space-y-2 rounded-xl border border-border bg-surface p-4">
                   <p className="font-medium">
@@ -234,7 +236,7 @@ export function Ausgleich() {
                       Rechnung erstellen
                     </Link>
                   )}
-                  {c !== 0 && (
+                  {total !== 0 && (
                     <button
                       className="text-sm text-accent underline"
                       onClick={() => prefill(p.id)}
@@ -249,8 +251,9 @@ export function Ausgleich() {
           </ul>
         )}
         <p className="text-sm text-muted">
-          Berechnet aus allen gemeinsamen Buchungen und den erfassten Ausgleichszahlungen aller
-          Monate. Ausgleichszahlungen zählen nicht ins Budget.
+          Berechnet aus allen gemeinsamen Buchungen und erfassten Ausgleichszahlungen bis Ende von{' '}
+          {monthLabel}. «Ausgleichen» rechnet mit dem Stand von heute. Ausgleichszahlungen zählen
+          nicht ins Budget.
         </p>
       </div>
 
