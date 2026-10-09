@@ -12,7 +12,7 @@ tags:
 
 # Offene Punkte
 
-Offene GitHub-Issues (Stand 2026-10-09): #48 (Analyse `records_seq`), #72 (CI-Artefakte aufs NAS), #76 (Synchronisation von Informationen), #126 (Bildtest «Konto» instabil: Länge der Test-Adresse), #112 und #113 (Konten: Zeitdarstellung, Verlauf-Chart).
+Offene GitHub-Issues (Stand 2026-10-09): #48 (Analyse `records_seq`), #72 (CI-Artefakte aufs NAS), #76 (Synchronisation von Informationen), #136 (`verify:kurz` liest den ersten statt den letzten Plan-Block), #137 (oxlint-Warnung in `referenzbilder.mjs`), #112 und #113 (Konten: Zeitdarstellung, Verlauf-Chart).
 Offen ist ausserdem der **öffentliche Start**. Die vollständige Liste steht in `docs/start-checkliste.md`; hier der Stand:
 
 ## Pilot Agenten-Ablauf (#128)
@@ -39,8 +39,7 @@ Sitzung mit Sonnet starten, `/issue-bearbeiten <Nr>` mit 2–3 Issues der Gröss
 - [ ] Mutationstests: überlebende Mutanten in `src/data/hooks.ts` (134, von keinem Unit-Test erfasst), `period.ts`, `monthView.ts`
 - [ ] E2E-Test «Passwort vergessen» (WebKit, `e2e/auth.spec.ts`) ist instabil (Issue #116, ohne gefundene Ursache geschlossen, bei neuer Rötung neues Issue): in CI einmal rot (Überschrift nach dem Mail-Link fehlt), lokal in WebKit 2 von rund 190 Läufen rot, beide direkt nach der Browser-Installation und an anderer Stelle (nach dem Setzen des neuen Passworts). Mit mehr Last nicht herbeizuführen. Bei der nächsten Rötung Trace und Fehlermeldung (Link und Zielseite) sichern, bevor aufgeräumt wird.
 - [ ] Branch-Schutz (Kevin): `ci-gesamt` deckt nur den Workflow «Deploy» ab. Die Prüfungen aus «Doku» (format, links, vault, geheimnisse, claude-konfiguration) laufen bei Änderungen an Markdown und Doku-Pfaden, auch in gemischten PRs, und sind kein Teil von `ci-gesamt`. Doku-PRs lösen «Deploy» nicht aus, sodass `ci-gesamt` dort fehlt: für den Schutz braucht es einen zweiten Sammelstatus für «Doku» (und eine Antwort auf das Fehlen bei Doku-PRs), sonst blockiert er sie.
-- [ ] Bildtest «Konto» wird sporadisch rot (#126): die Test-Adresse schwankt in der Länge und bricht manchmal um. Fix im PR (feste Länge 34, Wiederholungs-Beleg im Workflow «Referenzbilder»); offen sind die neuen Referenzbilder und die grüne CI.
-- [ ] `scripts/lib/verify-kurz.mjs` (`block()`) liest den ersten statt den letzten Plan-Block einer Art, die Anleitung in `plan-schreiben` sagt das Gegenteil; angleichen (eigenes Issue). Dazu die oxlint-Warnung zu ungenutztem `join` in `scripts/lib/referenzbilder.mjs`.
+- [x] Bildtest «Konto» (#126, erledigt mit PR #135): Testadresse hat feste Länge, neue Referenzbilder, 120 grüne Wiederholungen im Workflow «Referenzbilder» (Eingabe `wiederholungen`).
 - [ ] CI schneller machen (#62): Cache-Wirkung messen; falls `docker load` nicht schneller ist als der Download, Image-Cache entfernen
 
 ## Tests auf echten Geräten
