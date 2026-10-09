@@ -1,12 +1,13 @@
 import { execSync, spawn } from 'node:child_process'
 import { createClient, type SupabaseClient } from '@supabase/supabase-js'
-import { beforeAll, describe, expect, it } from 'vitest'
+import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 import { supabaseStatus } from '../test/supabaseStatus'
 
 const run = crypto.randomUUID().slice(0, 8)
 let url: string
 let anonKey: string
 let admin: SupabaseClient
+const userIds: string[] = []
 
 async function makeUser(name: string): Promise<{ client: SupabaseClient; id: string }> {
   const email = `${name}-${run}@test.local`
@@ -22,6 +23,7 @@ async function makeUser(name: string): Promise<{ client: SupabaseClient; id: str
   })
   const signIn = await client.auth.signInWithPassword({ email, password })
   if (signIn.error) throw signIn.error
+  userIds.push(data.user.id)
   return { client, id: data.user.id }
 }
 
@@ -88,6 +90,11 @@ beforeAll(() => {
   admin = createClient(url, s.SERVICE_ROLE_KEY, { auth: { persistSession: false } })
 })
 
+afterAll(async () => {
+  // Löscht die Testnutzer samt ihren Datensätzen (Cascade über auth.users).
+  for (const id of userIds) await admin.auth.admin.deleteUser(id)
+})
+
 describe('records_seq bei gleichzeitigen Pushes', () => {
   it('AK-1: Pull zwischen zwei gleichzeitigen Pushes verpasst keine Zeile', async () => {
     const d = await makeUser('seq')
@@ -117,13 +124,19 @@ describe('records_seq bei gleichzeitigen Pushes', () => {
         bDone = true
         return r
       })
-    await waitUntil(() => bDone || lockWaiters() >= 2, 10000)
+    expect(await waitUntil(() => bDone || lockWaiters() >= 2, 10000)).toBe(true)
 
-    const p1 = (await d.client.from('records').select('id, seq').gt('seq', cursor)).data!
-    if (p1.length > 0) cursor = Math.max(...p1.map((r) => Number(r.seq)))
-
-    await hold.release()
-    const [ra, rb] = await Promise.all([pushA, pushB])
+    let p1: { id: string; seq: unknown }[] = []
+    let ra: Awaited<typeof pushA>
+    let rb: Awaited<typeof pushB>
+    try {
+      p1 = (await d.client.from('records').select('id, seq').gt('seq', cursor)).data!
+      if (p1.length > 0) cursor = Math.max(...p1.map((r) => Number(r.seq)))
+    } finally {
+      // Auch bei einem Fehler die offene Transaktion beenden, sonst blockiert psql die nächsten DB-Tests.
+      await hold.release()
+    }
+    ;[ra, rb] = await Promise.all([pushA, pushB])
     expect(ra.error).toBeNull()
     expect(rb.error).toBeNull()
 
