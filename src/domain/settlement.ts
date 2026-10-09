@@ -30,12 +30,18 @@ export function settlementEffect(s: Settlement): Effect {
 /**
  * Saldo pro Person aus meiner Sicht, in Cent.
  * Positiv: die Person schuldet mir. Negativ: ich schulde der Person.
+ * Mit `upToMonth` (`YYYY-MM`) zählt nur, was bis Ende dieses Monats gebucht wurde.
  */
-export function balances(txs: Transaction[], settlements: Settlement[]): Map<string, number> {
+export function balances(
+  txs: Transaction[],
+  settlements: Settlement[],
+  upToMonth?: string,
+): Map<string, number> {
+  const upTo = <T extends { date: string }>(x: T) => !upToMonth || x.date.slice(0, 7) <= upToMonth
   const bal = new Map<string, number>()
   const add = (e: Effect) => bal.set(e.personId, (bal.get(e.personId) ?? 0) + e.cents)
-  for (const t of txs) effectsOf(t).forEach(add)
-  for (const s of settlements) if (!s.deleted) add(settlementEffect(s))
+  for (const t of txs.filter(upTo)) effectsOf(t).forEach(add)
+  for (const s of settlements.filter(upTo)) if (!s.deleted) add(settlementEffect(s))
   return bal
 }
 

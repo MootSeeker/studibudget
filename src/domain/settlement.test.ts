@@ -96,6 +96,14 @@ describe('balances', () => {
     const t = tx(buildSharedEqual(6000, 'anna', ['me', 'anna']))
     expect(balances([t], [settle('anna', 'ich_zahle', 3000)]).get('anna')).toBe(0)
   })
+  it('bis Monat: spätere Buchungen und Zahlungen zählen nicht, der Monatsletzte zählt', () => {
+    const t = tx(buildSharedEqual(6000, 'me', ['me', 'anna']), { date: '2026-09-30' })
+    const paid = settle('anna', 'ich_erhalte', 3000, { date: '2026-10-05' })
+    const later = tx(buildSharedEqual(2000, 'me', ['me', 'anna']), { date: '2026-11-01' })
+    expect(balances([t, later], [paid], '2026-09').get('anna')).toBe(3000)
+    expect(balances([t, later], [paid], '2026-10').get('anna')).toBe(0)
+    expect(balances([t, later], [paid]).get('anna')).toBe(1000)
+  })
 })
 
 describe('buildSettlement', () => {

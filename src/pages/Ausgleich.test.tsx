@@ -290,6 +290,36 @@ describe('ohne geteilte Kosten', () => {
   })
 })
 
+describe('Saldo pro Monat (#76)', () => {
+  it('die Karten zeigen den Stand bis Ende des gewählten Monats', async () => {
+    const anna = await personId('Anna')
+    const now = currentMonth()
+    const prev = addMonths(now, -1)
+    await book(12000, 'me', ['me', anna], 'Vormonat', `${prev}-03`)
+    await store.put('settlements', {
+      id: newId(),
+      deleted: false,
+      date: `${now}-02`,
+      personId: anna,
+      direction: 'ich_erhalte',
+      amountCents: 6000,
+      note: 'Rückzahlung',
+    })
+    const user = await setup()
+    expect(
+      await screen.findByText('Mit Anna bist du ausgeglichen.', { selector: 'p.text-lg' }),
+    ).toBeInTheDocument()
+    await user.click(screen.getByRole('button', { name: 'Vorheriger Monat' }))
+    expect(
+      await screen.findByText(/Anna schuldet dir CHF 60\.00/, { selector: 'p.text-lg' }),
+    ).toBeInTheDocument()
+    await user.click(screen.getByRole('button', { name: 'Nächster Monat' }))
+    expect(
+      await screen.findByText('Mit Anna bist du ausgeglichen.', { selector: 'p.text-lg' }),
+    ).toBeInTheDocument()
+  })
+})
+
 describe('Monatsansicht', () => {
   it('zeigt pro Monat Erhalten, Bezahlt, Neu offen und das echte Defizit; Listen folgen dem Monat', async () => {
     const anna = await personId('Anna')
