@@ -16,7 +16,7 @@ import {
 import { formatMoney, parseAmount } from '../domain/money'
 import { addMonths, currentMonth, monthOf, monthRange } from '../domain/period'
 import { goalBalance, neededPerMonth } from '../domain/goals'
-import { enteredBalance, wealthByMonth } from '../domain/wealth'
+import { accountSeries, enteredBalance, wealthByMonth } from '../domain/wealth'
 import type { Account, AccountKind, Country, Goal } from '../domain/types'
 
 const ops = createAccountOps(db)
@@ -198,7 +198,7 @@ export function Konten() {
   const now = currentMonth()
   const months = monthRange(addMonths(end, -11), end)
   const wealth = wealthByMonth(accounts, balances, months)
-  const completeCount = wealth.filter((w) => w.complete).length
+  const series = accountSeries(accounts, balances, months)
 
   function run(fn: () => Promise<void>) {
     setError(null)
@@ -438,13 +438,12 @@ export function Konten() {
 
           <div>
             <h3 className="mb-1 font-medium">Vermögensverlauf</h3>
-            {completeCount < 2 ? (
+            {series.length === 0 ? (
               <p className="text-sm text-muted">
-                Für den Verlauf brauchst du mindestens zwei Monate, in denen alle gezählten Konten
-                einen Stand haben.
+                Sobald du einen Stand erfasst hast, erscheint hier der Verlauf pro Konto und gesamt.
               </p>
             ) : (
-              <WealthChart points={wealth} money={money} />
+              <WealthChart points={wealth} accounts={series} money={money} />
             )}
           </div>
         </div>

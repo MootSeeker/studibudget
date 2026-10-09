@@ -194,7 +194,7 @@ describe('Statistik-Seite', () => {
       const user = await setup()
       await user.selectOptions(screen.getByLabelText('Zeitraum'), 'Letzte 6 Monate')
       expect(
-        await screen.findByText(/mindestens zwei Monate, in denen alle gezählten Konten/),
+        await screen.findByText(/In diesem Zeitraum ist kein Kontostand erfasst/),
       ).toBeInTheDocument()
     })
 
@@ -209,6 +209,17 @@ describe('Statistik-Seite', () => {
         'section',
       )!
       await waitFor(() => expect(norm(abschnitt.textContent)).toMatch(/\+CHF 300\.00/))
+    })
+
+    it('AK-1: zeigt den Verlauf schon mit einem Stand, die Veränderung erst mit zwei vollständigen Monaten', async () => {
+      await konto([[prev(1), 100000]])
+      const user = await setup()
+      await user.selectOptions(screen.getByLabelText('Zeitraum'), 'Letzte 6 Monate')
+      expect(await screen.findByRole('checkbox', { name: 'Sparkonto' })).toBeChecked()
+      expect(screen.getByRole('checkbox', { name: 'Gesamtvermögen' })).toBeChecked()
+      expect(
+        screen.getByText(/Für die Veränderung im Zeitraum brauchst du mindestens zwei Monate/),
+      ).toBeInTheDocument()
     })
   })
 })

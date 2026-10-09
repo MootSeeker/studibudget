@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { enteredBalance, storedBalance, wealthByMonth } from './wealth'
+import { accountSeries, enteredBalance, storedBalance, wealthByMonth } from './wealth'
 import type { Account, AccountBalance } from './types'
 
 const base = { deleted: false, updatedAt: '' }
@@ -82,5 +82,56 @@ describe('wealthByMonth', () => {
       wealthByMonth([acc('a', 'bank', { deleted: true })], [bal('a', '2026-08', 5)], ['2026-08'])[0]
         .total,
     ).toBeNull()
+  })
+})
+
+describe('accountSeries', () => {
+  const months = ['2026-08', '2026-09', '2026-10']
+
+  it('AK-1: liefert pro Konto mit Ständen eine Reihe in der Reihenfolge der Konten', () => {
+    const r = accountSeries(
+      [acc('privat', 'bank'), acc('karte', 'schuld'), acc('depot', 'depot', { include: false })],
+      [
+        bal('privat', '2026-08', 100000),
+        bal('privat', '2026-09', 120000),
+        bal('karte', '2026-08', -20000),
+        bal('depot', '2026-10', 9999),
+      ],
+      months,
+    )
+    expect(r).toEqual([
+      { accountId: 'privat', name: 'privat', include: true, values: [100000, 120000, null] },
+      { accountId: 'karte', name: 'karte', include: true, values: [-20000, null, null] },
+      { accountId: 'depot', name: 'depot', include: false, values: [null, null, 9999] },
+    ])
+  })
+
+  it('AK-4: gelöschte Konten, gelöschte Stände und Konten ohne Stand ergeben keine Reihe', () => {
+    const r = accountSeries(
+      [
+        acc('weg', 'bank', { deleted: true }),
+        acc('grab', 'bank'),
+        acc('leer', 'bank'),
+        acc('da', 'spar'),
+      ],
+      [
+        bal('weg', '2026-08', 100),
+        bal('grab', '2026-08', 200, { deleted: true }),
+        bal('da', '2026-09', 300),
+        bal('da', '2026-07', 400),
+      ],
+      months,
+    )
+    expect(r.map((s) => s.accountId)).toEqual(['da'])
+    expect(r[0].values).toEqual([null, 300, null])
+  })
+
+  it('AK-6: ein fehlender Monat bleibt null, ein Stand von 0 ist ein Wert', () => {
+    const r = accountSeries(
+      [acc('a', 'bank')],
+      [bal('a', '2026-08', 0), bal('a', '2026-10', 500)],
+      months,
+    )
+    expect(r[0].values).toEqual([0, null, 500])
   })
 })

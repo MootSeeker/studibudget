@@ -45,6 +45,8 @@ const CONTROLS: [string, string][] = [
   ['control', 'bg'],
   ['control', 'surface'],
 ]
+// Linien und Punkte in Diagrammen (WCAG 1.4.11): 3:1 zu Fläche und Hintergrund (Issue #113)
+const SERIES = ['series-1', 'series-2', 'series-3', 'series-4', 'series-5', 'series-6']
 
 describe.each([
   ['Hellmodus', light],
@@ -71,6 +73,20 @@ describe.each([
   })
   it.each(CONTROLS)('Rand %s auf %s: mindestens 3:1', (fg, bg) => {
     expect(ratio(tokens[fg], tokens[bg])).toBeGreaterThanOrEqual(3)
+  })
+  it.each(SERIES)('AK-5: Serienfarbe %s mit mindestens 3:1 zu Fläche und Hintergrund', (s) => {
+    expect(ratio(tokens[s], tokens.surface)).toBeGreaterThanOrEqual(3)
+    expect(ratio(tokens[s], tokens.bg)).toBeGreaterThanOrEqual(3)
+  })
+})
+
+describe('Serienfarben (Issue #113)', () => {
+  it('AK-5: hell und dunkel legen alle sechs Serienfarben eigens fest', () => {
+    const darkOnly = block(":root\\[data-theme='dark'\\]")
+    for (const s of SERIES) {
+      expect(light[s], `hell ${s}`).toMatch(/^#[0-9a-f]{6}$/i)
+      expect(darkOnly[s], `dunkel ${s}`).toMatch(/^#[0-9a-f]{6}$/i)
+    }
   })
 })
 
