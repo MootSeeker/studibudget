@@ -2,7 +2,7 @@
 typ: hub
 bereich: produkt
 status: erledigt
-aktualisiert: 2026-10-08
+aktualisiert: 2026-10-09
 tags:
   - typ/hub
 ---
@@ -54,6 +54,7 @@ Weitere Bausteine der Test-Suite: Stryker #58 (PR #59), E2E #60 (PR #61), zwei G
 | 120 | IBAN-Meldung | `ibanProblem` nennt den Grund, Hinweis auf die geltende IBAN; eine Blockade des Felds war nicht nachstellbar | #122 |
 | 121 | QR-Code von der Banking-App nicht akzeptiert | UTF-8-Kodierung (Fehler der Bibliothek), `validateQrPayload`, Rücklesetest mit `jsqr`, Warnung bei der Beispiel-IBAN; Scan mit echter IBAN steht aus | #123 |
 | 106 | Swiss QR Code | Zahlteil unter der Rechnung, Typ S, Zahlungspflichtiger leer | #114 |
+| 126 | Bildtest «Konto» instabil | Testadressen fester Länge (`e2e/support/adresse.ts`, 34 Zeichen), neue Bilder, Workflow «Referenzbilder» mit `wiederholungen` als Beleg | #135 |
 
 Weitere Änderungen ohne Issue: Version 1.2.0 (#82), CI-Warnungen und veraltete Pakete (#83), PWA-Test-Fix (#75).
 
