@@ -38,7 +38,7 @@ Sitzung mit Sonnet starten, `/issue-bearbeiten <Nr>` mit 2–3 Issues der Gröss
 ## Sync
 
 - [x] Migration `20261009000000_push_records_lock.sql` (#48) am 2026-10-10 auf dem echten Supabase-Projekt eingespielt (`--dry-run` zeigte genau diese eine Migration; `migration list` zeigt sie lokal und remote).
-- [ ] Referenzbilder `einstellungen-konto-*` weichen beim Lauf des Workflows «Referenzbilder» von den eingecheckten ab (beim PR zu #76 nicht übernommen); bei Gelegenheit prüfen, ob das Bild wirklich instabil ist.
+- [x] Referenzbilder `einstellungen-konto-*` (geklärt am 2026-10-10): Sie weichen bei jedem Lauf des Workflows «Referenzbilder» ab, weil die Testadresse im Bild zufällige Ziffern enthält (feste Länge, siehe #126). Das ist erwartet, kein Fehler; der Bildtest toleriert die wenigen Pixel, belegt durch 120 grüne Wiederholungen. Beim Übernehmen neuer Bilder den Ordner nur für die betroffene Seite ersetzen.
 
 ## Blocker (Kevin)
 
