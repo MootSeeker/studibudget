@@ -1,4 +1,4 @@
-import { render, screen, within } from '@testing-library/react'
+import { render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it } from 'vitest'
 import { db } from '../data/db'
@@ -6,6 +6,9 @@ import { completeOnboarding } from '../data/onboarding'
 import { store } from '../data/store'
 import { defaultSemesters } from '../domain/period'
 import type { Category } from '../domain/types'
+import { generateInboxKeyPair, sealForInbox, wrapInboxPrivateKey } from '../crypto/inbox'
+import { generateDek } from '../crypto/keys'
+import type { InboxApi, InboxRow } from '../sync/inbox'
 import { KI_HINWEIS_KEY, KiVorschlaege } from './KiVorschlaege'
 
 beforeEach(async () => {
@@ -164,5 +167,128 @@ describe('KiVorschlaege', () => {
     expect(await screen.findByText('Eintrag 1: schon erfasst')).toBeInTheDocument()
     expect(screen.queryByRole('listitem', { name: 'Vorschlag 1' })).toBeNull()
     expect((await db.transactions.get(U1))?.deleted).toBe(true)
+  })
+})
+
+describe('Posteingang', () => {
+  const C = '33333333-3333-4333-8333-333333333333'
+  async function verbindung(widerrufen = false) {
+    const dek = await generateDek()
+    await db.keystore.put({ id: 'dek', email: 'anna@example.com', key: dek })
+    const pair = await generateInboxKeyPair()
+    await store.put('inboxConnections', {
+      id: C,
+      deleted: false,
+      publicKey: pair.publicKey,
+      wrappedPrivateKey: await wrapInboxPrivateKey(dek, C, pair.privateKey),
+      createdAt: '2026-10-10',
+    })
+    if (widerrufen) await store.remove('inboxConnections', C)
+    return pair.publicKey
+  }
+  function fakeInbox(rows: InboxRow[], behalten = false) {
+    const removed: string[] = []
+    const api: InboxApi = {
+      list: async () => (behalten ? rows : rows.filter((r) => !removed.includes(r.proposalId))),
+      remove: async (ids) => {
+        removed.push(...ids)
+      },
+      connect: async () => {},
+      revoke: async () => {},
+    }
+    return { api, removed }
+  }
+  async function mitPosteingang(rows: InboxRow[], behalten = false) {
+    localStorage.setItem(KI_HINWEIS_KEY, '1')
+    const cats = (await db.categories.toArray()).filter((c) => !c.deleted) as Category[]
+    const f = fakeInbox(rows, behalten)
+    render(<KiVorschlaege categories={cats} inbox={f.api} />)
+    return { user: userEvent.setup(), ...f }
+  }
+
+  it('AK-2: Eintrag aus dem Posteingang erscheint in der Bestätigungsliste', async () => {
+    const publicKey = await verbindung()
+    const ct = await sealForInbox(publicKey, U1, block([E]))
+    const { user } = await mitPosteingang([{ connectionId: C, proposalId: U1, ciphertext: ct }])
+    await user.click(screen.getByRole('button', { name: 'Posteingang abrufen' }))
+    const v1 = within(await screen.findByRole('listitem', { name: 'Vorschlag 1' }))
+    expect(v1.getByLabelText('Betrag')).toHaveValue('18.50')
+    expect(v1.getByLabelText('Notiz')).toHaveValue('Mittagessen')
+    expect(await db.transactions.count()).toBe(0)
+  })
+
+  it('AK-2: nicht lesbarer Eintrag wird verworfen', async () => {
+    await verbindung()
+    const { user, removed } = await mitPosteingang([
+      { connectionId: C, proposalId: U1, ciphertext: 'AAAA' },
+    ])
+    await user.click(screen.getByRole('button', { name: 'Posteingang abrufen' }))
+    expect(
+      await screen.findByText('Ein Eintrag war nicht lesbar und wurde verworfen.'),
+    ).toBeInTheDocument()
+    expect(removed).toEqual([U1])
+    expect(screen.queryByRole('listitem', { name: 'Vorschlag 1' })).toBeNull()
+  })
+
+  it('AK-5: Einträge einer widerrufenen Verbindung werden verworfen', async () => {
+    const publicKey = await verbindung(true)
+    const ct = await sealForInbox(publicKey, U1, block([E]))
+    const { user, removed } = await mitPosteingang([
+      { connectionId: C, proposalId: U1, ciphertext: ct },
+    ])
+    await user.click(screen.getByRole('button', { name: 'Posteingang abrufen' }))
+    await waitFor(() => expect(removed).toEqual([U1]))
+    expect(screen.queryByRole('listitem', { name: 'Vorschlag 1' })).toBeNull()
+  })
+
+  it('AK-6: ein schon gebuchter Eintrag wird beim nächsten Abruf nicht mehr gezeigt', async () => {
+    const publicKey = await verbindung()
+    const ct = await sealForInbox(publicKey, U1, block([E]))
+    const { user, removed } = await mitPosteingang(
+      [{ connectionId: C, proposalId: U1, ciphertext: ct }],
+      true,
+    )
+    await user.click(screen.getByRole('button', { name: 'Posteingang abrufen' }))
+    await user.click(
+      within(await screen.findByRole('listitem', { name: 'Vorschlag 1' })).getByRole('button', {
+        name: 'Buchen',
+      }),
+    )
+    await user.click(screen.getByRole('button', { name: 'Posteingang abrufen' }))
+    await waitFor(() => expect(removed).toEqual([U1, U1]))
+    expect(screen.queryByRole('listitem', { name: 'Vorschlag 1' })).toBeNull()
+    expect(await db.transactions.count()).toBe(1)
+  })
+
+  it('AK-7: Bestätigen löscht den Eintrag im Posteingang', async () => {
+    const publicKey = await verbindung()
+    const ct = await sealForInbox(publicKey, U1, block([E]))
+    const { user, removed } = await mitPosteingang([
+      { connectionId: C, proposalId: U1, ciphertext: ct },
+    ])
+    await user.click(screen.getByRole('button', { name: 'Posteingang abrufen' }))
+    await user.click(
+      within(await screen.findByRole('listitem', { name: 'Vorschlag 1' })).getByRole('button', {
+        name: 'Buchen',
+      }),
+    )
+    await waitFor(() => expect(removed).toEqual([U1]))
+    expect(await db.transactions.get(U1)).toBeDefined()
+  })
+
+  it('AK-7: Verwerfen löscht den Eintrag im Posteingang', async () => {
+    const publicKey = await verbindung()
+    const ct = await sealForInbox(publicKey, U1, block([E]))
+    const { user, removed } = await mitPosteingang([
+      { connectionId: C, proposalId: U1, ciphertext: ct },
+    ])
+    await user.click(screen.getByRole('button', { name: 'Posteingang abrufen' }))
+    await user.click(
+      within(await screen.findByRole('listitem', { name: 'Vorschlag 1' })).getByRole('button', {
+        name: 'Verwerfen',
+      }),
+    )
+    await waitFor(() => expect(removed).toEqual([U1]))
+    expect(await db.transactions.count()).toBe(0)
   })
 })

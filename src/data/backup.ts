@@ -7,6 +7,10 @@ export const BACKUP_APP = 'studibudget'
 export const BACKUP_VERSION = 1
 export const MAX_BACKUP_BYTES = 20 * 1024 * 1024
 
+/** Tabellen im Backup. Die Posteingangs-Verbindungen fehlen bewusst: Ihr privater Schlüssel hängt am Datenschlüssel des Kontos (#157). */
+export type BackupTable = Exclude<SyncedTable, 'inboxConnections'>
+export const BACKUP_TABLES = SYNCED_TABLES.filter((t): t is BackupTable => t !== 'inboxConnections')
+
 const id = z.uuid()
 const month = z.string().regex(/^\d{4}-(0[1-9]|1[0-2])$/)
 const date = z.string().regex(/^\d{4}-\d{2}-\d{2}$/)
@@ -136,7 +140,7 @@ const schemas = {
     archived: z.boolean(),
   }),
   cars: z.object({ ...common, name: name(60), archived: z.boolean(), order: z.number().int() }),
-} satisfies Record<SyncedTable, z.ZodType>
+} satisfies Record<BackupTable, z.ZodType>
 
 const fileSchema = z.object({
   app: z.literal(BACKUP_APP),
@@ -144,7 +148,7 @@ const fileSchema = z.object({
   exportedAt: z.string(),
   data: z.object(
     Object.fromEntries(
-      SYNCED_TABLES.map((t) => [
+      BACKUP_TABLES.map((t) => [
         t,
         // Backups aus älteren Versionen kennen «cars» noch nicht.
         t === 'cars'
@@ -152,7 +156,7 @@ const fileSchema = z.object({
           : z.array(schemas[t]).max(200_000),
       ]),
     ) as unknown as {
-      [K in SyncedTable]: z.ZodArray<(typeof schemas)[K]>
+      [K in BackupTable]: z.ZodArray<(typeof schemas)[K]>
     },
   ),
 })
@@ -162,13 +166,13 @@ export interface Backup {
   app: typeof BACKUP_APP
   schemaVersion: number
   exportedAt: string
-  data: Record<SyncedTable, Rec[]>
+  data: Record<BackupTable, Rec[]>
 }
 
 /** Alle (nicht gelöschten) Daten als Backup-Objekt; die Zeitstempel für den Sync bleiben bewusst draussen. */
 export async function exportBackup(db: StudiBudgetDB, now: Date = new Date()): Promise<Backup> {
-  const data = {} as Record<SyncedTable, Rec[]>
-  for (const t of SYNCED_TABLES) {
+  const data = {} as Record<BackupTable, Rec[]>
+  for (const t of BACKUP_TABLES) {
     data[t] = (await db.table(t).toArray())
       .filter((r) => !r.deleted)
       .map(({ updatedAt: _u, deleted: _d, ...rest }) => rest as Rec)
@@ -183,13 +187,13 @@ export const backupFileName = (now: Date = new Date()) =>
   `studibudget-backup-${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}.json`
 
 export type ParseResult =
-  { ok: true; backup: Backup; counts: Record<SyncedTable, number> } | { ok: false; error: string }
+  { ok: true; backup: Backup; counts: Record<BackupTable, number> } | { ok: false; error: string }
 
 const fail = (error: string): ParseResult => ({ ok: false, error })
 
 /** Jede ID darf in ihrer Tabelle nur einmal vorkommen, sonst gewinnt beim Einspielen still die letzte Zeile. */
 function checkUniqueIds(d: Backup['data']): string | null {
-  for (const t of SYNCED_TABLES)
+  for (const t of BACKUP_TABLES)
     if (new Set(d[t].map((r) => r.id)).size !== d[t].length)
       return `In der Tabelle «${t}» kommt eine ID doppelt vor.`
   return null
@@ -199,9 +203,9 @@ function checkUniqueIds(d: Backup['data']): string | null {
 function checkReferences(all: Backup['data']): string | null {
   // Gelöschte Zeilen werden nicht eingespielt: Sie sind weder gültiges Verweisziel noch müssen ihre Verweise stimmen.
   const d = Object.fromEntries(
-    SYNCED_TABLES.map((t) => [t, all[t].filter((r) => !r.deleted)]),
+    BACKUP_TABLES.map((t) => [t, all[t].filter((r) => !r.deleted)]),
   ) as Backup['data']
-  const ids = (t: SyncedTable) => new Set(d[t].map((r) => r.id))
+  const ids = (t: BackupTable) => new Set(d[t].map((r) => r.id))
   const [areas, cats, persons, accounts, goals, cars] = [
     ids('areas'),
     ids('categories'),
@@ -279,8 +283,7 @@ export function parseBackup(raw: string): ParseResult {
   if (dup) return fail(`Die Backup-Datei ist beschädigt: ${dup}`)
   const ref = checkReferences(backup.data)
   if (ref) return fail(`Die Backup-Datei ist beschädigt: ${ref}`)
-  const counts = Object.fromEntries(SYNCED_TABLES.map((t) => [t, backup.data[t].length])) as Record<
-    SyncedTable,
+  const counts = Object.fromEntries(BACKUP_TABLES.map((t) => [t, backup.data[t].length])) as Record<BackupTable,
     number
   >
   return { ok: true, backup, counts }
@@ -296,7 +299,7 @@ export async function applyBackup(
   store: Store = storeFor(db),
 ): Promise<void> {
   const entries: { name: SyncedTable; drafts: object[] }[] = []
-  for (const t of SYNCED_TABLES) {
+  for (const t of BACKUP_TABLES) {
     const incoming = backup.data[t]
       .filter((r) => !r.deleted)
       .map(({ deleted: _d, ...r }) => ({ ...r, deleted: false }))

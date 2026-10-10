@@ -7,6 +7,7 @@ import type {
   Budget,
   Category,
   Goal,
+  InboxConnection,
   Person,
   Settings,
   Settlement,
@@ -50,6 +51,7 @@ export class StudiBudgetDB extends Dexie {
   accountBalances!: Table<AccountBalance, string>
   goals!: Table<Goal, string>
   cars!: Table<Car, string>
+  inboxConnections!: Table<InboxConnection, string>
   outbox!: Table<OutboxEntry, number>
   keystore!: Table<KeystoreEntry, string>
   syncState!: Table<SyncStateRow, string>
@@ -73,6 +75,7 @@ export class StudiBudgetDB extends Dexie {
     this.version(2).stores({ keystore: 'id' })
     this.version(3).stores({ syncState: 'id' })
     this.version(4).stores({ cars: 'id, order' })
+    this.version(5).stores({ inboxConnections: 'id' })
   }
 
   /** Alle lokalen Daten und Schlüssel löschen (Abmelden, Kontowechsel). */

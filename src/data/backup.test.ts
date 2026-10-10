@@ -1,10 +1,17 @@
 // @vitest-environment node
 import 'fake-indexeddb/auto'
 import { describe, expect, it } from 'vitest'
-import { applyBackup, backupFileName, exportBackup, parseBackup, type Backup } from './backup'
+import {
+  applyBackup,
+  BACKUP_TABLES,
+  backupFileName,
+  exportBackup,
+  parseBackup,
+  type Backup,
+} from './backup'
 import { StudiBudgetDB } from './db'
 import { completeOnboarding } from './onboarding'
-import { createStore, SYNCED_TABLES } from './store'
+import { createStore } from './store'
 import { newId, SETTINGS_ID } from './seed'
 import { defaultSemesters } from '../domain/period'
 import { buildSharedEqual } from '../domain/split'
@@ -103,7 +110,7 @@ const strip = (rows: { id: string; updatedAt?: string }[]) =>
   rows.map(({ updatedAt: _u, ...r }) => r).sort((a, b) => a.id.localeCompare(b.id))
 const snapshot = async (db: StudiBudgetDB) => {
   const out: Record<string, object[]> = {}
-  for (const t of SYNCED_TABLES)
+  for (const t of BACKUP_TABLES)
     out[t] = strip((await db.table(t).toArray()).filter((r) => !r.deleted))
   return out
 }
@@ -128,7 +135,7 @@ describe('Export', () => {
       schemaVersion: 1,
       exportedAt: '2026-10-20T10:00:00.000Z',
     })
-    expect(Object.keys(b.data).sort()).toEqual([...SYNCED_TABLES].sort())
+    expect(Object.keys(b.data).sort()).toEqual([...BACKUP_TABLES].sort())
     expect(b.data.transactions.map((r) => r.id)).not.toContain(tx.id)
     expect(JSON.stringify(b)).not.toContain('updatedAt')
     expect(b.data.settings).toHaveLength(1)

@@ -2,6 +2,8 @@ import { useState } from 'react'
 import { BookTemplatesDialog } from '../components/BookTemplatesDialog'
 import { Collapsible } from '../components/Collapsible'
 import { KiVorschlaege } from '../components/KiVorschlaege'
+import { supabase } from '../auth/supabase'
+import { supabaseInbox } from '../sync/inbox'
 import { EntryForm } from '../components/EntryForm'
 import { MonthList } from '../components/MonthList'
 import { MONTH_NAMES } from '../lib/months'
@@ -26,6 +28,8 @@ import { totalsByMonth } from '../domain/stats'
 import { openTemplates, templateToDraft, withSkipped } from '../domain/templates'
 import type { Transaction } from '../domain/types'
 import { useNow } from '../lib/useNow'
+
+const inboxApi = supabase ? supabaseInbox(supabase) : null
 
 export function Eingabe() {
   const settings = useSettings()
@@ -197,7 +201,7 @@ export function Eingabe() {
 
           <Collapsible title="KI-Vorschläge" open={kiOffen} onToggle={() => setKiOffen(!kiOffen)}>
             <div className="space-y-3 p-4">
-              <KiVorschlaege categories={categories} />
+              <KiVorschlaege categories={categories} inbox={inboxApi} />
             </div>
           </Collapsible>
 
