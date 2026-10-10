@@ -12,12 +12,12 @@ tags:
 
 # Offene Punkte
 
-Offene GitHub-Issues (Stand 2026-10-10): #72 (CI-Artefakte aufs NAS), #145 (KI-Konnektor: Analyse erledigt, Umsetzung in Folge-Issues, siehe unten).
+Offene GitHub-Issues (Stand 2026-10-10): #72 (CI-Artefakte aufs NAS), #153 (`verify:kurz` und Umlaute), #155 bis #158 (KI-Konnektor, siehe unten).
 Offen ist ausserdem der **öffentliche Start**. Die vollständige Liste steht in `docs/start-checkliste.md`; hier der Stand:
 
 ## Ideen für später (Label «Future / Idee»)
 
-- [ ] **KI-Konnektor (#145):** Analyse erledigt, siehe [[Entscheid - KI-Konnektor über Vorschläge mit Bestätigung]]. Gewählt: Vorschläge mit Bestätigung in der App, zuerst als Text-Übergabe (Claude und ChatGPT, kein Server), danach verschlüsselter Posteingang mit lokalem MCP-Server (Verschlüsselung auf dem Gerät). Umsetzung in vier Folge-Issues; Stufe 2 braucht eine Migration (Rückfrage vor dem Einspielen).
+- [ ] **KI-Konnektor (#145, Analyse erledigt und geschlossen; Umsetzung in #155 Vorschlagsformat, #156 Text einfügen, #157 verschlüsselter Posteingang, #158 MCP-Server):** Analyse erledigt, siehe [[Entscheid - KI-Konnektor über Vorschläge mit Bestätigung]]. Gewählt: Vorschläge mit Bestätigung in der App, zuerst als Text-Übergabe (Claude und ChatGPT, kein Server), danach verschlüsselter Posteingang mit lokalem MCP-Server (Verschlüsselung auf dem Gerät). Reihenfolge #155, #156, #157, #158; Stufe 2 braucht eine Migration (Rückfrage vor dem Einspielen).
 
 ## Pilot Agenten-Ablauf (#128)
 
