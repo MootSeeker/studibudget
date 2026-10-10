@@ -1,5 +1,6 @@
 dist
 dist-e2e
+mcp-dist
 reports
 test-results
 package-lock.json

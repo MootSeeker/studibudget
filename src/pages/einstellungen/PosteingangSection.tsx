@@ -17,6 +17,7 @@ interface NeueVerbindung {
   connectionId: string
   publicKey: string
   token: string
+  kategorien: string[]
 }
 
 function konfiguration(n: NeueVerbindung): string {
@@ -28,6 +29,7 @@ function konfiguration(n: NeueVerbindung): string {
       connectionId: n.connectionId,
       publicKey: n.publicKey,
       token: n.token,
+      kategorien: n.kategorien,
     },
     null,
     2,
@@ -76,7 +78,11 @@ export function PosteingangSection({ api }: { api: InboxApi | null }) {
         wrappedPrivateKey: await wrapInboxPrivateKey(entry.key, connectionId, pair.privateKey),
         createdAt: new Date().toISOString().slice(0, 10),
       })
-      setNeu({ connectionId, publicKey: pair.publicKey, token })
+      const kategorien = (await db.categories.toArray())
+        .filter((c) => !c.deleted && !c.hidden)
+        .sort((a, b) => a.order - b.order)
+        .map((c) => c.name)
+      setNeu({ connectionId, publicKey: pair.publicKey, token, kategorien })
     } finally {
       setLaeuft(false)
     }

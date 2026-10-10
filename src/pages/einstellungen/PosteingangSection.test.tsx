@@ -55,6 +55,55 @@ describe('PosteingangSection (#157)', () => {
     expect(outbox.some((o) => o.table === 'inboxConnections')).toBe(true)
   })
 
+  it('AK-1: Konfiguration enthält die sichtbaren Kategorien', async () => {
+    const stand = { updatedAt: '2026-01-01T00:00:00.000Z', areaId: 'a1', type: 'ausgabe' as const }
+    await db.categories.bulkPut([
+      {
+        ...stand,
+        id: 'k1',
+        name: 'Mittagessen',
+        order: 2,
+        deleted: false,
+        fix: false,
+        rolloverFrom: null,
+        hidden: false,
+      },
+      {
+        ...stand,
+        id: 'k2',
+        name: 'Einkauf zuhause',
+        order: 1,
+        deleted: false,
+        fix: false,
+        rolloverFrom: null,
+        hidden: false,
+      },
+      {
+        ...stand,
+        id: 'k3',
+        name: 'Alt',
+        order: 3,
+        deleted: false,
+        fix: false,
+        rolloverFrom: null,
+        hidden: true,
+      },
+      {
+        ...stand,
+        id: 'k4',
+        name: 'Weg',
+        order: 4,
+        deleted: true,
+        fix: false,
+        rolloverFrom: null,
+        hidden: false,
+      },
+    ])
+    await einrichten(fakeApi())
+    const konfig = (screen.getByLabelText('Konfiguration') as HTMLTextAreaElement).value
+    expect(JSON.parse(konfig).kategorien).toEqual(['Einkauf zuhause', 'Mittagessen'])
+  })
+
   it('AK-1: ohne Server gibt es keine Verbindung', () => {
     render(<PosteingangSection api={null} />)
     expect(screen.getByText('Der Posteingang braucht ein Konto mit Sync.')).toBeInTheDocument()

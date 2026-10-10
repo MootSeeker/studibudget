@@ -9,6 +9,7 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
+    "build:mcp": "vite build --config vite.mcp.config.ts",
     "preview": "vite preview",
     "lint": "oxlint",
     "typecheck": "tsc -b",

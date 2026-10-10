@@ -41,7 +41,13 @@ export default mergeConfig(
       coverage: {
         provider: 'v8',
         include: ['src/**/*.{ts,tsx}'],
-        exclude: ['src/**/*.test.{ts,tsx}', 'src/test/**', 'src/main.tsx', 'src/domain/types.ts'],
+        exclude: [
+          'src/**/*.test.{ts,tsx}',
+          'src/test/**',
+          'src/main.tsx',
+          'src/domain/types.ts',
+          'src/mcp/main.ts',
+        ],
         reporter: ['text-summary', 'html', 'json-summary', 'lcov'],
         reportsDirectory: 'reports/coverage',
         reportOnFailure: true,
