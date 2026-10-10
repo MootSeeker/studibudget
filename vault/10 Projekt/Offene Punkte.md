@@ -2,7 +2,7 @@
 typ: hub
 bereich: betrieb
 status: offen
-aktualisiert: 2026-10-09
+aktualisiert: 2026-10-10
 repo-quelle:
   - docs/start-checkliste.md
 tags:
@@ -12,12 +12,12 @@ tags:
 
 # Offene Punkte
 
-Offene GitHub-Issues (Stand 2026-10-09): #72 (CI-Artefakte aufs NAS), #145 (Idee: KI-Konnektor, siehe unten).
+Offene GitHub-Issues (Stand 2026-10-10): #72 (CI-Artefakte aufs NAS), #145 (KI-Konnektor: Analyse erledigt, Umsetzung in Folge-Issues, siehe unten).
 Offen ist ausserdem der **öffentliche Start**. Die vollständige Liste steht in `docs/start-checkliste.md`; hier der Stand:
 
 ## Ideen für später (Label «Future / Idee»)
 
-- [ ] **KI-Konnektor (#145):** Ein- und Ausgaben per Claude oder ChatGPT erfassen. Noch nicht eingeplant, Grösse Gross. Hürde ist die Ende-zu-Ende-Verschlüsselung: Der Schlüssel liegt nur beim Nutzer, ein Konnektor kann also nicht serverseitig schreiben (siehe [[Verschlüsselung und Sync]]). Erster Schritt ist eine Analyse mit Entscheid-Notiz (lokaler MCP-Server, verschlüsselter Posteingang mit Bestätigung in der App oder Import-Datei); danach wird das Issue in kleinere aufgeteilt.
+- [ ] **KI-Konnektor (#145):** Analyse erledigt, siehe [[Entscheid - KI-Konnektor über Vorschläge mit Bestätigung]]. Gewählt: Vorschläge mit Bestätigung in der App, zuerst als Text-Übergabe (Claude und ChatGPT, kein Server), danach verschlüsselter Posteingang mit lokalem MCP-Server (Verschlüsselung auf dem Gerät). Umsetzung in vier Folge-Issues; Stufe 2 braucht eine Migration (Rückfrage vor dem Einspielen).
 
 ## Pilot Agenten-Ablauf (#128)
 
