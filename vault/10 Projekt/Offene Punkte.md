@@ -38,7 +38,6 @@ Sitzung mit Sonnet starten, `/issue-bearbeiten <Nr>` mit 2–3 Issues der Gröss
 ## Sync
 
 - [ ] Migration `20261009000000_push_records_lock.sql` (#48) auf dem echten Supabase-Projekt einspielen: zuerst `--dry-run`, dann nach Rückfrage bei Kevin. Bis dahin gilt der Lock nur lokal und in der CI.
-- [ ] Test `src/sync/records-seq.db.test.ts` (Reviewer, kleine Schwächen): Ergebnis des zweiten `waitUntil` prüfen, `psql`-Prozess auch bei Fehlschlag vor `hold.release()` beenden, Testnutzer aufräumen.
 - [ ] Referenzbilder `einstellungen-konto-*` weichen beim Lauf des Workflows «Referenzbilder» von den eingecheckten ab (beim PR zu #76 nicht übernommen); bei Gelegenheit prüfen, ob das Bild wirklich instabil ist.
 
 ## Blocker (Kevin)
