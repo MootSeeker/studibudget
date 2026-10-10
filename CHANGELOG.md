@@ -19,6 +19,9 @@ die Versionen folgen [Semantic Versioning](https://semver.org/lang/de/).
 
 ### Hinzugefügt
 
+- KI-Konnektor: Einträge, die eine KI (Claude, ChatGPT) als kleinen Text-Block liefert, lassen sich in der Eingabe einfügen, prüfen, ändern und erst nach Bestätigung buchen; schon erfasste Einträge (auch gelöschte) werden nicht noch einmal gebucht. Dazu gibt es ein festes Vorschlagsformat mit Prüfung (#155, #156).
+- KI-Konnektor: verschlüsselter Posteingang mit widerrufbaren Verbindungen in den Einstellungen. Der Server speichert nur Chiffretext; neue Migration `inbox` (#157).
+- KI-Konnektor: lokaler MCP-Server für Claude Desktop (`npm run build:mcp`), der Vorschläge auf dem Gerät verschlüsselt und im Posteingang ablegt. Anleitung in `docs/ki-konnektor.md` (#158).
 - Rechnung: Zahlteil mit Swiss QR Code (Empfangsschein und Zahlteil, A4) für die Schweiz (CHF), wenn eine gültige
   Bankverbindung hinterlegt ist und ein Betrag offen ist. Der Code entsteht im Browser, ohne Netzwerkzugriff (#106, Teil von #65).
 - Community-Standards: `CODE_OF_CONDUCT.md`, `CONTRIBUTING.md`, `SECURITY.md` und `ACCESSIBILITY.md`.
