@@ -200,6 +200,22 @@ describe('stats', () => {
     expect(k.fixSharePct).toBeCloseTo((160000 / 180000) * 100)
     expect(k.mostExpensiveMonth).toBe('2026-08')
   })
+  it('Ø Ausgaben pro Monat: zukünftige Monate zählen nicht im Nenner', () => {
+    const future = totalsByMonth(txs, cats, '2026-08', '2026-12')
+    // heute ist September: August und September zählen, Oktober bis Dezember nicht
+    expect(keyFigures(future, txs, cats, '2026-09').avgExpensesPerMonth).toBe(90000)
+    expect(keyFigures(future, txs, cats, '2026-08').avgExpensesPerMonth).toBe(100000)
+  })
+  it('Ø Ausgaben pro Monat: liegt der Zeitraum ganz in der Vergangenheit, bleibt es Summe durch Anzahl Monate', () => {
+    const k = keyFigures(totals, txs, cats, '2027-03')
+    expect(k.avgExpensesPerMonth).toBe(90000)
+    const withEmpty = totalsByMonth(txs, cats, '2026-07', '2026-09')
+    expect(keyFigures(withEmpty, txs, cats, '2026-12').avgExpensesPerMonth).toBe(60000)
+  })
+  it('Ø Ausgaben pro Monat: liegt der ganze Zeitraum in der Zukunft, ist er 0', () => {
+    const future = totalsByMonth(txs, cats, '2026-11', '2026-12')
+    expect(keyFigures(future, txs, cats, '2026-09').avgExpensesPerMonth).toBe(0)
+  })
 })
 
 describe('settlement', () => {

@@ -117,7 +117,7 @@ describe('Monat-Seite', () => {
     const card = screen.getByText('Ausgaben im Vergleich').closest('div')!
     expect(norm(card.textContent)).toMatch(/CHF 510\.00/)
     expect(norm(card.textContent)).toMatch(/Vormonat: CHF 300\.00 \(\+CHF 210\.00\)/)
-    expect(norm(card.textContent)).toMatch(/Ø letzte 3 Monate: CHF 300\.00/)
+    expect(norm(card.textContent)).toMatch(/Ø letzte 3 Monate mit Werten: CHF 300\.00/)
     const items = within(top)
       .getAllByRole('listitem')
       .map((li) => norm(li.textContent))

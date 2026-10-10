@@ -11,7 +11,7 @@ import { Monat } from './pages/Monat'
 import { Eingabe } from './pages/Eingabe'
 import { Einstellungen } from './pages/Einstellungen'
 import { Platzhalter } from './pages/Platzhalter'
-import { PAGES } from './pages'
+import { ROUTES } from './routes'
 
 const PAGE_ELEMENTS: Record<string, ReactElement> = {
   '/eingabe': <Eingabe />,
@@ -21,6 +21,7 @@ const PAGE_ELEMENTS: Record<string, ReactElement> = {
   '/ausgleich': <Ausgleich />,
   '/budget': <Budget />,
   '/einstellungen': <Einstellungen />,
+  '/ausgleich/rechnung/:personId': <Rechnung />,
   '/datenschutz': <LegalPage slug="datenschutz" />,
   '/impressum': <LegalPage slug="impressum" />,
 }
@@ -31,16 +32,13 @@ export default function App() {
       <Routes>
         <Route element={<Layout />}>
           <Route index element={<Navigate to="/eingabe" replace />} />
-          {PAGES.map((p) => (
+          {ROUTES.map((r) => (
             <Route
-              key={p.path}
-              path={p.path}
-              element={PAGE_ELEMENTS[p.path] ?? <Platzhalter titel={p.label} />}
+              key={r.path}
+              path={r.path}
+              element={PAGE_ELEMENTS[r.path] ?? <Platzhalter titel={r.title} />}
             />
           ))}
-          <Route path="/ausgleich/rechnung/:personId" element={<Rechnung />} />
-          <Route path="/datenschutz" element={PAGE_ELEMENTS['/datenschutz']} />
-          <Route path="/impressum" element={PAGE_ELEMENTS['/impressum']} />
         </Route>
       </Routes>
     </HashRouter>

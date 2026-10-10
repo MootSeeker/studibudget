@@ -27,6 +27,28 @@ describe('AuthGate', () => {
     expect(screen.getByRole('heading', { name: 'Anmelden' })).toBeInTheDocument()
     expect(screen.queryByText('GEHEIM')).not.toBeInTheDocument()
   })
+  it('jeder Bildschirm vor der Anmeldung hat einen eigenen Seitentitel', async () => {
+    const user = userEvent.setup()
+    document.title = 'Einstellungen – StudiBudget'
+    render(<AuthGate>x</AuthGate>)
+    expect(document.title).toBe('Anmelden – StudiBudget')
+    await user.click(screen.getByRole('button', { name: 'Neues Konto anlegen' }))
+    expect(document.title).toBe('Konto anlegen – StudiBudget')
+    await user.click(screen.getByRole('button', { name: 'Ich habe schon ein Konto' }))
+    await user.click(screen.getByRole('button', { name: 'Passwort vergessen?' }))
+    expect(document.title).toBe('Passwort vergessen – StudiBudget')
+    await user.click(screen.getByRole('button', { name: 'Zurück zur Anmeldung' }))
+    await user.click(screen.getByRole('button', { name: 'Datenschutz' }))
+    expect(document.title).toBe('Datenschutz – StudiBudget')
+    await user.click(screen.getByRole('button', { name: '← Zurück' }))
+    await user.click(screen.getByRole('button', { name: 'Impressum' }))
+    expect(document.title).toBe('Impressum – StudiBudget')
+  })
+  it('im Wiederherstellungsmodus hat die Seite einen eigenen Titel', () => {
+    auth.state = { status: 'recovery', email: 'a@b.ch', notice: null }
+    render(<AuthGate>x</AuthGate>)
+    expect(document.title).toBe('Neues Passwort festlegen – StudiBudget')
+  })
   it('zeigt einen Hinweis nach dem Bestätigungslink', () => {
     auth.state = {
       status: 'out',

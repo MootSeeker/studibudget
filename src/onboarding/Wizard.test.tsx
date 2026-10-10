@@ -12,6 +12,11 @@ function setup() {
 }
 
 describe('Wizard', () => {
+  it('hat einen eigenen Seitentitel', () => {
+    document.title = 'Einstellungen – StudiBudget'
+    setup()
+    expect(document.title).toBe('Einrichtung – StudiBudget')
+  })
   it('führt in vier Schritten durch und liefert die Eingaben (CH, WG, Budget)', async () => {
     const { onFinish, user, next } = setup()
     expect(screen.getByText(/Schritt 1 von 4/)).toBeInTheDocument()

@@ -1,3 +1,4 @@
+import { useDocumentTitle } from '../lib/useDocumentTitle'
 import { useId, useState, type FormEvent, type ReactNode } from 'react'
 
 export const inputClass =
@@ -78,6 +79,7 @@ export function Form(props: {
 }
 
 export function Card({ title, children }: { title: string; children: ReactNode }) {
+  useDocumentTitle(title)
   return (
     <div className="mx-auto mt-10 w-full max-w-md space-y-4 rounded-xl border border-border bg-surface p-6">
       <h1 className="text-xl font-semibold">{title}</h1>

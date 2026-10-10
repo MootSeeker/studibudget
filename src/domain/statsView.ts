@@ -18,6 +18,8 @@ export interface StatsInput {
   areas: Area[]
   budgets: Budget[]
   txs: Transaction[]
+  /** Laufender Monat; spätere Monate zählen nicht in «Ø Ausgaben pro Monat». */
+  today?: MonthKey
 }
 
 export interface ExpenseCategory {
@@ -122,5 +124,11 @@ export function buildStats(input: StatsInput): StatsView {
     })
     .filter((a) => a.rows.length > 0)
 
-  return { months, totals, key: keyFigures(months, txs, categories), expensesByArea, planVsActual }
+  return {
+    months,
+    totals,
+    key: keyFigures(months, txs, categories, input.today),
+    expensesByArea,
+    planVsActual,
+  }
 }

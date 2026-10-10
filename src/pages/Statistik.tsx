@@ -178,7 +178,15 @@ export function Statistik() {
     kind === 'frei' && !customError ? custom : undefined,
   )
   const range = customError ? { from: ref, to: ref } : period
-  const stats = buildStats({ from: range.from, to: range.to, categories, areas, budgets, txs })
+  const stats = buildStats({
+    from: range.from,
+    to: range.to,
+    categories,
+    areas,
+    budgets,
+    txs,
+    today: currentMonth(),
+  })
 
   const shift = (dir: -1 | 1) => {
     if (kind === 'letzte6') setRef(addMonths(ref, dir * 6))
@@ -282,7 +290,11 @@ export function Statistik() {
         <Tile label="Ausgaben" value={money(totals.ausgaben)} />
         <Tile label="Gespart" value={money(totals.sparen)} />
         <Tile label="Saldo" value={money(totals.saldo)} hint="Einnahmen − Ausgaben − Sparen" />
-        <Tile label="Ø Ausgaben pro Monat" value={money(key.avgExpensesPerMonth)} />
+        <Tile
+          label="Ø Ausgaben pro Monat"
+          value={money(key.avgExpensesPerMonth)}
+          hint="bis und mit dem laufenden Monat"
+        />
         <Tile
           label="Sparquote"
           value={pct(key.savingsRatePct)}
