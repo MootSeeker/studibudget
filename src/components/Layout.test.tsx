@@ -70,6 +70,17 @@ describe('Layout', () => {
     expect(document.title).toBe('Statistik – StudiBudget')
   })
 
+  it('die Rechnungsseite hat einen eigenen Titel', async () => {
+    window.location.hash = '#/ausgleich/rechnung/abc'
+    render(
+      <SyncProvider>
+        <App />
+      </SyncProvider>,
+    )
+    await screen.findByRole('navigation', { name: 'Hauptnavigation' })
+    expect(document.title).toBe('Rechnung – StudiBudget')
+  })
+
   it('Datenschutz und Impressum sind aus der App heraus erreichbar, mit eigenem Titel', async () => {
     const user = await setup()
     await user.click(screen.getByRole('link', { name: 'Datenschutz' }))

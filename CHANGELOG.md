@@ -7,6 +7,8 @@ die Versionen folgen [Semantic Versioning](https://semver.org/lang/de/).
 
 ### Behoben
 
+- Statistik: «Ø Ausgaben pro Monat» teilt nur noch durch Monate bis und mit dem laufenden; zukünftige Monate des Zeitraums zählen nicht mehr mit. Liegt der Zeitraum ganz in der Vergangenheit, bleibt der Wert gleich. Die Kachel nennt die Regel, in der Monatsansicht heisst die Beschriftung «Ø letzte 3 Monate mit Werten» (#163).
+- Seitentitel: Die Rechnungsseite heisst «Rechnung – StudiBudget» (bisher nur «StudiBudget»). Anmelden, Konto anlegen, Passwort vergessen, Neues Passwort, Datenschutz, Impressum vor der Anmeldung und die Einrichtung haben einen eigenen Titel; nach dem Abmelden bleibt der Titel der letzten Seite nicht mehr stehen (#162).
 - Sync: Gleichzeitige Pushes eines Nutzers können beim Pull keine Datensätze mehr überspringen (Advisory-Lock in `push_records`, neue Migration, #48).
 - Ausgleich: «Wer schuldet wem?» zeigt den Saldo bis Ende des gewählten Monats; bisher blieb er beim Monatswechsel auf dem Gesamtstand, sodass bereits bezahlte Schulden weiter angezeigt wurden. «Ausgleichen» rechnet weiter mit dem Stand von heute (#76).
 - Konten und Sparziele: Die Tabelle «Stände am Monatsende» und der Verlauf lassen sich über ein Dropdown «Zeitraum» wählen (Semester, Halbjahr, Year to date, Jahr, 5 Jahre, Max. Aufnahme). Die Pfeile springen um genau einen Zeitraum weiter, ohne Monate zu überspringen oder doppelt zu zeigen; bisher zeigte die Seite immer 12 Monate und verschob sich um 6 (#112).

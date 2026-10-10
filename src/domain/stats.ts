@@ -67,6 +67,8 @@ export function keyFigures(
   totals: MonthTotals[],
   txs: Transaction[],
   cats: Category[],
+  /** Letzter Monat, der zählt (der laufende); spätere Monate fliessen nicht in den Durchschnitt. */
+  today?: MonthKey,
 ): KeyFigures {
   const sum = (f: (t: MonthTotals) => number) => totals.reduce((a, t) => a + f(t), 0)
   const expenses = sum((t) => t.ausgaben)
@@ -81,8 +83,11 @@ export function keyFigures(
     (b, t) => (t.ausgaben > (b?.ausgaben ?? 0) ? t : b),
     null,
   )
+  // Durchschnitt über die Monate, die schon begonnen haben (leere Monate davor zählen mit).
+  const elapsed = today ? totals.filter((t) => t.month <= today) : totals
+  const elapsedExpenses = elapsed.reduce((a, t) => a + t.ausgaben, 0)
   return {
-    avgExpensesPerMonth: totals.length ? Math.round(expenses / totals.length) : 0,
+    avgExpensesPerMonth: elapsed.length ? Math.round(elapsedExpenses / elapsed.length) : 0,
     savingsRatePct: income > 0 ? (sum((t) => t.sparen) / income) * 100 : null,
     fixSharePct: expenses > 0 ? (fix / expenses) * 100 : null,
     mostExpensiveMonth: worst?.month ?? null,

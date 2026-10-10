@@ -3,6 +3,7 @@ import { Link, NavLink, Outlet, useLocation } from 'react-router'
 import { BackupReminder } from './BackupReminder'
 import { useSettings } from '../data/hooks'
 import { PAGES } from '../pages'
+import { titleOf } from '../routes'
 import { describeStatus, useSync } from '../sync/SyncProvider'
 
 const COLLAPSE_KEY = 'studibudget:nav-collapsed'
@@ -13,11 +14,6 @@ function readCollapsed(): boolean {
   } catch {
     return false
   }
-}
-
-const EXTRA_TITLES: Record<string, string> = {
-  '/datenschutz': 'Datenschutz',
-  '/impressum': 'Impressum',
 }
 
 export function Layout() {
@@ -48,7 +44,7 @@ export function Layout() {
 
   // Seitentitel pro Seite: wichtig für Tabs, Verlauf und Screenreader.
   useEffect(() => {
-    const title = PAGES.find((p) => p.path === pathname)?.label ?? EXTRA_TITLES[pathname]
+    const title = titleOf(pathname)
     document.title = title ? `${title} – StudiBudget` : 'StudiBudget'
   }, [pathname])
 

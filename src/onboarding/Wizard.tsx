@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
 import { buttonClass, Field, inputClass } from '../auth/ui'
+import { useDocumentTitle } from '../lib/useDocumentTitle'
 import { catalogFor } from '../data/catalog'
 import type { OnboardingInput } from '../data/onboarding'
 import { parseAmount } from '../domain/money'
@@ -44,6 +45,7 @@ function Choice(props: {
 }
 
 export function Wizard({ onFinish }: { onFinish: (input: OnboardingInput) => Promise<void> }) {
+  useDocumentTitle('Einrichtung')
   const [step, setStep] = useState(0)
   const [country, setCountry] = useState<Country>('CH')
   const [living, setLiving] = useState<Living>('allein')

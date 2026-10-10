@@ -128,7 +128,12 @@ function CompareCard({
       <h3 className="font-medium">{title}</h3>
       <p className="text-lg font-semibold tabular-nums">{money(c.current)}</p>
       <Delta current={c.current} reference={c.prev} money={money} label="Vormonat" />
-      <Delta current={c.current} reference={c.avg3} money={money} label="Ø letzte 3 Monate" />
+      <Delta
+        current={c.current}
+        reference={c.avg3}
+        money={money}
+        label="Ø letzte 3 Monate mit Werten"
+      />
     </div>
   )
 }

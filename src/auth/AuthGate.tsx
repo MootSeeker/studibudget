@@ -1,4 +1,5 @@
 import { useState, type ReactNode } from 'react'
+import { useDocumentTitle } from '../lib/useDocumentTitle'
 import { LegalPage } from '../legal/LegalPage'
 import { useAuth } from './AuthProvider'
 import { Card, Field, Form, buttonClass, linkButtonClass } from './ui'
@@ -262,6 +263,18 @@ function Recovery() {
   )
 }
 
+function LegalScreen({ slug, back }: { slug: 'datenschutz' | 'impressum'; back: () => void }) {
+  useDocumentTitle(slug === 'datenschutz' ? 'Datenschutz' : 'Impressum')
+  return (
+    <div className="mx-auto max-w-2xl p-4 md:p-8">
+      <button className={`${linkButtonClass} mb-4`} onClick={back}>
+        ← Zurück
+      </button>
+      <LegalPage slug={slug} />
+    </div>
+  )
+}
+
 /** Zeigt die App nur an, wenn jemand angemeldet ist und der Datenschlüssel lokal vorliegt. */
 export function AuthGate({ children }: { children: ReactNode }) {
   const auth = useAuth()
@@ -280,15 +293,7 @@ export function AuthGate({ children }: { children: ReactNode }) {
   if (auth.state.status === 'loading') return <p className="p-8 text-muted">Lädt …</p>
   if (auth.state.status === 'recovery') return <Recovery />
   if (auth.state.status === 'out') {
-    if (legal)
-      return (
-        <div className="mx-auto max-w-2xl p-4 md:p-8">
-          <button className={`${linkButtonClass} mb-4`} onClick={() => setLegal(null)}>
-            ← Zurück
-          </button>
-          <LegalPage slug={legal} />
-        </div>
-      )
+    if (legal) return <LegalScreen slug={legal} back={() => setLegal(null)} />
     return (
       <>
         {screen === 'register' ? (
