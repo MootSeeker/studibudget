@@ -1,7 +1,7 @@
 ---
 typ: hub
 bereich: meta
-aktualisiert: 2026-10-09
+aktualisiert: 2026-10-10
 tags:
   - typ/hub
 ---
@@ -25,5 +25,5 @@ Dieser Vault hält das Wissen _um_ den Code: Entscheide, Betrieb, Issue-Kontext,
 | Verschlüsselung und Sync | [[Verschlüsselung und Sync]] |
 | Qualitätssicherung und Zeitfehler | [[Tests und Zeitfehler]] |
 | Betrieb: Supabase, Deploy, Start | [[Betrieb]] |
-| Entscheide | [[Entscheid - Kassensicht beim Ausgleich]], [[Entscheid - Offline-first und Ende-zu-Ende]], [[Entscheid - Vorlagen statt Budget im Intervall]], [[Entscheid - Reiter statt langer Seiten]], [[Entscheid - Reviewer mit Sonnet]], [[Entscheid - Rollen der Modelle im Agenten-Ablauf]], [[Entscheid - Advisory-Lock für records_seq]] |
+| Entscheide | [[Entscheid - Kassensicht beim Ausgleich]], [[Entscheid - Offline-first und Ende-zu-Ende]], [[Entscheid - Vorlagen statt Budget im Intervall]], [[Entscheid - Reiter statt langer Seiten]], [[Entscheid - Reviewer mit Sonnet]], [[Entscheid - Rollen der Modelle im Agenten-Ablauf]], [[Entscheid - Advisory-Lock für records_seq]], [[Entscheid - KI-Konnektor über Vorschläge mit Bestätigung]] |
 | Verlauf | [[2026-10-04]], [[2026-10-05]], [[2026-10-06]], [[2026-10-07]], [[2026-10-08]], [[2026-10-09]], [[2026-10-10]] |
