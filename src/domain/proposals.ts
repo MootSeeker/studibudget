@@ -1,4 +1,5 @@
 /** Vorschlagsformat des KI-Konnektors, Version 1 (Issue #155). Rein, ohne Browser-Abhängigkeit: auch aus Node nutzbar (#158). */
+import { buildEntry, type EntryResult } from './entry'
 import type { Category } from './types'
 
 export const PROPOSAL_FORMAT_VERSION = 1
@@ -145,4 +146,39 @@ export function parseProposals(
   })
 
   return { ok: true, vorschlaege, ungueltig, schonErfasst }
+}
+
+export interface ProposalEdit {
+  date: string
+  amount: string
+  categoryId: string
+  note: string
+}
+
+export function proposalToEdit(p: Proposal): ProposalEdit {
+  return {
+    date: p.date,
+    amount: (p.amountCents / 100).toFixed(2),
+    categoryId: p.categoryId,
+    note: p.note,
+  }
+}
+
+export function editToEntry(
+  id: string,
+  edit: ProposalEdit,
+  categories: readonly Category[],
+): EntryResult {
+  const kat = categories.find((c) => c.id === edit.categoryId && !c.deleted)
+  if (!kat) return { ok: false, error: 'Bitte wähle eine Kategorie.' }
+  return buildEntry({
+    id,
+    type: kat.type,
+    categoryId: edit.categoryId,
+    amount: edit.amount,
+    date: edit.date,
+    note: edit.note,
+    shared: null,
+    goal: null,
+  })
 }

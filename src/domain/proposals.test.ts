@@ -1,6 +1,6 @@
 import { expect, it } from 'vitest'
 import type { Category } from './types'
-import { parseProposals } from './proposals'
+import { editToEntry, parseProposals, proposalToEdit } from './proposals'
 
 function cat(id: string, name: string, extra: Partial<Category> = {}): Category {
   return {
@@ -221,4 +221,55 @@ it('AK-5: meldet einen Fehler ohne Liste der Einträge', () => {
   expect(
     parseProposals(JSON.stringify({ studibudgetVorschlaege: 1, eintraege: {} }), CATS, new Set()),
   ).toEqual({ ok: false, fehler })
+})
+
+it('AK-2: proposalToEdit zeigt den Betrag mit zwei Nachkommastellen', () => {
+  const p = {
+    id: U1,
+    date: '2026-10-09',
+    amountCents: 1850,
+    categoryId: 'k1',
+    categoryName: 'Essen',
+    note: 'Mittagessen',
+  }
+  expect(proposalToEdit(p)).toEqual({
+    date: '2026-10-09',
+    amount: '18.50',
+    categoryId: 'k1',
+    note: 'Mittagessen',
+  })
+  expect(proposalToEdit({ ...p, amountCents: 5 }).amount).toBe('0.05')
+})
+
+it('AK-3: editToEntry übernimmt geänderte Werte und die id', () => {
+  expect(
+    editToEntry(
+      U1,
+      { date: '2026-10-08', amount: '20.00', categoryId: 'k1', note: 'Znacht' },
+      CATS,
+    ),
+  ).toMatchObject({
+    ok: true,
+    draft: {
+      id: U1,
+      deleted: false,
+      date: '2026-10-08',
+      categoryId: 'k1',
+      amountCents: 2000,
+      myAmountCents: 2000,
+      note: 'Znacht',
+    },
+  })
+})
+
+it('AK-3: editToEntry meldet ungültige Werte', () => {
+  const base = { date: '2026-10-08', amount: '20.00', categoryId: 'k1', note: '' }
+  expect(editToEntry(U1, { ...base, amount: 'abc' }, CATS)).toEqual({
+    ok: false,
+    error: 'Bitte gib einen gültigen Betrag ein.',
+  })
+  expect(editToEntry(U1, { ...base, categoryId: 'k3' }, CATS)).toEqual({
+    ok: false,
+    error: 'Bitte wähle eine Kategorie.',
+  })
 })
