@@ -1,12 +1,15 @@
 import { useState } from 'react'
 import { useAuth } from '../auth/AuthProvider'
+import { supabase } from '../auth/supabase'
 import { Field, Form, buttonClass } from '../auth/ui'
 import { SubNav } from '../components/SubNav'
 import { useSubNav, type SubNavItem } from '../lib/useSubNav'
+import { supabaseInbox } from '../sync/inbox'
 import { useSettings } from '../data/hooks'
 import { BackupSection } from './einstellungen/BackupSection'
 import { BankSection } from './einstellungen/BankSection'
 import { InstallSection } from './einstellungen/InstallSection'
+import { PosteingangSection } from './einstellungen/PosteingangSection'
 import { ResetSection } from './einstellungen/ResetSection'
 import {
   CarsSection,
@@ -110,6 +113,8 @@ function DeleteAccount() {
   )
 }
 
+const inboxApi = supabase ? supabaseInbox(supabase) : null
+
 const TABS: SubNavItem[] = [
   { id: 'haushalt', label: 'Haushalt' },
   { id: 'darstellung', label: 'Darstellung' },
@@ -144,6 +149,7 @@ export function Einstellungen() {
       {settings && tab === 'daten' && (
         <>
           <BackupSection settings={settings} />
+          <PosteingangSection api={inboxApi} />
           <ResetSection settings={settings} />
         </>
       )}

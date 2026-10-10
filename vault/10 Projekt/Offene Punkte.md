@@ -12,7 +12,7 @@ tags:
 
 # Offene Punkte
 
-Offene GitHub-Issues (Stand 2026-10-10): #72 (CI-Artefakte aufs NAS), #153 (`verify:kurz` und Umlaute), #155 bis #158 (KI-Konnektor, siehe unten).
+Offene GitHub-Issues (Stand 2026-10-10): #72 (CI-Artefakte aufs NAS), #153 (`verify:kurz` und Umlaute), #155 bis #158 (KI-Konnektor: umgesetzt im PR, Migration `inbox` noch einzuspielen, siehe unten).
 Offen ist ausserdem der **öffentliche Start**. Die vollständige Liste steht in `docs/start-checkliste.md`; hier der Stand:
 
 ## Ideen für später (Label «Future / Idee»)
@@ -37,6 +37,8 @@ Sitzung mit Sonnet starten, `/issue-bearbeiten <Nr>` mit 2–3 Issues der Gröss
 
 ## Sync
 
+- [ ] Migration `20261010000000_inbox.sql` (#157) nach dem Merge auf dem echten Supabase-Projekt einspielen (erst `--dry-run`, Rückfrage bei Kevin). Ohne sie scheitern Verbindungen und Posteingang.
+- [ ] KI-Konnektor von Hand ausprobieren: Text-Übergabe mit Claude und ChatGPT, MCP-Server in Claude Desktop (Schritte in `docs/ki-konnektor.md`); Ausgangsfrage: wird die Funktion genutzt?
 - [x] Migration `20261009000000_push_records_lock.sql` (#48) am 2026-10-10 auf dem echten Supabase-Projekt eingespielt (`--dry-run` zeigte genau diese eine Migration; `migration list` zeigt sie lokal und remote).
 - [x] Referenzbilder `einstellungen-konto-*` (geklärt am 2026-10-10): Sie weichen bei jedem Lauf des Workflows «Referenzbilder» ab, weil die Testadresse im Bild zufällige Ziffern enthält (feste Länge, siehe #126). Das ist erwartet, kein Fehler; der Bildtest toleriert die wenigen Pixel, belegt durch 120 grüne Wiederholungen. Beim Übernehmen neuer Bilder den Ordner nur für die betroffene Seite ersetzen.
 

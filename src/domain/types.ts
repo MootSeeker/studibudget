@@ -143,3 +143,10 @@ export interface Goal extends Synced {
   startCents: number
   archived: boolean
 }
+
+/** Verbindung des KI-Posteingangs (#157). Widerruf = Grabstein. Der private Schlüssel ist zusätzlich mit dem Datenschlüssel verpackt. */
+export interface InboxConnection extends Synced {
+  publicKey: string // Base64, P-256 raw (65 Byte)
+  wrappedPrivateKey: string // wrapInboxPrivateKey(dek, id, privateKey)
+  createdAt: string // YYYY-MM-DD
+}

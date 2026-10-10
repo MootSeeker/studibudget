@@ -9,6 +9,7 @@ import type {
   Budget,
   Category,
   Goal,
+  InboxConnection,
   Person,
   Settings,
   Settlement,
@@ -31,6 +32,7 @@ export interface TableTypes {
   accountBalances: AccountBalance
   goals: Goal
   cars: Car
+  inboxConnections: InboxConnection
 }
 
 export type SyncedTable = keyof TableTypes
@@ -47,6 +49,7 @@ export const SYNCED_TABLES: SyncedTable[] = [
   'accountBalances',
   'goals',
   'cars',
+  'inboxConnections',
 ]
 
 export type Draft<N extends SyncedTable> = Omit<TableTypes[N], 'updatedAt'>

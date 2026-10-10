@@ -1,5 +1,9 @@
 import { useState } from 'react'
 import { BookTemplatesDialog } from '../components/BookTemplatesDialog'
+import { Collapsible } from '../components/Collapsible'
+import { KiVorschlaege } from '../components/KiVorschlaege'
+import { supabase } from '../auth/supabase'
+import { supabaseInbox } from '../sync/inbox'
 import { EntryForm } from '../components/EntryForm'
 import { MonthList } from '../components/MonthList'
 import { MONTH_NAMES } from '../lib/months'
@@ -25,6 +29,8 @@ import { openTemplates, templateToDraft, withSkipped } from '../domain/templates
 import type { Transaction } from '../domain/types'
 import { useNow } from '../lib/useNow'
 
+const inboxApi = supabase ? supabaseInbox(supabase) : null
+
 export function Eingabe() {
   const settings = useSettings()
   const categories = useCategories()
@@ -37,6 +43,7 @@ export function Eingabe() {
   const txs = useMonthTransactions(month)
   const [editing, setEditing] = useState<Transaction | null>(null)
   const [booking, setBooking] = useState(false)
+  const [kiOffen, setKiOffen] = useState(false)
   const today = useNow()
 
   if (!settings) return null
@@ -191,6 +198,12 @@ export function Eingabe() {
               </button>
             </div>
           )}
+
+          <Collapsible title="KI-Vorschläge" open={kiOffen} onToggle={() => setKiOffen(!kiOffen)}>
+            <div className="space-y-3 p-4">
+              <KiVorschlaege categories={categories} inbox={inboxApi} />
+            </div>
+          </Collapsible>
 
           <MonthList
             groups={groups}
