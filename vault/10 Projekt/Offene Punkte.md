@@ -12,7 +12,7 @@ tags:
 
 # Offene Punkte
 
-Offene GitHub-Issues (Stand 2026-10-10): #72 (CI-Artefakte aufs NAS), #153 (`verify:kurz` und Umlaute), #155 bis #158 (KI-Konnektor: umgesetzt im PR, Migration `inbox` noch einzuspielen, siehe unten).
+Offene GitHub-Issues (Stand 2026-10-10): #72 (CI-Artefakte aufs NAS), #153 (`verify:kurz` und Umlaute), #155 bis #158 (KI-Konnektor: umgesetzt im PR, Migration `inbox` noch einzuspielen, siehe unten), #190 (Dependabot für npm und GitHub Actions).
 Offen ist ausserdem der **öffentliche Start**. Die vollständige Liste steht in `docs/start-checkliste.md`; hier der Stand:
 
 ## Ideen für später (Label «Future / Idee»)
@@ -54,6 +54,8 @@ Sitzung mit Sonnet starten, `/issue-bearbeiten <Nr>` mit 2–3 Issues der Gröss
 - [x] Baustein 1 bis 13; Ausgangswert der Mutationstests 82,26 %, `break` = 80
 - [ ] Mutationstests: überlebende Mutanten in `src/data/hooks.ts` (134, von keinem Unit-Test erfasst), `period.ts`, `monthView.ts`
 - [ ] E2E-Test «Passwort vergessen» (WebKit, `e2e/auth.spec.ts`) ist instabil (Issue #116, ohne gefundene Ursache geschlossen, bei neuer Rötung neues Issue): in CI einmal rot (Überschrift nach dem Mail-Link fehlt), lokal in WebKit 2 von rund 190 Läufen rot, beide direkt nach der Browser-Installation und an anderer Stelle (nach dem Setzen des neuen Passworts). Mit mehr Last nicht herbeizuführen. Bei der nächsten Rötung Trace und Fehlermeldung (Link und Zielseite) sichern, bevor aufgeräumt wird.
+- [ ] Vertrauliche Meldung von Schwachstellen einschalten (Kevin, Settings → Code security → Private vulnerability reporting): `SECURITY.md` verweist auf «Report a vulnerability», die Funktion ist aber aus (Prüfung der Repo-Einstellungen 2026-10-10).
+- [ ] Dependabot-Warnungen und Sicherheits-Updates einschalten (Kevin), danach #190 umsetzen.
 - [ ] Branch-Schutz (Kevin): `ci-gesamt` deckt nur den Workflow «Deploy» ab. Die Prüfungen aus «Doku» (format, links, vault, geheimnisse, claude-konfiguration) laufen bei Änderungen an Markdown und Doku-Pfaden, auch in gemischten PRs, und sind kein Teil von `ci-gesamt`. Doku-PRs lösen «Deploy» nicht aus, sodass `ci-gesamt` dort fehlt: für den Schutz braucht es einen zweiten Sammelstatus für «Doku» (und eine Antwort auf das Fehlen bei Doku-PRs), sonst blockiert er sie.
 - [x] Bildtest «Konto» (#126, erledigt mit PR #135): Testadresse hat feste Länge, neue Referenzbilder, 120 grüne Wiederholungen im Workflow «Referenzbilder» (Eingabe `wiederholungen`).
 - [ ] CI schneller machen (#62): Cache-Wirkung messen; falls `docker load` nicht schneller ist als der Download, Image-Cache entfernen

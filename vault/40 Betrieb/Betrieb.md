@@ -2,7 +2,7 @@
 typ: referenz
 bereich: betrieb
 status: aktiv
-aktualisiert: 2026-10-06
+aktualisiert: 2026-10-10
 repo-quelle:
   - .github/workflows/deploy.yml
   - docs/start-checkliste.md
@@ -26,7 +26,8 @@ tags:
 - **CI-Zwischenspeicher:** Docker-Images des lokalen Supabase (Tar im Actions-Cache, Schlüssel aus Lock-Datei und `supabase/config.toml`) und Playwright-Browser; Wirkung noch zu messen ([[Offene Punkte]], #62). Kosten: keine, das Repo ist öffentlich.
 - **Actions** laufen auf Node 24 (Version aus `.nvmrc`, mindestens 24.15; checkout 7, setup-node 7, cache 6, upload-artifact 7, download-artifact 8, pages 5). Verbleibende `punycode`-/`Buffer()`-Hinweise stammen aus `deploy-pages` und `download-artifact`, nicht aus unserem Code.
 - **Abhängigkeiten:** `overrides` für `glob` (^13) und `qs` (^6.16); `npm audit` soll 0 melden.
-- **Aufräumen:** Nach Squash-Merges bleiben Branches stehen, wenn über die Weboberfläche gemergt wurde; regelmässig `git fetch --prune` und Remote-Branches löschen. `backup-vor-umschreiben` (lokal) ist das Backup von der Historienbereinigung.
+- **Merge-Einstellungen (seit 2026-10-10):** nur Squash-Merge erlaubt (Merge-Commit und Rebase aus), Commit-Titel = PR-Titel, Commit-Nachricht leer (die PR-Nummer im Titel verweist auf Beschreibung und Verlauf). GitHub löscht den Branch nach dem Merge selbst.
+- **Aufräumen:** Remote-Branches löscht GitHub beim Merge; lokal `git fetch --prune` und die lokalen Branches entfernen. `backup-vor-umschreiben` (lokal) ist das Backup von der Historienbereinigung.
 
 ## Git-Ablauf
 
