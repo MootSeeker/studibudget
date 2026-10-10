@@ -283,7 +283,8 @@ export function parseBackup(raw: string): ParseResult {
   if (dup) return fail(`Die Backup-Datei ist beschädigt: ${dup}`)
   const ref = checkReferences(backup.data)
   if (ref) return fail(`Die Backup-Datei ist beschädigt: ${ref}`)
-  const counts = Object.fromEntries(BACKUP_TABLES.map((t) => [t, backup.data[t].length])) as Record<BackupTable,
+  const counts = Object.fromEntries(BACKUP_TABLES.map((t) => [t, backup.data[t].length])) as Record<
+    BackupTable,
     number
   >
   return { ok: true, backup, counts }
