@@ -80,11 +80,15 @@ function ChangeEmail() {
   const [sent, setSent] = useState<string | null>(null)
   return (
     <div className="space-y-3">
+      <p role="note" className="text-sm">
+        Wichtig: Bis du die Änderung in beiden E-Mails bestätigt hast, kannst du dich auf keinem
+        Gerät neu anmelden. Halte deinen Wiederherstellungsschlüssel bereit.
+      </p>
       <Form
         submitLabel="Bestätigung anfordern"
         onSubmit={async () => {
-          await auth.changeEmail(newEmail, pw)
-          setSent(newEmail)
+          setSent(await auth.changeEmail(newEmail, pw))
+          setPw('')
         }}
       >
         <Field
@@ -104,7 +108,7 @@ function ChangeEmail() {
       </Form>
       {sent && (
         <p role="status" className="text-sm">
-          {`Wir haben eine Bestätigung an ${sent} geschickt. Bestätige die Änderung in beiden E-Mails (neue und bisherige Adresse). Bis dahin kannst du dich nicht neu anmelden; bleib auf diesem Gerät angemeldet. Danach meldest du dich mit der neuen Adresse an. Im Notfall hilft der Wiederherstellungsschlüssel.`}
+          {`Wir haben eine Bestätigung an ${sent} geschickt. Bestätige die Änderung in beiden E-Mails, an die neue und an die bisherige Adresse. Bis beide bestätigt sind, kannst du dich auf keinem Gerät neu anmelden, auch nicht mit der bisherigen Adresse. Bleib auf diesem Gerät angemeldet. Danach meldest du dich mit der neuen Adresse an. Bestätigst du nicht, kommst du nur noch mit deinem Wiederherstellungsschlüssel («Passwort vergessen») an deine Daten.`}
         </p>
       )}
     </div>

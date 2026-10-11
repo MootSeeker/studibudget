@@ -174,6 +174,21 @@ describe('Stichtag beim Zurücksetzen (Issue #189)', () => {
     expect(deletedIds(planReset(d, ['settlements'], '2025-01'))).toEqual(['as-alt'])
   })
 
+  it('AK-2: Stichtag und Kontostände gelöschter Konten', () => {
+    const d = data()
+    d.accountBalances = [
+      { ...balance, id: 'ks-alt', month: '2024-12' },
+      { ...balance, id: 'ks-neu', month: '2025-01' },
+    ]
+    // Konto wird mitgelöscht: der Stichtag gilt nicht, alle Stände gehen mit
+    expect(
+      [...deletedIds(planReset(d, ['accounts', 'accountBalances'], '2025-01'))].sort(),
+    ).toEqual(['k1', 'ks-alt', 'ks-neu'])
+    // Konto schon früher gelöscht (Grabstein), nur Kontostände gewählt: der Stichtag gilt
+    d.accounts = [{ ...account, deleted: true }]
+    expect(deletedIds(planReset(d, ['accountBalances'], '2025-01'))).toEqual(['ks-alt'])
+  })
+
   it('AK-3: ohne Stichtag unverändert', () => {
     expect(planReset(data(), ['transactions', 'settlements'], undefined)).toEqual(
       planReset(data(), ['transactions', 'settlements']),

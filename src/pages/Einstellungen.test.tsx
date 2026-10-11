@@ -354,18 +354,20 @@ describe('Einstellungen: Passwort und E-Mail (Issue #187, #188)', () => {
   })
 
   it('AK-1: E-Mail ändern ruft changeEmail und zeigt den Hinweis', async () => {
-    auth.changeEmail.mockResolvedValue(undefined)
+    auth.changeEmail.mockResolvedValue('neu@example.com')
     const user = await open('E-Mail-Adresse ändern')
-    await user.type(screen.getByLabelText('Neue E-Mail-Adresse'), 'neu@example.com')
+    expect(screen.getByText(/Halte deinen Wiederherstellungsschlüssel bereit/)).toBeInTheDocument()
+    await user.type(screen.getByLabelText('Neue E-Mail-Adresse'), 'Neu@Example.com')
     await user.type(
       formOf('Bestätigung anfordern').getByLabelText('Passwort zur Bestätigung'),
       'Passwort-1',
     )
     await user.click(screen.getByRole('button', { name: 'Bestätigung anfordern' }))
-    expect(auth.changeEmail).toHaveBeenCalledWith('neu@example.com', 'Passwort-1')
-    expect(await screen.findByRole('status')).toHaveTextContent(
-      'Wir haben eine Bestätigung an neu@example.com geschickt.',
-    )
+    expect(auth.changeEmail).toHaveBeenCalledWith('Neu@Example.com', 'Passwort-1')
+    const status = await screen.findByRole('status')
+    expect(status).toHaveTextContent('Wir haben eine Bestätigung an neu@example.com geschickt.')
+    expect(status).toHaveTextContent('auch nicht mit der bisherigen Adresse')
+    expect(status).toHaveTextContent('Wiederherstellungsschlüssel')
   })
 })
 
@@ -426,6 +428,23 @@ describe('Einstellungen: ungespeicherte Änderungen (Issue #185)', () => {
     await user.click(dialog().getByRole('button', { name: 'Verwerfen' }))
     expect(await screen.findByRole('heading', { name: 'Ampel' })).toBeInTheDocument()
     expect((await db.settings.get(SETTINGS_ID))!.country).toBe('CH')
+  })
+
+  it('AK-2: Link aus den Einstellungen fragt bei ungespeicherten Änderungen nach', async () => {
+    const user = userEvent.setup()
+    render(
+      <MemoryRouter initialEntries={['/einstellungen']}>
+        <Einstellungen />
+        <a href="#/budget">Weg</a>
+      </MemoryRouter>,
+    )
+    await user.type(await screen.findByLabelText('Name Semester 1'), 'X')
+    await user.click(screen.getByRole('link', { name: 'Weg' }))
+    expect(screen.getByRole('dialog', { name: 'Ungespeicherte Änderungen' })).toBeInTheDocument()
+    expect(window.location.hash).not.toBe('#/budget')
+    await user.click(within(screen.getByRole('dialog')).getByRole('button', { name: 'Verwerfen' }))
+    expect(window.location.hash).toBe('#/budget')
+    window.location.hash = ''
   })
 })
 

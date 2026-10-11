@@ -29,7 +29,7 @@ interface AuthApi {
   discardAccountInRecovery(): Promise<void>
   logout(): Promise<void>
   changePassword(oldPw: string, newPw: string): Promise<void>
-  changeEmail(newEmail: string, password: string): Promise<void>
+  changeEmail(newEmail: string, password: string): Promise<string>
   renewRecoveryKey(password: string): Promise<string>
   deleteAccount(password: string): Promise<void>
   clearNotice(): void

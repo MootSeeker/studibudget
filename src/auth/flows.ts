@@ -219,6 +219,8 @@ export async function changePassword(
 }
 
 const EMAIL_FORMAT = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+const EMAIL_ROLLBACK_FAILED =
+  'Die Adresse wurde nicht geändert, und der alte Stand liess sich nicht wiederherstellen. Melde dich ab und wähle auf der Anmeldeseite «Passwort vergessen». Mit deinem Wiederherstellungsschlüssel kommst du wieder an deine Daten.'
 
 /**
  * E-Mail-Adresse ändern (Issue #188). Der Salt des Schlüssels enthält die Adresse: Auth-Passwort und verpackter
@@ -230,7 +232,7 @@ export async function changeEmail(
   currentEmail: string,
   password: string,
   newEmail: string,
-): Promise<void> {
+): Promise<string> {
   const next = newEmail.trim().toLowerCase()
   if (!EMAIL_FORMAT.test(next))
     throw new AuthError('invalid', 'Bitte gib eine gültige E-Mail-Adresse ein.')
@@ -240,18 +242,27 @@ export async function changeEmail(
   const rewrapped = await rewrapForPassword(dek, password, next)
   const { error } = await sb.auth.updateUser({ email: next, password: rewrapped.authSecret })
   if (error) {
-    if (/already|registered|exists|taken/i.test(error.message))
+    const code = (error as { code?: string }).code
+    if (
+      code === 'email_exists' ||
+      (code === undefined && /already|registered|exists|taken/i.test(error.message))
+    )
       throw new AuthError('other', 'Diese Adresse ist schon vergeben.')
     throw mapError(error)
   }
   try {
     await storeKeys(sb, { wrapped_dek: rewrapped.wrappedDek, kdf: rewrapped.kdf })
   } catch (e) {
-    await sb.auth
+    const failed = await sb.auth
       .updateUser({ email: currentEmail.trim().toLowerCase(), password: authSecret })
-      .catch(() => undefined)
+      .then(
+        (r) => r.error !== null,
+        () => true,
+      )
+    if (failed) throw new AuthError('keys', EMAIL_ROLLBACK_FAILED)
     throw e
   }
+  return next
 }
 
 /** Erzeugt einen neuen Wiederherstellungsschlüssel; der alte wird ungültig. */

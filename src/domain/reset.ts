@@ -61,7 +61,11 @@ export function effectiveSelection(selected: Iterable<ResetKind>): Set<ResetKind
 }
 
 /** Arten, die der Stichtag («nur Einträge vor diesem Monat») erfasst. */
-export const RESET_KINDS_WITH_CUTOFF: ResetKind[] = ['transactions', 'accountBalances', 'settlements']
+export const RESET_KINDS_WITH_CUTOFF: ResetKind[] = [
+  'transactions',
+  'accountBalances',
+  'settlements',
+]
 
 /**
  * `before` (YYYY-MM): Nur Buchungen, Kontostände und Ausgleichszahlungen vor diesem Monat werden gelöscht.
@@ -78,11 +82,11 @@ export function planReset(
   const counts = {} as Record<ResetKind, number>
   const writes: ResetPlan['writes'] = []
   const cut = (kind: ResetKind): ((r: unknown) => boolean) | undefined => {
-    if (before === undefined || !chosen.has(kind)) return undefined
+    if (before === undefined || !chosen.has(kind) || !RESET_KINDS_WITH_CUTOFF.includes(kind))
+      return undefined
     if (kind === 'accountBalances' && chosen.has('accounts')) return undefined
-    if (kind === 'accountBalances')
-      return (r) => (r as AccountBalance).month < before
-    return (r) => ((r as Transaction | Settlement).date) < before + '-01'
+    if (kind === 'accountBalances') return (r) => (r as AccountBalance).month < before
+    return (r) => (r as Transaction | Settlement).date < before + '-01'
   }
 
   let detachedFromTemplates = 0
