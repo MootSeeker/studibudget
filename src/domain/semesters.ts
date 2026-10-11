@@ -10,7 +10,8 @@ export interface SemesterCheck {
   gapMonths: number[]
 }
 
-const label = (s: Semester, i: number) => (s.name.trim() === '' ? `Semester ${i + 1}` : s.name.trim())
+const label = (s: Semester, i: number) =>
+  s.name.trim() === '' ? `Semester ${i + 1}` : s.name.trim()
 
 /** Namen zu einer Liste: «A», «A und B», «A, B und C». */
 function joinNames(names: string[]): string {
