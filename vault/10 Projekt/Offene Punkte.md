@@ -37,6 +37,11 @@ Sitzung mit Sonnet starten, `/issue-bearbeiten <Nr>` mit 2–3 Issues der Gröss
 
 ## Sync
 
+- [ ] E-Mail-Wechsel (#188) von Hand auf dem echten Projekt prüfen: beide Bestätigungsmails (`double_confirm_changes`), danach Anmeldung mit der neuen Adresse. Braucht den eigenen SMTP-Anbieter; bis zur Bestätigung gelingt keine neue Anmeldung (Wiederherstellungsschlüssel als Notausgang).
+- [ ] #194: E-Mail-Wechsel abbrechen (Konto bleibt bis zur Bestätigung beider Adressen für neue Anmeldungen gesperrt, Notausgang Wiederherstellungsschlüssel).
+- [ ] Browser-Zurück-Taste fragt bei ungespeicherten Änderungen nicht nach (`HashRouter` ohne `useBlocker`, #185); Neuladen und Schliessen schon (`beforeunload`).
+- [ ] Referenzbilder `einstellungen-*` und `einstellungen-konto-*` nach #183 bis #189 über den Workflow «Referenzbilder» ersetzen.
+- [ ] `HousingSection`: «Nicht gespeichert» erscheint fälschlich, wenn sich `settings.living` von aussen ändert, während Land oder Wohnsituation im Entwurf stehen (#185, kein Test).
 - [ ] Migration `20261010000000_inbox.sql` (#157) nach dem Merge auf dem echten Supabase-Projekt einspielen (erst `--dry-run`, Rückfrage bei Kevin). Ohne sie scheitern Verbindungen und Posteingang.
 - [ ] KI-Konnektor von Hand ausprobieren: Text-Übergabe mit Claude und ChatGPT, MCP-Server in Claude Desktop (Schritte in `docs/ki-konnektor.md`); Ausgangsfrage: wird die Funktion genutzt?
 - [x] Migration `20261009000000_push_records_lock.sql` (#48) am 2026-10-10 auf dem echten Supabase-Projekt eingespielt (`--dry-run` zeigte genau diese eine Migration; `migration list` zeigt sie lokal und remote).

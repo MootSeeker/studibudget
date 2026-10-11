@@ -29,6 +29,7 @@ interface AuthApi {
   discardAccountInRecovery(): Promise<void>
   logout(): Promise<void>
   changePassword(oldPw: string, newPw: string): Promise<void>
+  changeEmail(newEmail: string, password: string): Promise<string>
   renewRecoveryKey(password: string): Promise<string>
   deleteAccount(password: string): Promise<void>
   clearNotice(): void
@@ -135,6 +136,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       },
       changePassword: (oldPw, newPw) =>
         flows.changePassword(need(), state.email ?? '', oldPw, newPw),
+      changeEmail: (newEmail, password) =>
+        flows.changeEmail(need(), state.email ?? '', password, newEmail),
       renewRecoveryKey: (pw) => flows.renewRecoveryKey(need(), state.email ?? '', pw),
       async deleteAccount(password) {
         await flows.deleteAccount(need(), state.email ?? '', password)

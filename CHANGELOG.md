@@ -7,6 +7,8 @@ die Versionen folgen [Semantic Versioning](https://semver.org/lang/de/).
 
 ### Behoben
 
+- Einstellungen: Semester werden geprüft. Ein leerer Name oder zwei Semester, die sich einen Monat teilen, lassen sich nicht speichern (die Meldung nennt Semester und Monat); Monate ohne Semester zeigen nur einen Hinweis. Bisher konnte ein Name aus Leerzeichen gespeichert werden und machte die eigene Sicherung unbrauchbar (#183).
+- Einstellungen: Semester, Ampel und Bankverbindung zeigen nach einem Landwechsel oder Sync von einem anderen Gerät die neuen gespeicherten Werte. Bei ungespeicherten Eingaben erscheint ein Hinweis, «Speichern» überschreibt nicht mehr still (#184).
 - Statistik: «Ø Ausgaben pro Monat» teilt nur noch durch Monate bis und mit dem laufenden; zukünftige Monate des Zeitraums zählen nicht mehr mit. Liegt der Zeitraum ganz in der Vergangenheit, bleibt der Wert gleich. Die Kachel nennt die Regel, in der Monatsansicht heisst die Beschriftung «Ø letzte 3 Monate mit Werten» (#163).
 - Seitentitel: Die Rechnungsseite heisst «Rechnung – StudiBudget» (bisher nur «StudiBudget»). Anmelden, Konto anlegen, Passwort vergessen, Neues Passwort, Datenschutz, Impressum vor der Anmeldung und die Einrichtung haben einen eigenen Titel; nach dem Abmelden bleibt der Titel der letzten Seite nicht mehr stehen (#162).
 - Sync: Gleichzeitige Pushes eines Nutzers können beim Pull keine Datensätze mehr überspringen (Advisory-Lock in `push_records`, neue Migration, #48).
@@ -16,11 +18,16 @@ die Versionen folgen [Semantic Versioning](https://semver.org/lang/de/).
 
 ### Geändert
 
+- Einstellungen: Abschnitte mit «Speichern»-Knopf (Semester, Ampel, Bankverbindung, Land und Wohnsituation) zeigen «Nicht gespeichert». Beim Wechsel des Reiters oder der Seite mit ungespeicherten Änderungen fragt ein Dialog nach (Speichern, Verwerfen, Abbrechen). Darstellung wird wie bisher sofort gespeichert und ist von der Ampel getrennt (#185).
+- Einstellungen: Die Bankverbindung erscheint nur bei «WG» und «Mit Partner/in»; eine gespeicherte Bankverbindung bleibt erhalten (#186).
+- Passwort ändern: Das neue Passwort muss wiederholt werden; ein gleiches Passwort wie das aktuelle wird abgelehnt (#187).
 - Konten und Statistik: Der Vermögensverlauf zeigt neben dem Gesamtvermögen für jedes Konto eine eigene Linie. In der Legende lassen sich die Linien per Kästchen ein- und ausblenden; das Gesamtvermögen ist dicker, solange weitere Linien sichtbar sind. Der Chart erscheint schon ab dem ersten erfassten Stand (bisher ab zwei vollständigen Monaten); die «Veränderung im Zeitraum» braucht weiterhin zwei vollständige Monate (#113).
 - Bankverbindung: Die Meldung bei einer abgelehnten IBAN nennt jetzt den Grund (Prüfsumme, Länge mit Zeichenzahl, Land, Zeichen), und das Formular zeigt, welche IBAN bis zum Speichern weiterhin auf der Rechnung steht (#120).
 
 ### Hinzugefügt
 
+- Konto: «E-Mail-Adresse ändern» (mit Passwort). Supabase schickt Bestätigungen an beide Adressen. Daten und Schlüssel bleiben nutzbar, weil der Schlüssel beim Anfordern für die neue Adresse neu verpackt wird; bis zur Bestätigung ist keine neue Anmeldung möglich, der Wiederherstellungsschlüssel bleibt der Notausgang (#188).
+- Einstellungen: bis zu vier Semester («Semester hinzufügen», «Entfernen»). «Daten zurücksetzen» löscht auf Wunsch nur Buchungen, Kontostände und Ausgleichszahlungen vor einem gewählten Monat (#189).
 - KI-Konnektor: Einträge, die eine KI (Claude, ChatGPT) als kleinen Text-Block liefert, lassen sich in der Eingabe einfügen, prüfen, ändern und erst nach Bestätigung buchen; schon erfasste Einträge (auch gelöschte) werden nicht noch einmal gebucht. Dazu gibt es ein festes Vorschlagsformat mit Prüfung (#155, #156).
 - KI-Konnektor: verschlüsselter Posteingang mit widerrufbaren Verbindungen in den Einstellungen. Der Server speichert nur Chiffretext; neue Migration `inbox` (#157).
 - KI-Konnektor: lokaler MCP-Server für Claude Desktop (`npm run build:mcp`), der Vorschläge auf dem Gerät verschlüsselt und im Posteingang ablegt. Anleitung in `docs/ki-konnektor.md` (#158).

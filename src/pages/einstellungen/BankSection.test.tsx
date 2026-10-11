@@ -4,6 +4,7 @@ import { beforeEach, describe, expect, it } from 'vitest'
 import { db } from '../../data/db'
 import { completeOnboarding } from '../../data/onboarding'
 import { SETTINGS_ID } from '../../data/seed'
+import { store } from '../../data/store'
 import { defaultSemesters } from '../../domain/period'
 import { BankSection } from './BankSection'
 
@@ -126,6 +127,24 @@ describe('Bankverbindung in den Einstellungen (Issue #104)', () => {
     expect(hinweis).toHaveTextContent(/nur für Rechnungen/)
     expect(hinweis).toHaveTextContent(/nur verschlüsselt synchronisiert/)
     expect(hinweis).toHaveTextContent(/Backup-Datei stehen sie unverschlüsselt/)
+  })
+
+  it('AK-3: Bankverbindung folgt gespeicherten Werten', async () => {
+    const { rerender } = render(<BankSection settings={(await db.settings.get(SETTINGS_ID))!} />)
+    await store.patch('settings', SETTINGS_ID, {
+      bank: {
+        holder: 'Anna Muster',
+        street: '',
+        zip: '',
+        town: '',
+        country: 'CH',
+        iban: 'CH9300762011623852957',
+      },
+    })
+    rerender(<BankSection settings={(await db.settings.get(SETTINGS_ID))!} />)
+    await waitFor(() =>
+      expect(screen.getByLabelText('IBAN')).toHaveValue('CH93 0076 2011 6238 5295 7'),
+    )
   })
 
   describe('Falsch eingegebene IBAN (Issue #120)', () => {

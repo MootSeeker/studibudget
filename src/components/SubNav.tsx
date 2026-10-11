@@ -5,10 +5,12 @@ export function SubNav({
   param,
   items,
   label,
+  beforeChange,
 }: {
   param: string
   items: SubNavItem[]
   label: string
+  beforeChange?: (go: () => void) => void
 }) {
   const [params, setParams] = useSearchParams()
   const current = useSubNav(param, items)
@@ -28,7 +30,9 @@ export function SubNav({
             const next = new URLSearchParams(params)
             if (i.id === items[0].id) next.delete(param)
             else next.set(param, i.id)
-            setParams(next)
+            const go = () => setParams(next)
+            if (beforeChange) beforeChange(go)
+            else go()
           }}
         >
           {i.label}

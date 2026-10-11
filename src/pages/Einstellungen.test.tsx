@@ -4,6 +4,7 @@ import { MemoryRouter } from 'react-router'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { db } from '../data/db'
 import { completeOnboarding } from '../data/onboarding'
+import { SETTINGS_ID } from '../data/seed'
 import { store } from '../data/store'
 import { defaultSemesters } from '../domain/period'
 import { Einstellungen } from './Einstellungen'
@@ -11,6 +12,7 @@ import { Einstellungen } from './Einstellungen'
 const auth = {
   state: { status: 'in', email: 'anna@example.com', notice: null },
   changePassword: vi.fn(),
+  changeEmail: vi.fn(),
   renewRecoveryKey: vi.fn(),
   deleteAccount: vi.fn(),
   logout: vi.fn(),
@@ -76,10 +78,12 @@ describe('Einstellungen: Konto', () => {
     const user = await open('Passwort ändern')
     await user.type(screen.getByLabelText('Aktuelles Passwort'), 'Altes-Passwort-123')
     await user.type(screen.getByLabelText('Neues Passwort'), 'Neues-Passwort-456')
+    await user.type(screen.getByLabelText('Neues Passwort wiederholen'), 'Neues-Passwort-456')
     await user.click(screen.getByRole('button', { name: 'Passwort ändern' }))
     expect(await screen.findByRole('status')).toHaveTextContent('Passwort geändert.')
     expect(auth.changePassword).toHaveBeenCalledWith('Altes-Passwort-123', 'Neues-Passwort-456')
     expect(screen.getByLabelText('Aktuelles Passwort')).toHaveValue('')
+    expect(screen.getByLabelText('Neues Passwort wiederholen')).toHaveValue('')
   })
 
   it('Passwort ändern: ein Fehler wird angezeigt, kein Erfolg gemeldet', async () => {
@@ -87,6 +91,7 @@ describe('Einstellungen: Konto', () => {
     const user = await open('Passwort ändern')
     await user.type(screen.getByLabelText('Aktuelles Passwort'), 'falsch')
     await user.type(screen.getByLabelText('Neues Passwort'), 'Neues-Passwort-456')
+    await user.type(screen.getByLabelText('Neues Passwort wiederholen'), 'Neues-Passwort-456')
     await user.click(screen.getByRole('button', { name: 'Passwort ändern' }))
     expect(await screen.findByRole('alert')).toHaveTextContent('Das Passwort stimmt nicht.')
     expect(screen.queryByRole('status')).not.toBeInTheDocument()
@@ -308,14 +313,174 @@ describe('Einstellungen: Daten zurücksetzen (Issue #30)', () => {
   })
 })
 
-describe('Einstellungen: Reiter', () => {
-  const zeige = (url: string) =>
+const zeige = (url: string) =>
+  render(
+    <MemoryRouter initialEntries={[url]}>
+      <Einstellungen />
+    </MemoryRouter>,
+  )
+
+describe('Einstellungen: Passwort und E-Mail (Issue #187, #188)', () => {
+  it('AK-1: Feld «Neues Passwort wiederholen» mit new-password', async () => {
+    await open('Passwort ändern')
+    expect(screen.getByLabelText('Neues Passwort wiederholen')).toHaveAttribute(
+      'autocomplete',
+      'new-password',
+    )
+  })
+
+  it('AK-2: ungleiche neue Passwörter ändern nichts', async () => {
+    const user = await open('Passwort ändern')
+    await user.type(screen.getByLabelText('Aktuelles Passwort'), 'Altes-Passwort-123')
+    await user.type(screen.getByLabelText('Neues Passwort'), 'Neues-Passwort-456')
+    await user.type(screen.getByLabelText('Neues Passwort wiederholen'), 'Anderes-Passwort-789')
+    await user.click(screen.getByRole('button', { name: 'Passwort ändern' }))
+    expect(await screen.findByRole('alert')).toHaveTextContent(
+      'Die beiden neuen Passwörter stimmen nicht überein.',
+    )
+    expect(auth.changePassword).not.toHaveBeenCalled()
+  })
+
+  it('AK-3: neues gleich aktuellem ändert nichts', async () => {
+    const user = await open('Passwort ändern')
+    await user.type(screen.getByLabelText('Aktuelles Passwort'), 'Gleiches-Passwort-123')
+    await user.type(screen.getByLabelText('Neues Passwort'), 'Gleiches-Passwort-123')
+    await user.type(screen.getByLabelText('Neues Passwort wiederholen'), 'Gleiches-Passwort-123')
+    await user.click(screen.getByRole('button', { name: 'Passwort ändern' }))
+    expect(await screen.findByRole('alert')).toHaveTextContent(
+      'Das neue Passwort ist gleich dem aktuellen.',
+    )
+    expect(auth.changePassword).not.toHaveBeenCalled()
+  })
+
+  it('AK-1: E-Mail ändern ruft changeEmail und zeigt den Hinweis', async () => {
+    auth.changeEmail.mockResolvedValue('neu@example.com')
+    const user = await open('E-Mail-Adresse ändern')
+    expect(screen.getByText(/Halte deinen Wiederherstellungsschlüssel bereit/)).toBeInTheDocument()
+    await user.type(screen.getByLabelText('Neue E-Mail-Adresse'), 'Neu@Example.com')
+    await user.type(
+      formOf('Bestätigung anfordern').getByLabelText('Passwort zur Bestätigung'),
+      'Passwort-1',
+    )
+    await user.click(screen.getByRole('button', { name: 'Bestätigung anfordern' }))
+    expect(auth.changeEmail).toHaveBeenCalledWith('Neu@Example.com', 'Passwort-1')
+    const status = await screen.findByRole('status')
+    expect(status).toHaveTextContent('Wir haben eine Bestätigung an neu@example.com geschickt.')
+    expect(status).toHaveTextContent('auch nicht mit der bisherigen Adresse')
+    expect(status).toHaveTextContent('Wiederherstellungsschlüssel')
+  })
+})
+
+describe('Einstellungen: ungespeicherte Änderungen (Issue #185)', () => {
+  const dialog = () => within(screen.getByRole('dialog'))
+
+  it('AK-2: Reiterwechsel fragt bei ungespeicherten Änderungen nach', async () => {
+    const user = userEvent.setup()
+    zeige('/einstellungen')
+    await user.type(await screen.findByLabelText('Name Semester 1'), 'X')
+    await user.click(screen.getByRole('button', { name: 'Darstellung' }))
+    expect(screen.getByRole('dialog', { name: 'Ungespeicherte Änderungen' })).toBeInTheDocument()
+    expect(dialog().getByRole('button', { name: 'Speichern' })).toBeInTheDocument()
+    expect(dialog().getByRole('button', { name: 'Verwerfen' })).toBeInTheDocument()
+    await user.click(dialog().getByRole('button', { name: 'Abbrechen' }))
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: 'Land und Wohnsituation' })).toBeInTheDocument()
+
+    await user.click(screen.getByRole('button', { name: 'Darstellung' }))
+    await user.click(dialog().getByRole('button', { name: 'Speichern' }))
+    expect(await screen.findByRole('heading', { name: 'Ampel' })).toBeInTheDocument()
+    expect((await db.settings.get(SETTINGS_ID))!.semesters[0].name).toBe('HerbstsemesterX')
+
+    await user.click(screen.getByRole('button', { name: 'Haushalt' }))
+    await user.type(await screen.findByLabelText('Name Semester 1'), 'Y')
+    await user.click(screen.getByRole('button', { name: 'Darstellung' }))
+    await user.click(dialog().getByRole('button', { name: 'Verwerfen' }))
+    expect(await screen.findByRole('heading', { name: 'Ampel' })).toBeInTheDocument()
+    expect((await db.settings.get(SETTINGS_ID))!.semesters[0].name).toBe('HerbstsemesterX')
+  })
+
+  it('AK-2: ohne Änderung kein Dialog', async () => {
+    const user = userEvent.setup()
+    zeige('/einstellungen')
+    await screen.findByRole('heading', { name: 'Land und Wohnsituation' })
+    await user.click(screen.getByRole('button', { name: 'Darstellung' }))
+    expect(await screen.findByRole('heading', { name: 'Ampel' })).toBeInTheDocument()
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+  })
+
+  it('AK-2: misslungenes Speichern im Dialog bleibt auf dem Reiter', async () => {
+    const user = userEvent.setup()
+    zeige('/einstellungen')
+    await user.clear(await screen.findByLabelText('Name Semester 1'))
+    await user.click(screen.getByRole('button', { name: 'Darstellung' }))
+    await user.click(dialog().getByRole('button', { name: 'Speichern' }))
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument())
+    expect(screen.getByRole('heading', { name: 'Land und Wohnsituation' })).toBeInTheDocument()
+    expect(screen.getByText('Semester 1: Der Name fehlt.')).toBeInTheDocument()
+  })
+
+  it('AK-2: Land geändert zeigt im Dialog kein Speichern', async () => {
+    const user = userEvent.setup()
+    zeige('/einstellungen')
+    await user.selectOptions(await screen.findByLabelText('Land'), 'DE')
+    await user.click(screen.getByRole('button', { name: 'Darstellung' }))
+    expect(dialog().queryByRole('button', { name: 'Speichern' })).not.toBeInTheDocument()
+    await user.click(dialog().getByRole('button', { name: 'Verwerfen' }))
+    expect(await screen.findByRole('heading', { name: 'Ampel' })).toBeInTheDocument()
+    expect((await db.settings.get(SETTINGS_ID))!.country).toBe('CH')
+  })
+
+  it('AK-2: Link aus den Einstellungen fragt bei ungespeicherten Änderungen nach', async () => {
+    const user = userEvent.setup()
     render(
-      <MemoryRouter initialEntries={[url]}>
+      <MemoryRouter initialEntries={['/einstellungen']}>
         <Einstellungen />
+        <a href="#/budget">Weg</a>
       </MemoryRouter>,
     )
+    await user.type(await screen.findByLabelText('Name Semester 1'), 'X')
+    await user.click(screen.getByRole('link', { name: 'Weg' }))
+    expect(screen.getByRole('dialog', { name: 'Ungespeicherte Änderungen' })).toBeInTheDocument()
+    expect(window.location.hash).not.toBe('#/budget')
+    await user.click(within(screen.getByRole('dialog')).getByRole('button', { name: 'Verwerfen' }))
+    expect(window.location.hash).toBe('#/budget')
+    window.location.hash = ''
+  })
+})
 
+describe('Einstellungen: Bankverbindung (Issue #186)', () => {
+  it('AK-1: Bankverbindung bei «Allein» und «Bei den Eltern» ausgeblendet', async () => {
+    const erste = zeige('/einstellungen')
+    await screen.findByRole('heading', { name: 'Land und Wohnsituation' })
+    expect(screen.queryByRole('heading', { name: 'Bankverbindung' })).not.toBeInTheDocument()
+    erste.unmount()
+    await store.patch('settings', SETTINGS_ID, { living: 'eltern' })
+    zeige('/einstellungen')
+    await screen.findByRole('heading', { name: 'Land und Wohnsituation' })
+    expect(screen.queryByRole('heading', { name: 'Bankverbindung' })).not.toBeInTheDocument()
+  })
+
+  it('AK-2: gespeicherte Bank bleibt, Abschnitt erscheint bei WG wieder', async () => {
+    const bank = {
+      holder: 'Anna Muster',
+      street: '',
+      zip: '',
+      town: '',
+      country: 'CH' as const,
+      iban: 'CH9300762011623852957',
+    }
+    await store.patch('settings', SETTINGS_ID, { bank, living: 'allein' })
+    zeige('/einstellungen')
+    await screen.findByRole('heading', { name: 'Land und Wohnsituation' })
+    expect(screen.queryByRole('heading', { name: 'Bankverbindung' })).not.toBeInTheDocument()
+    expect((await db.settings.get(SETTINGS_ID))!.bank).toEqual(bank)
+    await store.patch('settings', SETTINGS_ID, { living: 'wg' })
+    expect(await screen.findByRole('heading', { name: 'Bankverbindung' })).toBeInTheDocument()
+    expect(screen.getByLabelText('IBAN')).toHaveValue('CH93 0076 2011 6238 5295 7')
+  })
+})
+
+describe('Einstellungen: Reiter', () => {
   it('startet im Reiter «Haushalt» und zeigt nur dessen Abschnitte', async () => {
     zeige('/einstellungen')
     expect(
@@ -334,7 +499,7 @@ describe('Einstellungen: Reiter', () => {
   })
 
   it.each([
-    ['darstellung', 'Darstellung und Ampel'],
+    ['darstellung', 'Ampel'],
     ['daten', 'Backup'],
     ['konto', 'Konto'],
   ])('Reiter «%s» zeigt «%s»', async (id, heading) => {
