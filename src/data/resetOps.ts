@@ -1,4 +1,5 @@
 import { planReset, type ResetData, type ResetKind, type ResetPlan } from '../domain/reset'
+import type { MonthKey } from '../domain/period'
 import type { StudiBudgetDB } from './db'
 import { storeFor, type Store } from './store'
 
@@ -21,8 +22,8 @@ export function createResetOps(db: StudiBudgetDB, store: Store = storeFor(db)) {
      * Löscht die gewählten Arten und bereinigt Verweise darauf, alles in einer Transaktion. Die Grabsteine werden
      * synchronisiert, die anderen Geräte löschen also mit. Der Plan wird frisch aus der Datenbank berechnet.
      */
-    async reset(selected: Iterable<ResetKind>): Promise<ResetPlan> {
-      const plan = planReset(await load(), selected)
+    async reset(selected: Iterable<ResetKind>, before?: MonthKey): Promise<ResetPlan> {
+      const plan = planReset(await load(), selected, before)
       await store.writeBatch(plan.writes)
       return plan
     },

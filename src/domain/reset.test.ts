@@ -147,3 +147,36 @@ describe('Daten zurücksetzen (Issue #30)', () => {
     expect(JSON.stringify(d)).toBe(before)
   })
 })
+
+describe('Stichtag beim Zurücksetzen (Issue #189)', () => {
+  it('AK-2: Stichtag löscht nur Frühere', () => {
+    const d = data()
+    d.transactions = [
+      tx({ id: 'alt', date: '2024-12-31', categoryId: 'c', myAmountCents: 100 }),
+      tx({ id: 'neu', date: '2025-01-01', categoryId: 'c', myAmountCents: 100 }),
+    ]
+    const plan = planReset(d, ['transactions'], '2025-01')
+    expect(plan.counts.transactions).toBe(1)
+    expect(deletedIds(plan)).toEqual(['alt'])
+  })
+
+  it('AK-2: Stichtag für Kontostände und Ausgleichszahlungen', () => {
+    const d = data()
+    d.accountBalances = [
+      { ...balance, id: 'ks-alt', month: '2024-12' },
+      { ...balance, id: 'ks-neu', month: '2025-01' },
+    ]
+    d.settlements = [
+      { ...settlement, id: 'as-alt', date: '2024-12-31' },
+      { ...settlement, id: 'as-neu', date: '2025-01-01' },
+    ]
+    expect(deletedIds(planReset(d, ['accountBalances'], '2025-01'))).toEqual(['ks-alt'])
+    expect(deletedIds(planReset(d, ['settlements'], '2025-01'))).toEqual(['as-alt'])
+  })
+
+  it('AK-3: ohne Stichtag unverändert', () => {
+    expect(planReset(data(), ['transactions', 'settlements'], undefined)).toEqual(
+      planReset(data(), ['transactions', 'settlements']),
+    )
+  })
+})

@@ -14,6 +14,7 @@ import { completeOnboarding } from './onboarding'
 import { createStore } from './store'
 import { newId, SETTINGS_ID } from './seed'
 import { defaultSemesters } from '../domain/period'
+import { trimSemesters } from '../domain/semesters'
 import { buildSharedEqual } from '../domain/split'
 
 let n = 0
@@ -445,4 +446,25 @@ describe('Prüfung der Datei', () => {
     ;(open.data.settings[0] as Record<string, unknown>).onboardingDone = false
     expect(errorOf(parseBackup(text(open)))).toContain('nicht abgeschlossenen Einrichtung')
   })
+})
+
+describe('Semester im Backup (Issue #183)', () => {
+  it(
+    'AK-4: gespeicherte Semester ergeben ein gültiges Backup (Regression #183)',
+    { tags: ['regression'] },
+    async () => {
+      const a = fresh()
+      await populate(a)
+      await createStore(a).patch('settings', SETTINGS_ID, {
+        semesters: trimSemesters([
+          { name: '  Herbst ', startMonth: 9, endMonth: 1 },
+          { name: 'Frühling', startMonth: 2, endMonth: 8 },
+        ]),
+      })
+      const r = await roundtrip(a)
+      expect(r.ok).toBe(true)
+      const semesters = r.backup.data.settings[0].semesters as { name: string }[]
+      expect(semesters[0].name).toBe('Herbst')
+    },
+  )
 })

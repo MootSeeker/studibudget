@@ -1,9 +1,10 @@
 import { useEffect, useRef, useState } from 'react'
-import { buttonClass } from '../../auth/ui'
+import { buttonClass, inputClass } from '../../auth/ui'
 import { db } from '../../data/db'
 import { createResetOps } from '../../data/resetOps'
 import {
   RESET_KINDS,
+  RESET_KINDS_WITH_CUTOFF,
   effectiveSelection,
   planReset,
   type ResetData,
@@ -31,6 +32,7 @@ function ResetDialog({
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [backupMessage, setBackupMessage] = useState<string | null>(null)
+  const [before, setBefore] = useState('')
   const box = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -65,8 +67,10 @@ function ResetDialog({
     return () => document.removeEventListener('keydown', onKey)
   }, [])
 
-  const plan = data ? planReset(data, chosen) : null
+  const cutoff = before === '' ? undefined : before
+  const plan = data ? planReset(data, chosen, cutoff) : null
   const forced = effectiveSelection(chosen)
+  const withCutoff = [...forced].some((k) => RESET_KINDS_WITH_CUTOFF.includes(k))
   const available = (kind: ResetKind) => (data ? data[kind].filter((r) => !r.deleted).length : 0)
 
   function toggle(kind: ResetKind, on: boolean) {
@@ -91,7 +95,7 @@ function ResetDialog({
     setBusy(true)
     setError(null)
     try {
-      const done = await ops.reset(chosen)
+      const done = await ops.reset(chosen, cutoff)
       onDone(`${entries(done.total)} gelöscht.`)
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Das Zurücksetzen hat nicht geklappt.')
@@ -150,6 +154,22 @@ function ResetDialog({
               )
             })}
           </fieldset>
+        )}
+
+        {withCutoff && (
+          <label className="block space-y-1 text-sm">
+            <span className="font-medium">Nur Einträge vor diesem Monat löschen (freiwillig)</span>
+            <input
+              type="month"
+              className={inputClass}
+              value={before}
+              onChange={(e) => setBefore(e.target.value)}
+            />
+            <span className="block text-muted">
+              Gilt für Buchungen, Kontostände und Ausgleichszahlungen. Leer lassen, um alles zu
+              löschen.
+            </span>
+          </label>
         )}
 
         {plan && (

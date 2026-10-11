@@ -7,6 +7,7 @@ import type {
   Template,
   Transaction,
 } from './types'
+import type { MonthKey } from './period'
 
 /** Was sich zurücksetzen lässt. Konto, Kategorien, Personen, Autos und Einstellungen bleiben immer. */
 export type ResetKind =
@@ -59,11 +60,30 @@ export function effectiveSelection(selected: Iterable<ResetKind>): Set<ResetKind
   return s
 }
 
-export function planReset(data: ResetData, selected: Iterable<ResetKind>): ResetPlan {
-  const selection = effectiveSelection(selected)
+/** Arten, die der Stichtag («nur Einträge vor diesem Monat») erfasst. */
+export const RESET_KINDS_WITH_CUTOFF: ResetKind[] = ['transactions', 'accountBalances', 'settlements']
+
+/**
+ * `before` (YYYY-MM): Nur Buchungen, Kontostände und Ausgleichszahlungen vor diesem Monat werden gelöscht.
+ * Ausgenommen sind Kontostände, die nur ein gelöschtes Konto mitzieht: die gehen ganz.
+ */
+export function planReset(
+  data: ResetData,
+  selected: Iterable<ResetKind>,
+  before?: MonthKey,
+): ResetPlan {
+  const chosen = new Set(selected)
+  const selection = effectiveSelection(chosen)
   const live = <T extends { deleted: boolean }>(rows: T[]) => rows.filter((r) => !r.deleted)
   const counts = {} as Record<ResetKind, number>
   const writes: ResetPlan['writes'] = []
+  const cut = (kind: ResetKind): ((r: unknown) => boolean) | undefined => {
+    if (before === undefined || !chosen.has(kind)) return undefined
+    if (kind === 'accountBalances' && chosen.has('accounts')) return undefined
+    if (kind === 'accountBalances')
+      return (r) => (r as AccountBalance).month < before
+    return (r) => ((r as Transaction | Settlement).date) < before + '-01'
+  }
 
   let detachedFromTemplates = 0
   let detachedFromGoals = 0
@@ -92,7 +112,9 @@ export function planReset(data: ResetData, selected: Iterable<ResetKind>): Reset
   }
 
   for (const { kind } of RESET_KINDS) {
-    const rows = live(data[kind] as { deleted: boolean }[])
+    const all = live(data[kind] as { deleted: boolean }[])
+    const doomed = cut(kind)
+    const rows = doomed ? all.filter(doomed) : all
     counts[kind] = selection.has(kind) ? rows.length : 0
     if (selection.has(kind) && rows.length > 0)
       writes.push({ name: kind, drafts: rows.map((r) => ({ ...r, deleted: true })) })

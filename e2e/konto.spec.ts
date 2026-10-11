@@ -16,7 +16,8 @@ test('Passwort ändern: das alte gilt nicht mehr, das neue öffnet dieselben Dat
   const bereich = page.locator('details', { hasText: 'Passwort ändern' }).first()
   await bereich.locator('summary').click()
   await bereich.getByLabel('Aktuelles Passwort').fill(konto.passwort)
-  await bereich.getByLabel('Neues Passwort').fill(NEU)
+  await bereich.getByLabel('Neues Passwort', { exact: true }).fill(NEU)
+  await bereich.getByLabel('Neues Passwort wiederholen').fill(NEU)
   await bereich.getByRole('button', { name: 'Passwort ändern' }).click()
   await expect(bereich.getByRole('status')).toHaveText('Passwort geändert.')
 

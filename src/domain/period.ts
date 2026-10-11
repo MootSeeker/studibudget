@@ -56,7 +56,7 @@ export interface Period {
   label: string
 }
 
-function inSemester(mo: number, s: Semester): boolean {
+export function inSemester(mo: number, s: Semester): boolean {
   return s.startMonth <= s.endMonth
     ? mo >= s.startMonth && mo <= s.endMonth
     : mo >= s.startMonth || mo <= s.endMonth

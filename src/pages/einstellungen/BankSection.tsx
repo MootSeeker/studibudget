@@ -2,39 +2,77 @@ import { useState } from 'react'
 import { buttonClass, Field, inputClass } from '../../auth/ui'
 import { buildBank } from '../../domain/bank'
 import { formatIban, normalizeIban } from '../../domain/iban'
-import type { Settings } from '../../domain/types'
+import type { BankDetails, Settings } from '../../domain/types'
 import { saveSettings } from './saveSettings'
+import { useSectionDraft } from './useSectionDraft'
 import { Section } from './Sections'
+import { useRegisterUnsaved } from './useUnsaved'
+
+type BankDraft = {
+  holder: string
+  street: string
+  zip: string
+  town: string
+  country: 'CH' | 'LI'
+  iban: string
+}
+
+function toDraft(b: BankDetails | undefined): BankDraft {
+  return {
+    holder: b?.holder ?? '',
+    street: b?.street ?? '',
+    zip: b?.zip ?? '',
+    town: b?.town ?? '',
+    country: b?.country ?? 'CH',
+    iban: b ? formatIban(b.iban) : '',
+  }
+}
 
 /** Bankverbindung und Adresse für Rechnungen (Issue #104). Alle Angaben sind freiwillig. */
 export function BankSection({ settings }: { settings: Settings }) {
-  const bank = settings.bank
-  const [holder, setHolder] = useState(bank?.holder ?? '')
-  const [street, setStreet] = useState(bank?.street ?? '')
-  const [zip, setZip] = useState(bank?.zip ?? '')
-  const [town, setTown] = useState(bank?.town ?? '')
-  const [country, setCountry] = useState<'CH' | 'LI'>(bank?.country ?? 'CH')
-  const [iban, setIban] = useState(bank ? formatIban(bank.iban) : '')
+  const d = useSectionDraft(toDraft(settings.bank))
   const [error, setError] = useState<string | null>(null)
   const [saved, setSaved] = useState(false)
 
-  // Solange eine andere IBAN eingegeben als gespeichert ist, gilt auf der Rechnung noch die gespeicherte (Issue #120)
-  const gilt = bank?.iban && normalizeIban(iban) !== bank.iban ? bank.iban : null
-
-  async function save() {
+  const edit = (next: BankDraft) => {
     setSaved(false)
-    const result = buildBank({ holder, street, zip, town, country, iban })
-    if (!result.ok) return setError(result.error)
-    setError(null)
-    await saveSettings(settings, { bank: result.bank })
-    // Die bereinigte Fassung zeigen (IBAN in Vierergruppen, überflüssige Leerzeichen weg)
-    setHolder(result.bank?.holder ?? '')
-    setStreet(result.bank?.street ?? '')
-    setZip(result.bank?.zip ?? '')
-    setTown(result.bank?.town ?? '')
-    setIban(result.bank ? formatIban(result.bank.iban) : '')
-    setSaved(true)
+    d.setDraft(next)
   }
+
+  // Solange eine andere IBAN eingegeben als gespeichert ist, gilt auf der Rechnung noch die gespeicherte (Issue #120)
+  const gilt =
+    settings.bank?.iban && normalizeIban(d.draft.iban) !== settings.bank.iban
+      ? settings.bank.iban
+      : null
+
+  async function save(force = false): Promise<boolean> {
+    if (d.stale && !force) return false
+    setSaved(false)
+    const result = buildBank({
+      holder: d.draft.holder,
+      street: d.draft.street,
+      zip: d.draft.zip,
+      town: d.draft.town,
+      country: d.draft.country,
+      iban: d.draft.iban,
+    })
+    if (!result.ok) {
+      setError(result.error)
+      return false
+    }
+    setError(null)
+    try {
+      await saveSettings(settings, { bank: result.bank })
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Das hat nicht geklappt.')
+      return false
+    }
+    // Die bereinigte Fassung zeigen (IBAN in Vierergruppen, überflüssige Leerzeichen weg)
+    d.markSaved(toDraft(result.bank))
+    setSaved(true)
+    return true
+  }
+  useRegisterUnsaved('bank', d.dirty, { save: () => save(), discard: d.reset })
 
   return (
     <Section title="Bankverbindung">
@@ -42,20 +80,63 @@ export function BankSection({ settings }: { settings: Settings }) {
         Diese Angaben brauchst du nur für Rechnungen. Sie werden nur verschlüsselt synchronisiert.
         In der Backup-Datei stehen sie unverschlüsselt.
       </p>
-      <Field label="Kontoinhaber/in" value={holder} onChange={setHolder} required={false} />
-      <Field label="Strasse und Nr." value={street} onChange={setStreet} required={false} />
+      {d.stale && (
+        <div className="space-y-2">
+          <p role="note" className="text-sm">
+            Die gespeicherten Werte haben sich geändert.
+          </p>
+          <div className="flex flex-wrap gap-2">
+            <button
+              type="button"
+              className="rounded-md border border-border px-4 py-2"
+              onClick={d.adoptSaved}
+            >
+              Gespeicherte Werte übernehmen
+            </button>
+            <button
+              type="button"
+              className="rounded-md border border-border px-4 py-2"
+              onClick={() => void save(true)}
+            >
+              Trotzdem speichern
+            </button>
+          </div>
+        </div>
+      )}
+      <Field
+        label="Kontoinhaber/in"
+        value={d.draft.holder}
+        onChange={(v) => edit({ ...d.draft, holder: v })}
+        required={false}
+      />
+      <Field
+        label="Strasse und Nr."
+        value={d.draft.street}
+        onChange={(v) => edit({ ...d.draft, street: v })}
+        required={false}
+      />
       <div className="grid grid-cols-3 gap-3">
-        <Field label="PLZ" value={zip} onChange={setZip} required={false} />
+        <Field
+          label="PLZ"
+          value={d.draft.zip}
+          onChange={(v) => edit({ ...d.draft, zip: v })}
+          required={false}
+        />
         <div className="col-span-2">
-          <Field label="Ort" value={town} onChange={setTown} required={false} />
+          <Field
+            label="Ort"
+            value={d.draft.town}
+            onChange={(v) => edit({ ...d.draft, town: v })}
+            required={false}
+          />
         </div>
       </div>
       <label className="block space-y-1">
         <span className="text-sm font-medium">Land der Bank</span>
         <select
           className={inputClass}
-          value={country}
-          onChange={(e) => setCountry(e.target.value as 'CH' | 'LI')}
+          value={d.draft.country}
+          onChange={(e) => edit({ ...d.draft, country: e.target.value as 'CH' | 'LI' })}
         >
           <option value="CH">Schweiz</option>
           <option value="LI">Liechtenstein</option>
@@ -63,8 +144,8 @@ export function BankSection({ settings }: { settings: Settings }) {
       </label>
       <Field
         label="IBAN"
-        value={iban}
-        onChange={setIban}
+        value={d.draft.iban}
+        onChange={(v) => edit({ ...d.draft, iban: v })}
         required={false}
         hint="Schweizer oder Liechtensteiner IBAN, zum Beispiel CH93 0076 2011 6238 5295 7."
       />
@@ -78,8 +159,9 @@ export function BankSection({ settings }: { settings: Settings }) {
           {error}
         </p>
       )}
+      {d.dirty && <p className="text-sm text-amber-700">Nicht gespeichert</p>}
       <div className="flex items-center gap-3">
-        <button className={buttonClass} onClick={() => void save()}>
+        <button className={buttonClass} disabled={d.stale} onClick={() => void save()}>
           Bankverbindung speichern
         </button>
         {saved && (

@@ -24,9 +24,13 @@ als App installieren und funktioniert auch ohne Internet.
 8. **Konten & Sparziele.** Kontostände am Monatsende, Vermögensverlauf und Sparziele mit Fortschritt.
 9. **Ausgleich** (WG und Partner/in). Gemeinsame Ausgaben teilen, sehen wer wem wie viel schuldet, Zahlungen erfassen.
 10. **Backup.** Unter Einstellungen › Daten kannst du alle Daten als Datei sichern und wieder einspielen. Die Einstellungen sind in
-    Reiter gegliedert: Haushalt, Darstellung, Daten und Konto.
+    Reiter gegliedert: Haushalt, Darstellung, Daten und Konto. Abschnitte mit «Speichern» zeigen «Nicht gespeichert»,
+    beim Reiterwechsel mit offenen Änderungen fragt die App nach. Unter Haushalt lassen sich bis zu vier Semester pflegen
+    (ungültige Semester werden nicht gespeichert); die Bankverbindung erscheint nur bei WG und Partner/in. Unter Konto
+    kannst du Passwort und E-Mail-Adresse ändern.
 11. **Neu anfangen.** Unter Einstellungen › Daten › «Daten zurücksetzen» löschst du wahlweise Budget, Buchungen, Vorlagen,
-    Ausgleichszahlungen, Konten oder Sparziele. Konto, Kategorien und Einstellungen bleiben. Das Budget allein
+    Ausgleichszahlungen, Konten oder Sparziele. Konto, Kategorien und Einstellungen bleiben. Buchungen, Kontostände und
+    Ausgleichszahlungen kannst du auf die Zeit vor einem Monat begrenzen. Das Budget allein
     kannst du auf der Budget-Seite exportieren und importieren.
 
 **Auf mehreren Geräten:** Melde dich überall mit demselben Konto an, die Daten werden abgeglichen. **Ohne Internet:**

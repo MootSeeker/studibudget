@@ -82,6 +82,18 @@ Der Server speichert nur: E-Mail, verpackte Schlüssel, Datensatz-ID, `hlc`, Lö
   wird nur, wenn der Name noch dem Standardnamen entspricht. Beträge werden beim Landeswechsel nicht umgerechnet.
 - **Darstellung** liegt in den (synchronisierten) Einstellungen; der Browser merkt sich sie zusätzlich lokal,
   damit beim Laden nichts aufblitzt.
+- **Speichern in den Einstellungen:** Wahlfelder ohne Fehlermöglichkeit (Darstellung, «archiviert», Namen von
+  Personen und Autos) speichern sofort. Alles mit «Speichern» oder «Änderung prüfen» (Semester, Ampel, Bankverbindung,
+  Land und Wohnsituation) hält einen Entwurf, zeigt «Nicht gespeichert» und fragt beim Wechsel von Reiter oder Seite
+  nach (`useSectionDraft`, `UnsavedGuard`). Folgen die gespeicherten Werte (Landwechsel, Sync), übernimmt der Entwurf
+  sie, solange nichts ungespeichert ist; sonst erscheint ein Hinweis. Begründung: `vault/30 Entscheide/Entscheid - Speichern in den Einstellungen.md`.
+- **Semester:** `checkSemesters` (`src/domain/semesters.ts`) sperrt leere Namen und Überlappungen, Lücken sind nur ein Hinweis
+  (Semesterferien). Bis zu vier Semester. Namen werden getrimmt, damit das Backup gültig bleibt.
+- **Bankverbindung** erscheint nur bei WG und Partner/in (nur dort gibt es den Ausgleich); gespeicherte Daten bleiben erhalten.
+- **Zurücksetzen mit Stichtag:** `planReset(…, before)` beschränkt Buchungen, Kontostände und Ausgleichszahlungen auf die Zeit vor einem Monat.
+- **E-Mail ändern:** Die E-Mail ist Teil der Schlüsselableitung (PBKDF2-Salt). `changeEmail` verpackt den Datenschlüssel
+  deshalb beim Anfordern für die neue Adresse neu und setzt das Auth-Passwort mit; Supabase bestätigt beide Adressen
+  (`double_confirm_changes`). Bis zur Bestätigung gelingt keine neue Anmeldung; der Wiederherstellungsschlüssel ist der Notausgang.
 
 ## Eingabe
 

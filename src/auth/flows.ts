@@ -218,6 +218,42 @@ export async function changePassword(
   await applyNewPassword(sb, dek, email, newPassword, authSecret)
 }
 
+const EMAIL_FORMAT = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+
+/**
+ * E-Mail-Adresse ändern (Issue #188). Der Salt des Schlüssels enthält die Adresse: Auth-Passwort und verpackter
+ * Datenschlüssel werden deshalb auf die neue Adresse umgestellt, bevor der Server die Änderung annimmt. Der
+ * Wiederherstellungsschlüssel bleibt gleich. Keine Migration nötig.
+ */
+export async function changeEmail(
+  sb: SupabaseClient,
+  currentEmail: string,
+  password: string,
+  newEmail: string,
+): Promise<void> {
+  const next = newEmail.trim().toLowerCase()
+  if (!EMAIL_FORMAT.test(next))
+    throw new AuthError('invalid', 'Bitte gib eine gültige E-Mail-Adresse ein.')
+  if (next === currentEmail.trim().toLowerCase())
+    throw new AuthError('invalid', 'Das ist bereits deine Adresse.')
+  const { dek, authSecret } = await verifyPassword(sb, currentEmail, password)
+  const rewrapped = await rewrapForPassword(dek, password, next)
+  const { error } = await sb.auth.updateUser({ email: next, password: rewrapped.authSecret })
+  if (error) {
+    if (/already|registered|exists|taken/i.test(error.message))
+      throw new AuthError('other', 'Diese Adresse ist schon vergeben.')
+    throw mapError(error)
+  }
+  try {
+    await storeKeys(sb, { wrapped_dek: rewrapped.wrappedDek, kdf: rewrapped.kdf })
+  } catch (e) {
+    await sb.auth
+      .updateUser({ email: currentEmail.trim().toLowerCase(), password: authSecret })
+      .catch(() => undefined)
+    throw e
+  }
+}
+
 /** Erzeugt einen neuen Wiederherstellungsschlüssel; der alte wird ungültig. */
 export async function renewRecoveryKey(
   sb: SupabaseClient,

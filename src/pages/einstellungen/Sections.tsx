@@ -1,4 +1,4 @@
-import { useState, type ReactNode } from 'react'
+import { useEffect, useState, type ReactNode } from 'react'
 import { buttonClass, Field, inputClass } from '../../auth/ui'
 import { MonthSelect } from '../../components/MonthSelect'
 import { applyCatalogPlan, planCatalogChange, type CatalogPlan } from '../../data/catalogSync'
@@ -8,9 +8,18 @@ import { newId } from '../../data/seed'
 import { store } from '../../data/store'
 import { defaultSemesters } from '../../domain/period'
 import { isDuplicateName } from '../../domain/persons'
+import {
+  checkSemesters,
+  formatMonths,
+  MAX_SEMESTERS,
+  nextSemester,
+  trimSemesters,
+} from '../../domain/semesters'
 import type { Country, Living, Semester, Settings, ThemeChoice } from '../../domain/types'
 import { applyTheme } from '../../theme'
 import { saveSettings } from './saveSettings'
+import { useSectionDraft } from './useSectionDraft'
+import { useRegisterUnsaved } from './useUnsaved'
 
 export function Section({ title, children }: { title: string; children: ReactNode }) {
   return (
@@ -72,6 +81,24 @@ export function HousingSection({ settings }: { settings: Settings }) {
 
   const changed =
     country !== settings.country || living !== settings.living || hasCar !== settings.hasCar
+
+  // Solange nichts geändert ist, folgt die Auswahl dem gespeicherten Stand (Issue #184).
+  useEffect(() => {
+    if (!changed) {
+      setCountry(settings.country)
+      setLiving(settings.living)
+      setHasCar(settings.hasCar)
+    }
+  }, [settings.country, settings.living, settings.hasCar])
+
+  function discard() {
+    setCountry(settings.country)
+    setLiving(settings.living)
+    setHasCar(settings.hasCar)
+    setPlan(null)
+    setError(null)
+  }
+  useRegisterUnsaved('housing', changed, { discard })
 
   async function review() {
     setError(null)
@@ -153,6 +180,7 @@ export function HousingSection({ settings }: { settings: Settings }) {
           {error}
         </p>
       )}
+      {changed && <p className="text-sm text-amber-700">Nicht gespeichert</p>}
       <div className="flex gap-2">
         {!plan ? (
           <button className={buttonClass} disabled={!changed} onClick={review}>
@@ -374,50 +402,125 @@ export function CarsSection({ settings }: { settings: Settings }) {
 }
 
 export function SemesterSection({ settings }: { settings: Settings }) {
-  const [semesters, setSemesters] = useState<Semester[]>(settings.semesters)
+  const d = useSectionDraft(settings.semesters)
+  const [error, setError] = useState<string | null>(null)
   const [saved, setSaved] = useState(false)
-  const update = (i: number, patch: Partial<Semester>) => {
+  const check = checkSemesters(d.draft)
+
+  const edit = (next: Semester[]) => {
     setSaved(false)
-    setSemesters(semesters.map((s, j) => (j === i ? { ...s, ...patch } : s)))
+    d.setDraft(next)
   }
+
+  async function save(force = false): Promise<boolean> {
+    if (d.stale && !force) return false
+    setSaved(false)
+    const value = trimSemesters(d.draft)
+    if (checkSemesters(value).errors.length > 0) return false
+    setError(null)
+    try {
+      await saveSettings(settings, { semesters: value })
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Das hat nicht geklappt.')
+      return false
+    }
+    d.markSaved(value)
+    setSaved(true)
+    return true
+  }
+  useRegisterUnsaved('semesters', d.dirty, { save: () => save(), discard: d.reset })
+
   return (
     <Section title="Semester">
-      {semesters.map((s, i) => (
-        <div key={i} className="grid grid-cols-3 gap-2">
-          <input
-            aria-label={`Name Semester ${i + 1}`}
-            className={inputClass}
-            value={s.name}
-            onChange={(e) => update(i, { name: e.target.value })}
-          />
-          <MonthSelect
-            label={`Start Semester ${i + 1}`}
-            value={s.startMonth}
-            onChange={(m) => update(i, { startMonth: m })}
-          />
-          <MonthSelect
-            label={`Ende Semester ${i + 1}`}
-            value={s.endMonth}
-            onChange={(m) => update(i, { endMonth: m })}
-          />
+      {d.stale && (
+        <div className="space-y-2">
+          <p role="note" className="text-sm">
+            Die gespeicherten Semester haben sich geändert.
+          </p>
+          <div className="flex flex-wrap gap-2">
+            <button
+              type="button"
+              className="rounded-md border border-border px-4 py-2"
+              onClick={d.adoptSaved}
+            >
+              Gespeicherte Werte übernehmen
+            </button>
+            <button
+              type="button"
+              className="rounded-md border border-border px-4 py-2"
+              onClick={() => void save(true)}
+            >
+              Trotzdem speichern
+            </button>
+          </div>
+        </div>
+      )}
+      {d.draft.map((s, i) => (
+        <div key={i} className="space-y-2">
+          <div className="grid grid-cols-3 gap-2">
+            <input
+              aria-label={`Name Semester ${i + 1}`}
+              className={inputClass}
+              value={s.name}
+              onChange={(e) =>
+                edit(d.draft.map((x, j) => (j === i ? { ...x, name: e.target.value } : x)))
+              }
+            />
+            <MonthSelect
+              label={`Start Semester ${i + 1}`}
+              value={s.startMonth}
+              onChange={(m) => edit(d.draft.map((x, j) => (j === i ? { ...x, startMonth: m } : x)))}
+            />
+            <MonthSelect
+              label={`Ende Semester ${i + 1}`}
+              value={s.endMonth}
+              onChange={(m) => edit(d.draft.map((x, j) => (j === i ? { ...x, endMonth: m } : x)))}
+            />
+          </div>
+          {d.draft.length > 1 && (
+            <button
+              type="button"
+              aria-label={`Semester ${i + 1} entfernen`}
+              className="text-sm text-accent underline"
+              onClick={() => edit(d.draft.filter((_, j) => j !== i))}
+            >
+              Entfernen
+            </button>
+          )}
         </div>
       ))}
-      <div className="flex items-center gap-3">
+      {d.draft.length < MAX_SEMESTERS && (
         <button
-          className={buttonClass}
-          onClick={async () => {
-            await saveSettings(settings, { semesters })
-            setSaved(true)
-          }}
+          type="button"
+          className="rounded-md border border-border px-4 py-2 text-sm"
+          onClick={() => edit([...d.draft, nextSemester(d.draft)])}
         >
+          Semester hinzufügen
+        </button>
+      )}
+      {check.errors.map((e) => (
+        <p key={e} role="alert" className="text-sm text-red-600">
+          {e}
+        </p>
+      ))}
+      {check.gapMonths.length > 0 && (
+        <p role="note" className="text-sm">
+          {`Diese Monate gehören zu keinem Semester: ${formatMonths(check.gapMonths)}.`}
+        </p>
+      )}
+      {error && (
+        <p role="alert" className="text-sm text-red-600">
+          {error}
+        </p>
+      )}
+      {d.dirty && <p className="text-sm text-amber-700">Nicht gespeichert</p>}
+      <div className="flex items-center gap-3">
+        <button className={buttonClass} disabled={d.stale} onClick={() => void save()}>
           Speichern
         </button>
         <button
           className="text-sm text-accent underline"
-          onClick={() => {
-            setSemesters(defaultSemesters(settings.country))
-            setSaved(false)
-          }}
+          onClick={() => edit(defaultSemesters(settings.country))}
         >
           Auf Vorgabe zurücksetzen
         </button>
@@ -432,24 +535,8 @@ export function SemesterSection({ settings }: { settings: Settings }) {
 }
 
 export function DisplaySection({ settings }: { settings: Settings }) {
-  const [yellow, setYellow] = useState(String(settings.ampel.yellowPct))
-  const [red, setRed] = useState(String(settings.ampel.redPct))
-  const [error, setError] = useState<string | null>(null)
-  const [saved, setSaved] = useState(false)
-
-  async function saveAmpel() {
-    const y = Number(yellow)
-    const r = Number(red)
-    setSaved(false)
-    if (!Number.isFinite(y) || !Number.isFinite(r) || y <= 0 || r <= y)
-      return setError('Gelb muss über 0 und kleiner als Rot sein.')
-    setError(null)
-    await saveSettings(settings, { ampel: { yellowPct: y, redPct: r } })
-    setSaved(true)
-  }
-
   return (
-    <Section title="Darstellung und Ampel">
+    <Section title="Darstellung">
       <label className="block space-y-1">
         <span className="text-sm font-medium">Darstellung</span>
         <select
@@ -466,9 +553,83 @@ export function DisplaySection({ settings }: { settings: Settings }) {
           <option value="dark">Dunkel</option>
         </select>
       </label>
+    </Section>
+  )
+}
+
+export function AmpelSection({ settings }: { settings: Settings }) {
+  const d = useSectionDraft({
+    yellow: String(settings.ampel.yellowPct),
+    red: String(settings.ampel.redPct),
+  })
+  const [error, setError] = useState<string | null>(null)
+  const [saved, setSaved] = useState(false)
+
+  const edit = (next: { yellow: string; red: string }) => {
+    setSaved(false)
+    d.setDraft(next)
+  }
+
+  async function save(force = false): Promise<boolean> {
+    if (d.stale && !force) return false
+    const y = Number(d.draft.yellow)
+    const r = Number(d.draft.red)
+    setSaved(false)
+    if (!Number.isFinite(y) || !Number.isFinite(r) || y <= 0 || r <= y) {
+      setError('Gelb muss über 0 und kleiner als Rot sein.')
+      return false
+    }
+    setError(null)
+    try {
+      await saveSettings(settings, { ampel: { yellowPct: y, redPct: r } })
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Das hat nicht geklappt.')
+      return false
+    }
+    d.markSaved({ yellow: String(y), red: String(r) })
+    setSaved(true)
+    return true
+  }
+  useRegisterUnsaved('ampel', d.dirty, { save: () => save(), discard: d.reset })
+
+  return (
+    <Section title="Ampel">
+      {d.stale && (
+        <div className="space-y-2">
+          <p role="note" className="text-sm">
+            Die gespeicherten Werte haben sich geändert.
+          </p>
+          <div className="flex flex-wrap gap-2">
+            <button
+              type="button"
+              className="rounded-md border border-border px-4 py-2"
+              onClick={d.adoptSaved}
+            >
+              Gespeicherte Werte übernehmen
+            </button>
+            <button
+              type="button"
+              className="rounded-md border border-border px-4 py-2"
+              onClick={() => void save(true)}
+            >
+              Trotzdem speichern
+            </button>
+          </div>
+        </div>
+      )}
       <div className="grid grid-cols-2 gap-3">
-        <Field label="Ampel gelb ab (%)" type="number" value={yellow} onChange={setYellow} />
-        <Field label="Ampel rot ab (%)" type="number" value={red} onChange={setRed} />
+        <Field
+          label="Ampel gelb ab (%)"
+          type="number"
+          value={d.draft.yellow}
+          onChange={(v) => edit({ ...d.draft, yellow: v })}
+        />
+        <Field
+          label="Ampel rot ab (%)"
+          type="number"
+          value={d.draft.red}
+          onChange={(v) => edit({ ...d.draft, red: v })}
+        />
       </div>
       <p className="text-xs text-muted">
         Bezieht sich auf den Anteil des Monatsbudgets, der bereits ausgegeben ist.
@@ -478,8 +639,9 @@ export function DisplaySection({ settings }: { settings: Settings }) {
           {error}
         </p>
       )}
+      {d.dirty && <p className="text-sm text-amber-700">Nicht gespeichert</p>}
       <div className="flex items-center gap-3">
-        <button className={buttonClass} onClick={saveAmpel}>
+        <button className={buttonClass} disabled={d.stale} onClick={() => void save()}>
           Ampel speichern
         </button>
         {saved && (
