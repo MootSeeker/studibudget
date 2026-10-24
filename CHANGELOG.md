@@ -7,6 +7,10 @@ die Versionen folgen [Semantic Versioning](https://semver.org/lang/de/).
 
 ### Behoben
 
+- Statistik: «Anteil Fixkosten» zählt Ausgaben aus Vorlagen auch in variablen Kategorien; fixe Kategorien zählen weiterhin, ohne Doppelzählung. Die Kachel nennt beide Regeln (#182).
+- Monat: Kategorien ohne verfügbares Budget zeigen «Ohne Budget» neutral und ohne Prozentbalken. Kategorien mit Budget behalten die eingestellten Ampelschwellen (#166).
+- Eingabe: Der Betragsplatzhalter lautet in Deutschland «0,00». «Gespeichert.» verschwindet bei einer neuen Eingabe oder beim Wechsel der Buchungsart (#175).
+- Entwicklung: Die Planprüfung von `verify:kurz` liest geänderte und neue Dateinamen mit Umlauten ohne Git-Quoting; Dateien ausserhalb des Plans werden weiterhin gemeldet (#153).
 - Einstellungen: Semester werden geprüft. Ein leerer Name oder zwei Semester, die sich einen Monat teilen, lassen sich nicht speichern (die Meldung nennt Semester und Monat); Monate ohne Semester zeigen nur einen Hinweis. Bisher konnte ein Name aus Leerzeichen gespeichert werden und machte die eigene Sicherung unbrauchbar (#183).
 - Einstellungen: Semester, Ampel und Bankverbindung zeigen nach einem Landwechsel oder Sync von einem anderen Gerät die neuen gespeicherten Werte. Bei ungespeicherten Eingaben erscheint ein Hinweis, «Speichern» überschreibt nicht mehr still (#184).
 - Statistik: «Ø Ausgaben pro Monat» teilt nur noch durch Monate bis und mit dem laufenden; zukünftige Monate des Zeitraums zählen nicht mehr mit. Liegt der Zeitraum ganz in der Vergangenheit, bleibt der Wert gleich. Die Kachel nennt die Regel, in der Monatsansicht heisst die Beschriftung «Ø letzte 3 Monate mit Werten» (#163).

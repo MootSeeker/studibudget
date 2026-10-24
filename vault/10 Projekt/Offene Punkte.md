@@ -2,7 +2,7 @@
 typ: hub
 bereich: betrieb
 status: offen
-aktualisiert: 2026-10-10
+aktualisiert: 2026-10-24
 repo-quelle:
   - docs/start-checkliste.md
 tags:
@@ -11,6 +11,10 @@ tags:
 ---
 
 # Offene Punkte
+
+## In Bearbeitung (2026-10-24)
+
+- #153, #166, #175 und #182 gemeinsam auf `fix/153-166-175-182-kleine-fehler`; ein PR auf ausdrücklichen Wunsch von Kevin. Die Issues bleiben bis zum Merge offen. Verlauf: [[2026-10-24]].
 
 Offene GitHub-Issues (Stand 2026-10-10): #72 (CI-Artefakte aufs NAS), #153 (`verify:kurz` und Umlaute), #155 bis #158 (KI-Konnektor: umgesetzt im PR, Migration `inbox` noch einzuspielen, siehe unten), #190 (Dependabot für npm und GitHub Actions).
 Offen ist ausserdem der **öffentliche Start**. Die vollständige Liste steht in `docs/start-checkliste.md`; hier der Stand:

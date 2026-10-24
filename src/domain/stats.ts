@@ -75,10 +75,14 @@ export function keyFigures(
   const income = sum((t) => t.einnahmen)
   const from = totals[0]?.month ?? ''
   const to = totals[totals.length - 1]?.month ?? ''
-  const fixIds = new Set(cats.filter((c) => c.type === 'ausgabe' && c.fix).map((c) => c.id))
+  const expenseCats = new Map(cats.filter((c) => c.type === 'ausgabe').map((c) => [c.id, c]))
   let fix = 0
-  for (const [id, cents] of expensesByCategory(txs, cats, from, to))
-    if (fixIds.has(id)) fix += cents
+  for (const t of txs) {
+    const m = monthOf(t.date)
+    if (t.deleted || m < from || m > to) continue
+    const category = expenseCats.get(t.categoryId)
+    if (category && (category.fix || t.templateId)) fix += t.myAmountCents
+  }
   const worst = totals.reduce<MonthTotals | null>(
     (b, t) => (t.ausgaben > (b?.ausgaben ?? 0) ? t : b),
     null,

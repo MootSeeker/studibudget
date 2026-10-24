@@ -48,6 +48,42 @@ async function setup() {
 const rowOf = (name: string) => screen.getByText(name, { selector: 'span' }).closest('li')!
 
 describe('Monat-Seite', () => {
+  it(
+    'Ohne Budget erscheint ein neutraler Hinweis ohne Fortschrittsbalken (#166)',
+    { tags: ['regression'] },
+    async () => {
+      const settings = (await db.settings.toArray())[0]
+      await store.patch('settings', settings.id, { ampel: { yellowPct: 30, redPct: 60 } })
+      await book('mensa', 5001)
+      await setup()
+      await waitFor(() => {
+        const row = within(rowOf('Mensa / Mittagessen'))
+        expect(row.getByText('Ohne Budget')).toHaveClass('text-muted')
+        expect(row.queryByRole('progressbar')).not.toBeInTheDocument()
+        expect(rowOf('Mensa / Mittagessen')).toHaveTextContent(/50\.01/)
+      })
+    },
+  )
+
+  it(
+    'Mit Budget gelten die eingestellten Ampelschwellen weiterhin (#166)',
+    { tags: ['regression'] },
+    async () => {
+      const settings = (await db.settings.toArray())[0]
+      await store.patch('settings', settings.id, { ampel: { yellowPct: 30, redPct: 60 } })
+      await book('einkauf', 16000)
+      await book('ausgang', 12000)
+      await setup()
+      await waitFor(() => {
+        const knapp = within(rowOf('Einkauf zuhause'))
+        expect(knapp.getByText('Knapp')).toHaveClass('text-warn')
+        expect(knapp.getByRole('progressbar')).toHaveAttribute('aria-valuenow', '40')
+        const drueber = within(rowOf('Ausgang / Kino'))
+        expect(drueber.getByText('Überschritten')).toHaveClass('text-bad')
+        expect(drueber.getByRole('progressbar').firstElementChild).toHaveClass('bg-bad')
+      })
+    },
+  )
   it('zeigt Restbudget und Ampel pro Kategorie, mit Text und nicht nur Farbe', async () => {
     await book('miete', 80000)
     await book('einkauf', 33000) // 82.5 % → knapp

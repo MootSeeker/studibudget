@@ -300,7 +300,11 @@ export function Statistik() {
           value={pct(key.savingsRatePct)}
           hint="Gespart im Verhältnis zu den Einnahmen"
         />
-        <Tile label="Anteil Fixkosten" value={pct(key.fixSharePct)} hint="an allen Ausgaben" />
+        <Tile
+          label="Anteil Fixkosten"
+          value={pct(key.fixSharePct)}
+          hint="fixe Kategorien und Vorlagen"
+        />
         <Tile
           label="Teuerster Monat"
           value={key.mostExpensiveMonth ? monthName(key.mostExpensiveMonth) : '–'}

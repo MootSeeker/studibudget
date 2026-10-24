@@ -5,6 +5,7 @@ import { spawnSync } from 'node:child_process'
 import { existsSync, mkdtempSync, readFileSync, rmSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
+import { geaenderteDateien, neueDateien } from './lib/git-dateien.mjs'
 import {
   bericht,
   exitCode,
@@ -65,7 +66,7 @@ function leitplanken() {
   if (basis.status !== 0)
     return { name: 'Leitplanken', status: 'rot', befunde: ['kein lokales main für den Vergleich'] }
   const zeilen = hinzugefuegteZeilen(git('diff', '-U0', basis.stdout.trim()).stdout)
-  for (const datei of neueDateien()) {
+  for (const datei of neueDateien(git)) {
     if (!existsSync(datei)) continue
     readFileSync(datei, 'utf8')
       .split('\n')
@@ -75,20 +76,11 @@ function leitplanken() {
   return { name: 'Leitplanken', status: befunde.length ? 'rot' : 'gruen', befunde }
 }
 
-const neueDateien = () =>
-  git('ls-files', '--others', '--exclude-standard').stdout.split('\n').filter(Boolean)
-
-function geaenderteDateien() {
-  const basis = git('merge-base', 'main', 'HEAD').stdout.trim()
-  const geaendert = basis ? git('diff', '--name-only', basis).stdout.split('\n') : []
-  return [...new Set([...geaendert, ...neueDateien()].filter(Boolean))]
-}
-
 function plan() {
   if (planPfad === undefined) return planpruefung(undefined, [], () => null)
   if (!existsSync(planPfad))
     return { name: 'Plan', status: 'rot', befunde: [`Plan-Datei fehlt: ${planPfad}`] }
-  return planpruefung(readFileSync(planPfad, 'utf8'), geaenderteDateien(), (datei) =>
+  return planpruefung(readFileSync(planPfad, 'utf8'), geaenderteDateien(git), (datei) =>
     existsSync(datei) ? readFileSync(datei, 'utf8') : null,
   )
 }

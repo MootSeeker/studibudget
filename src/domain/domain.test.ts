@@ -200,6 +200,76 @@ describe('stats', () => {
     expect(k.fixSharePct).toBeCloseTo((160000 / 180000) * 100)
     expect(k.mostExpensiveMonth).toBe('2026-08')
   })
+  it(
+    'Fixkosten zählen Vorlagen und fixe Kategorien genau einmal (#182)',
+    { tags: ['regression'] },
+    () => {
+      const mixed = [
+        tx({
+          id: 'fix',
+          date: '2026-08-01',
+          categoryId: 'miete',
+          myAmountCents: 80000,
+          templateId: 'miete-vorlage',
+        }),
+        tx({
+          id: 'vorlage',
+          date: '2026-08-02',
+          categoryId: 'essen',
+          amountCents: 40000,
+          myAmountCents: 20000,
+          templateId: 'essen-vorlage',
+        }),
+        tx({ id: 'variabel', date: '2026-08-03', categoryId: 'essen', myAmountCents: 10000 }),
+        tx({
+          id: 'geloescht',
+          date: '2026-08-04',
+          categoryId: 'essen',
+          myAmountCents: 50000,
+          templateId: 'weg',
+          deleted: true,
+        }),
+        tx({
+          id: 'vorher',
+          date: '2026-07-31',
+          categoryId: 'essen',
+          myAmountCents: 50000,
+          templateId: 'alt',
+        }),
+        tx({
+          id: 'nachher',
+          date: '2026-09-01',
+          categoryId: 'essen',
+          myAmountCents: 50000,
+          templateId: 'neu',
+        }),
+        tx({
+          id: 'einnahme',
+          date: '2026-08-05',
+          categoryId: 'lohn',
+          myAmountCents: 200000,
+          templateId: 'lohn-vorlage',
+        }),
+        tx({
+          id: 'sparen',
+          date: '2026-08-05',
+          categoryId: 'spar',
+          myAmountCents: 20000,
+          templateId: 'spar-vorlage',
+        }),
+        tx({
+          id: 'unbekannt',
+          date: '2026-08-05',
+          categoryId: 'fehlt',
+          myAmountCents: 50000,
+          templateId: 'unbekannt',
+        }),
+      ]
+      const months = totalsByMonth(mixed, cats, '2026-08', '2026-08')
+      expect(keyFigures(months, mixed, cats).fixSharePct).toBeCloseTo((100000 / 110000) * 100)
+      expect(keyFigures([], mixed, cats).fixSharePct).toBeNull()
+    },
+  )
   it('Ø Ausgaben pro Monat: zukünftige Monate zählen nicht im Nenner', () => {
     const future = totalsByMonth(txs, cats, '2026-08', '2026-12')
     // heute ist September: August und September zählen, Oktober bis Dezember nicht

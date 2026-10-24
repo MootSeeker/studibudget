@@ -58,6 +58,44 @@ async function fillAndSubmit(user: ReturnType<typeof userEvent.setup>) {
 const lastDraft = (onSubmit: EntryFormProps['onSubmit']) =>
   vi.mocked(onSubmit).mock.calls.at(-1)![0] as EntryDraft
 
+describe('EntryForm: Rückmeldung und Landesformat (#175)', () => {
+  it('Platzhalter folgt dem Land (#175)', { tags: ['regression'] }, () => {
+    const p = props()
+    const { rerender } = render(<EntryForm {...p} />)
+    expect(screen.getByLabelText('Betrag (CHF)')).toHaveAttribute('placeholder', '0.00')
+    rerender(<EntryForm {...p} settings={{ ...settings, country: 'DE' }} />)
+    expect(screen.getByLabelText('Betrag (EUR)')).toHaveAttribute('placeholder', '0,00')
+  })
+
+  it.each(['Betrag', 'Kategorie', 'Datum', 'Notiz', 'Wiederholen', 'Art'])(
+    'Erfolgshinweis verschwindet bei Formularänderungen (#175): %s',
+    { tags: ['regression'] },
+    async (feld) => {
+      const user = userEvent.setup()
+      const p = props({
+        categories: [...categories, { ...categories[0], id: 'c2', name: 'Mensa' }],
+      })
+      render(<EntryForm {...p} />)
+      await fillAndSubmit(user)
+      expect(await screen.findByText('Gespeichert.')).toBeInTheDocument()
+      if (feld === 'Betrag') await user.type(screen.getByLabelText(/Betrag/), '12')
+      if (feld === 'Kategorie')
+        await user.selectOptions(screen.getByLabelText('Kategorie'), 'Mensa')
+      if (feld === 'Datum') {
+        await user.clear(screen.getByLabelText('Datum'))
+        await user.type(screen.getByLabelText('Datum'), '2026-10-04')
+        expect(screen.getByLabelText('Datum')).toHaveValue('2026-10-04')
+      }
+      if (feld === 'Notiz')
+        await user.type(screen.getByLabelText('Notiz (optional)'), 'Neue Buchung')
+      if (feld === 'Wiederholen') await user.click(screen.getByLabelText(/Wiederholen/))
+      if (feld === 'Art') await user.click(screen.getByLabelText('Einnahme'))
+      expect(screen.queryByText('Gespeichert.')).not.toBeInTheDocument()
+      expect(p.onSubmit).toHaveBeenCalledTimes(1)
+    },
+  )
+})
+
 describe('EntryForm: Beteiligte bei gemeinsamen Ausgaben', () => {
   it('Standard: ich und alle aktiven Personen', async () => {
     const p = props()

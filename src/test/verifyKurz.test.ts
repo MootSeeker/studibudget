@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest'
+import { spawnSync } from 'node:child_process'
 import {
   bericht,
   exitCode,
@@ -46,6 +47,18 @@ const PLAN = [
 ].join('\n')
 
 describe('verify:kurz (#129)', () => {
+  it(
+    'Git-Dateilisten mit Umlauten: Integrationstests unter scripts/ (#153)',
+    { tags: ['regression'] },
+    () => {
+      const r = spawnSync(process.execPath, ['--test', 'scripts/git-dateien.test.mjs'], {
+        encoding: 'utf8',
+      })
+      expect(r.error).toBeUndefined()
+      expect(r.stdout + r.stderr).toContain('#153')
+      expect(r.status, r.stdout + r.stderr).toBe(0)
+    },
+  )
   it('AK-1: liest die Schritte aus dem Skript verify und hängt test:slow an', () => {
     expect(schritteAusVerify('npm run lint && npm run typecheck && npm run test:coverage')).toEqual(
       ['lint', 'typecheck', 'test:coverage', 'test:slow'],

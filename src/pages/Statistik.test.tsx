@@ -72,6 +72,14 @@ const tile = (label: string) =>
   norm(screen.getByText(label, { selector: 'dt' }).parentElement!.textContent)
 
 describe('Statistik-Seite', () => {
+  it(
+    'Fixkosten-Kachel erklärt fixe Kategorien und Vorlagen (#182)',
+    { tags: ['regression'] },
+    async () => {
+      await setup()
+      expect(tile('Anteil Fixkosten')).toContain('fixe Kategorien und Vorlagen')
+    },
+  )
   it('zeigt Kennzahlen für den gewählten Zeitraum', async () => {
     await setup()
     expect(tile('Einnahmen')).toMatch(/CHF 4'000\.00/)

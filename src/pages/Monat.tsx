@@ -61,21 +61,15 @@ function Row({ row, money }: { row: RowView; money: (c: number) => string }) {
           {row.available > 0 && <span className="text-muted"> von {money(row.available)}</span>}
         </span>
       </div>
-      {(row.available > 0 || row.ampel) && (
+      {row.available > 0 && (
         <Bar
           label={`${c.name} ausgeschöpft`}
           pct={row.pct ?? (row.actual > 0 ? 100 : 0)}
-          className={
-            isExpense ? (row.ampel?.noBudget ? 'bg-bad' : (status?.bar ?? 'bg-ok')) : 'bg-accent'
-          }
+          className={isExpense ? (status?.bar ?? 'bg-ok') : 'bg-accent'}
         />
       )}
       <div className="flex justify-between text-sm">
-        <span
-          className={isExpense ? (row.ampel?.noBudget ? 'text-bad' : status?.color) : 'text-muted'}
-        >
-          {label}
-        </span>
+        <span className={isExpense ? (status?.color ?? 'text-muted') : 'text-muted'}>{label}</span>
         <span className="text-muted">
           {isExpense &&
             row.available > 0 &&
