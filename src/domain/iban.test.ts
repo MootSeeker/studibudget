@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { formatIban, ibanProblem, isValidSwissIban, normalizeIban } from './iban'
+import { formatIban, ibanProblem, isQrIban, isValidSwissIban, normalizeIban } from './iban'
 
 // Bankverbindung für Rechnungen (Issue #104): nur Schweizer und Liechtensteiner IBAN.
 
@@ -70,5 +70,32 @@ describe('ibanProblem (Issue #120)', () => {
   it('stimmt mit isValidSwissIban überein', () => {
     for (const i of [CH, LI, 'CH7893253212984736473', 'DE89370400440532013000', 'CH93'])
       expect(ibanProblem(i) === null).toBe(isValidSwissIban(normalizeIban(i)))
+  })
+})
+
+// QR-IBAN (#160): IID (Stellen 5 bis 9) im Bereich 30000 bis 31999, alle mit gültiger Prüfsumme.
+describe('QR-IBAN (#160)', () => {
+  const grenzen = [
+    ['CH4929999123000889012', false], // 29999
+    ['CH5730000123000889012', true], // 30000
+    ['CH4431999123000889012', true], // 31999, Beispiel-QR-IBAN aus der Dokumentation von SIX
+    ['CH5232000123000889012', false], // 32000
+    ['LI3530808123000889012', true], // Liechtenstein
+  ] as const
+  it.each(grenzen)('isQrIban(%s) = %s', (iban, qr) => {
+    expect(isValidSwissIban(iban)).toBe(true)
+    expect(isQrIban(iban)).toBe(qr)
+  })
+  it('AK-1: ibanProblem nennt den Grund bei einer QR-IBAN, auch mit Leerzeichen', () => {
+    expect(ibanProblem('CH44 3199 9123 0008 8901 2')).toBe(
+      'Das ist eine QR-IBAN. Für den Zahlteil braucht es die normale IBAN des Kontos.',
+    )
+    expect(ibanProblem('LI3530808123000889012')).toMatch(/QR-IBAN/)
+    expect(ibanProblem('CH4929999123000889012')).toBeNull()
+    expect(ibanProblem('CH5232000123000889012')).toBeNull()
+  })
+  it('ungültige Eingaben gelten nicht als QR-IBAN', () => {
+    expect(isQrIban('CH4431999123000889013')).toBe(false) // Prüfsumme falsch
+    expect(isQrIban('')).toBe(false)
   })
 })
