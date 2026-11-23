@@ -23,6 +23,29 @@ describe('money', () => {
     expect(norm(formatMoney(123450, 'CH'))).toBe("CHF 1'234.50")
     expect(norm(formatMoney(123450, 'DE'))).toBe('1.234,50 €')
   })
+  // #164: negatives Format einheitlich «CHF -696.00»; DE unverändert «-1.234,50 €».
+  it.each([
+    [69600, 'CH', 'CHF 696.00'],
+    [-69600, 'CH', 'CHF -696.00'],
+    [0, 'CH', 'CHF 0.00'],
+    [-123450, 'CH', "CHF -1'234.50"],
+    [69600, 'DE', '696,00 €'],
+    [-123450, 'DE', '-1.234,50 €'],
+    [0, 'DE', '0,00 €'],
+  ] as const)('formatMoney(%i, %s) = %s', (cents, country, expected) => {
+    const norm = (s: string) => s.replace(/⁠/g, '').replace(/\s/g, ' ').replace('’', "'")
+    expect(norm(formatMoney(cents, country))).toBe(expected)
+  })
+  it('negative Beträge brechen nicht um: keine normalen Leerzeichen, Minus mit Wortverbinder', () => {
+    for (const country of ['CH', 'DE'] as const) {
+      const s = formatMoney(-69600, country)
+      expect(s).not.toMatch(/ /)
+      expect(s).toMatch(/-⁠\d/)
+    }
+  })
+  it('kleine negative Beträge, die auf 0 runden, zeigen kein Minus', () => {
+    expect(formatMoney(-0, 'CH')).not.toMatch(/-/)
+  })
   it.each([
     ['23.50', 2350],
     ['23,5', 2350],

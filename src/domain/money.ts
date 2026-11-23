@@ -6,10 +6,24 @@ const LOCALE: Record<Country, { locale: string; currency: string }> = {
   DE: { locale: 'de-DE', currency: 'EUR' },
 }
 
-/** Formatiert Rappen/Cent nach Landesformat: «CHF 1’234.50» bzw. «1.234,50 €». */
+const NBSP = ' '
+/** Wortverbinder: verhindert einen Umbruch nach dem Minus, ist unsichtbar. */
+const WJ = '⁠'
+
+/**
+ * Formatiert Rappen/Cent nach Landesformat: «CHF 1’234.50» bzw. «1.234,50 €».
+ * Negativ (#164): «CHF -696.00» bzw. «-696,00 €». Alle Teile sind mit geschützten Zeichen verbunden,
+ * damit Vorzeichen, Währung und Zahl nie umbrechen.
+ */
 export function formatMoney(cents: number, country: Country): string {
   const { locale, currency } = LOCALE[country]
-  return new Intl.NumberFormat(locale, { style: 'currency', currency }).format(cents / 100)
+  const abs = new Intl.NumberFormat(locale, { style: 'currency', currency })
+    .format(Math.abs(cents) / 100)
+    .replace(/\s/g, NBSP)
+  // Was auf 0.00 rundet, bekommt kein Minus.
+  if (!(cents < 0) || /^[^1-9]*$/.test(abs)) return abs
+  if (country === 'CH') return abs.replace(NBSP, `${NBSP}-${WJ}`)
+  return `-${WJ}${abs}`
 }
 
 /**
@@ -23,7 +37,7 @@ export function parseAmount(input: string): number | null {
 
 /** Liest einen einzelnen Betrag als Cent. */
 function parseSingleAmount(input: string): number | null {
-  let s = input.replace(/[\s'’]/g, '').replace(/^(CHF|EUR|€)|(CHF|EUR|€)$/gi, '')
+  let s = input.replace(/[\s'’⁠]/g, '').replace(/^(CHF|EUR|€)|(CHF|EUR|€)$/gi, '')
   if (!/^-?[\d.,]+$/.test(s) || !/\d/.test(s)) return null
   const lastDot = s.lastIndexOf('.')
   const lastComma = s.lastIndexOf(',')
