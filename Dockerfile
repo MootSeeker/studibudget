@@ -8,8 +8,7 @@ COPY . .
 ARG VITE_SUPABASE_URL
 ARG VITE_SUPABASE_ANON_KEY
 # Ohne Zeilenfortsetzung, damit die Datei auch mit Windows-Zeilenenden funktioniert.
-RUN test -n "$VITE_SUPABASE_URL" && test -n "$VITE_SUPABASE_ANON_KEY" \
-  || (echo "VITE_SUPABASE_URL und VITE_SUPABASE_ANON_KEY als --build-arg angeben (docs/docker.md)" && exit 1)
+RUN test -n "$VITE_SUPABASE_URL" && test -n "$VITE_SUPABASE_ANON_KEY" || (echo "VITE_SUPABASE_URL und VITE_SUPABASE_ANON_KEY als --build-arg angeben (docs/docker.md)" && exit 1)
 RUN VITE_SUPABASE_URL="$VITE_SUPABASE_URL" VITE_SUPABASE_ANON_KEY="$VITE_SUPABASE_ANON_KEY" npm run build
 
 FROM nginx:1.29-alpine
