@@ -200,6 +200,34 @@ describe('stats', () => {
     expect(k.fixSharePct).toBeCloseTo((160000 / 180000) * 100)
     expect(k.mostExpensiveMonth).toBe('2026-08')
   })
+  it('Anteil Fixkosten: Vorlagen-Buchungen in nicht fixen Kategorien zählen als fix (#182)', () => {
+    const mitVorlage = [
+      ...txs,
+      tx({
+        id: '7',
+        date: '2026-09-10',
+        categoryId: 'essen',
+        myAmountCents: 20000,
+        templateId: 'v1',
+        templateMonth: '2026-09',
+      }),
+    ]
+    const t = totalsByMonth(mitVorlage, cats, '2026-08', '2026-09')
+    // fix: Miete 160000 (fixe Kategorie) + 20000 aus der Vorlage; gesamt 200000
+    expect(keyFigures(t, mitVorlage, cats).fixSharePct).toBeCloseTo((180000 / 200000) * 100)
+    // Vorlage in einer fixen Kategorie zählt nicht doppelt (AK-2)
+    const vorlageInFix = [
+      ...txs.filter((x) => x.id !== '5'),
+      tx({
+        id: '5',
+        date: '2026-09-02',
+        categoryId: 'miete',
+        myAmountCents: 80000,
+        templateId: 'm',
+      }),
+    ]
+    expect(keyFigures(totals, vorlageInFix, cats).fixSharePct).toBeCloseTo((160000 / 180000) * 100)
+  })
   it('Ø Ausgaben pro Monat: zukünftige Monate zählen nicht im Nenner', () => {
     const future = totalsByMonth(txs, cats, '2026-08', '2026-12')
     // heute ist September: August und September zählen, Oktober bis Dezember nicht

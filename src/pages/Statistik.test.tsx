@@ -86,6 +86,7 @@ describe('Statistik-Seite', () => {
     await setup()
     expect(tile('Teuerster Monat')).toMatch(/CHF 1'400\.00/)
     expect(tile('Anteil Fixkosten')).toMatch(/\d+(,|\.)?\d* %/)
+    expect(tile('Anteil Fixkosten')).toMatch(/fixe Kategorien und Vorlagen/) // #182 AK-3
   })
 
   it('Ausgaben nach Bereich: Balken mit Betrag und Anteil, Kategorien klappen auf', async () => {
