@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from 'react'
+import { useRef, useState, type FormEvent } from 'react'
 import { Link } from 'react-router'
 import { buttonClass, inputClass } from '../auth/ui'
 import {
@@ -43,6 +43,9 @@ export function Ausgleich() {
   const [note, setNote] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [saved, setSaved] = useState(false)
+  // Hinweis nach «Ausgleichen» (#173); verschwindet bei der nächsten Änderung im Formular.
+  const [prefilled, setPrefilled] = useState<string | null>(null)
+  const amountRef = useRef<HTMLInputElement>(null)
   const [filter, setFilter] = useState('')
   const [all, setAll] = useState(false)
   const [month, setMonth] = useState(currentMonth())
@@ -89,12 +92,20 @@ export function Ausgleich() {
     }
     setSaved(false)
     setError(null)
+    setPrefilled(
+      s
+        ? `Vorausgefüllt: ${s.direction === 'ich_zahle' ? `du zahlst ${nameOf(id)}` : `${nameOf(id)} zahlt dir`} ${money(s.cents)}. Prüfen und speichern.`
+        : null,
+    )
     document.getElementById('ausgleich-form')?.scrollIntoView?.({ behavior: 'smooth' })
+    // Fokus ohne zweites Scrollen: das sanfte Scrollen oben bringt das Formular ins Bild.
+    amountRef.current?.focus({ preventScroll: true })
   }
 
   async function submit(e: FormEvent) {
     e.preventDefault()
     setSaved(false)
+    setPrefilled(null)
     const r = buildSettlement({ id: newId(), personId, direction, amount, date, note })
     if (!r.ok) return setError(r.error)
     setError(null)
@@ -111,6 +122,16 @@ export function Ausgleich() {
     if (!r.ok) return null
     const after = balanceOf(personId) + settlementEffect({ ...r.draft, updatedAt: '' }).cents
     return statement(personId, after)
+  })()
+
+  // Hinweis bei Überzahlung (#172): mehr als in dieser Richtung offen ist, ist meist ein Tippfehler.
+  const overpay = (() => {
+    if (!personId) return null
+    const r = buildSettlement({ id: 'x', personId, direction, amount, date, note: '' })
+    if (!r.ok) return null
+    const bal = balanceOf(personId)
+    const open = direction === 'ich_erhalte' ? Math.max(bal, 0) : Math.max(-bal, 0)
+    return r.draft.amountCents > open ? open : null
   })()
 
   const inMonth = (date: string) => allMonths || monthOf(date) === month
@@ -260,6 +281,7 @@ export function Ausgleich() {
       <form
         id="ausgleich-form"
         onSubmit={submit}
+        onChange={() => setPrefilled(null)}
         className="space-y-4 rounded-xl border border-border bg-surface p-5"
         aria-label="Ausgleichszahlung erfassen"
       >
@@ -298,6 +320,7 @@ export function Ausgleich() {
             <input
               className={inputClass}
               inputMode="decimal"
+              ref={amountRef}
               value={amount}
               onChange={(e) => setAmount(e.target.value)}
               placeholder="0.00"
@@ -322,7 +345,17 @@ export function Ausgleich() {
             />
           </label>
         </div>
-        {preview && <p className="text-sm text-muted">Danach: {preview}</p>}
+        {prefilled && (
+          <p role="status" className="text-sm">
+            {prefilled}
+          </p>
+        )}
+        {preview && overpay === null && <p className="text-sm text-muted">Danach: {preview}</p>}
+        {preview && overpay !== null && (
+          <p role="note" className="rounded-md border border-warn/40 bg-warn/10 px-3 py-2 text-sm">
+            Achtung: Offen sind nur {money(overpay)}. Danach: {preview} Ist der Betrag richtig?
+          </p>
+        )}
         {error && (
           <p
             role="alert"

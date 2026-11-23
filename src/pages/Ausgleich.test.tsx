@@ -375,3 +375,79 @@ describe('Monatsansicht', () => {
     await waitFor(() => expect(screen.getByLabelText('Datum')).toHaveValue(`${prev}-01`))
   })
 })
+
+describe('Vorausfüllen sichtbar (#173)', () => {
+  it('AK-1/AK-3: «Ausgleichen» scrollt zum Formular und setzt den Fokus aufs Betragsfeld', async () => {
+    const scroll = vi.fn()
+    Element.prototype.scrollIntoView = scroll
+    const ben = await personId('Ben')
+    await book(6000, ben, ['me', ben]) // ich schulde Ben 30
+    const user = await setup()
+    await user.click(await screen.findByRole('button', { name: 'Ben ausgleichen' }))
+    const formEl = screen.getByRole('form', { name: 'Ausgleichszahlung erfassen' })
+    const form = within(formEl)
+    expect(form.getByLabelText(/Betrag/)).toHaveFocus()
+    expect(form.getByLabelText(/Betrag/)).toHaveValue('30.00')
+    expect(scroll).toHaveBeenCalled()
+    expect(scroll.mock.contexts[0]).toBe(formEl)
+  })
+
+  it('AK-2: Hinweis «Vorausgefüllt …», verschwindet nach einer Änderung', async () => {
+    Element.prototype.scrollIntoView = vi.fn()
+    const ben = await personId('Ben')
+    await book(6000, ben, ['me', ben])
+    const user = await setup()
+    await user.click(await screen.findByRole('button', { name: 'Ben ausgleichen' }))
+    const form = within(screen.getByRole('form', { name: 'Ausgleichszahlung erfassen' }))
+    expect(norm(form.getByText(/Vorausgefüllt/).textContent)).toBe(
+      'Vorausgefüllt: du zahlst Ben CHF 30.00. Prüfen und speichern.',
+    )
+    await user.type(form.getByLabelText(/Betrag/), '1')
+    expect(form.queryByText(/Vorausgefüllt/)).not.toBeInTheDocument()
+  })
+})
+
+describe('Hinweis bei Überzahlung (#172)', () => {
+  async function erfassen(direction: 'ich_erhalte' | 'ich_zahle', betrag: string) {
+    const anna = await personId('Anna')
+    await book(10000, 'me', ['me', anna]) // Anna schuldet mir 50
+    const user = await setup()
+    const form = within(screen.getByRole('form', { name: 'Ausgleichszahlung erfassen' }))
+    await user.selectOptions(form.getByLabelText('Person'), 'Anna')
+    await user.selectOptions(form.getByLabelText('Was ist passiert?'), direction)
+    await user.type(form.getByLabelText(/Betrag/), betrag)
+    return { user, form }
+  }
+
+  it('AK-1: Betrag über dem offenen Saldo → Hinweis mit offenem Betrag und Saldo danach', async () => {
+    const { form } = await erfassen('ich_erhalte', '80')
+    expect(norm(form.getByRole('note').textContent)).toBe(
+      'Achtung: Offen sind nur CHF 50.00. Danach: Du schuldest Anna CHF 30.00. Ist der Betrag richtig?',
+    )
+  })
+
+  it('AK-2: trotzdem speichern erfasst die Zahlung wie bisher', async () => {
+    const { user, form } = await erfassen('ich_erhalte', '80')
+    await user.click(form.getByRole('button', { name: 'Speichern' }))
+    await waitFor(async () => expect(await db.settlements.count()).toBe(1))
+    expect((await db.settlements.toArray())[0]).toMatchObject({
+      direction: 'ich_erhalte',
+      amountCents: 8000,
+    })
+    await waitFor(() =>
+      expect(norm(card('Anna').textContent)).toMatch(/Du schuldest Anna CHF 30\.00/),
+    )
+  })
+
+  it('AK-3: Betrag bis zum offenen Saldo → kein Hinweis', async () => {
+    const { form } = await erfassen('ich_erhalte', '50')
+    expect(form.queryByRole('note')).not.toBeInTheDocument()
+  })
+
+  it('AK-1: auch in Gegenrichtung (ich zahle, obwohl nichts offen ist)', async () => {
+    const { form } = await erfassen('ich_zahle', '20')
+    expect(norm(form.getByRole('note').textContent)).toMatch(
+      /Offen sind nur CHF 0\.00\. Danach: Anna schuldet dir CHF 70\.00/,
+    )
+  })
+})
