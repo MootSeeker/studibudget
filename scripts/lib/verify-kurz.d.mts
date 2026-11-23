@@ -42,6 +42,8 @@ export function planlauf(
 ): Promise<Schritt[]>
 export function bericht(lauf: Lauf): string[]
 export function exitCode(lauf: Lauf): 0 | 1
+export function gitPfad(z: string): string
+export function dateiliste(diffAusgabe: string, neueAusgabe: string): string[]
 export function hinzugefuegteZeilen(diff: string): Zeile[]
 export function pruefeLeitplanken(zeilen: Zeile[], ausnahmen: Ausnahme[]): string[]
 export function lesePlanBlock(text: string): Plan | null

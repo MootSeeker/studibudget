@@ -1,7 +1,9 @@
 import { describe, expect, it } from 'vitest'
 import {
   bericht,
+  dateiliste,
   exitCode,
+  gitPfad,
   hinzugefuegteZeilen,
   lesePlanBlock,
   planlauf,
@@ -245,5 +247,39 @@ describe('verify:kurz (#129)', () => {
     expect(planpruefung('```plan-dateien\nsrc/a.ts\n```', ['src/a.ts'], () => null).status).toBe(
       'gruen',
     )
+  })
+})
+
+describe('Dateinamen mit Umlauten (#153)', () => {
+  // So schreibt Git Namen mit Umlauten ohne core.quotePath=false: in Anführungszeichen, UTF-8 als Oktal.
+  const GEQUOTET = String.raw`"vault/30 Entscheide/Entscheid - KI-Konnektor \303\274ber Vorschl\303\244ge.md"`
+  const KLAR = 'vault/30 Entscheide/Entscheid - KI-Konnektor über Vorschläge.md'
+
+  it('gitPfad entschlüsselt gequotete Namen und lässt andere unverändert', () => {
+    expect(gitPfad(GEQUOTET)).toBe(KLAR)
+    expect(gitPfad('src/a.ts')).toBe('src/a.ts')
+    expect(gitPfad(String.raw`"a\tb \"c\".md"`)).toBe('a\tb "c".md')
+  })
+
+  it('AK-1: eine Datei mit Umlaut im Plan gilt als erlaubt', () => {
+    const plan = { dateien: ['docs/Prüfung.md'], tests: [] }
+    const geaendert = dateiliste(String.raw`"docs/Pr\303\274fung.md"` + '\n', '')
+    expect(geaendert).toEqual(['docs/Prüfung.md'])
+    expect(pruefePlan(plan, geaendert, () => null)).toEqual([])
+  })
+
+  it('AK-2: eine Datei mit Umlaut ausserhalb des Plans bleibt rot', () => {
+    const plan = { dateien: ['src/a.ts'], tests: [] }
+    const geaendert = dateiliste('src/a.ts\n', String.raw`"docs/\303\226ffnung.md"` + '\n')
+    expect(pruefePlan(plan, geaendert, () => null)).toEqual([
+      'docs/Öffnung.md: nicht in der Dateiliste des Plans',
+    ])
+  })
+
+  it('hinzugefuegteZeilen liest auch einen gequoteten Dateinamen', () => {
+    const diff = [String.raw`+++ "b/docs/Pr\303\274fung.md"`, '@@ -0,0 +1 @@', '+Text'].join('\n')
+    expect(hinzugefuegteZeilen(diff)).toEqual([
+      { datei: 'docs/Prüfung.md', zeile: 1, text: 'Text' },
+    ])
   })
 })
