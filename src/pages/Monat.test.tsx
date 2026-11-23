@@ -59,12 +59,48 @@ describe('Monat-Seite', () => {
       expect(norm(rowOf('Einkauf zuhause').textContent)).toMatch(/Noch CHF 70\.00/)
       expect(within(rowOf('Ausgang / Kino')).getByText('Überschritten')).toBeInTheDocument()
       expect(norm(rowOf('Ausgang / Kino').textContent)).toMatch(/CHF 20\.00 drüber/)
-      expect(within(rowOf('Miete')).getByText('Ausgeschöpft')).toBeInTheDocument() // genau 100 % = rot, aber nicht überschritten
+      // Miete ist fix: genau wie geplant bezahlt heisst «Wie geplant» (#179)
+      expect(within(rowOf('Miete')).getByText('Wie geplant')).toBeInTheDocument()
+      expect(within(rowOf('Miete')).queryByText('Ausgeschöpft')).not.toBeInTheDocument()
       expect(within(rowOf('Miete')).queryByText('Überschritten')).not.toBeInTheDocument()
       expect(within(rowOf('Miete')).getByRole('progressbar')).toHaveAttribute(
         'aria-valuenow',
         '100',
       )
+    })
+  })
+
+  it('Kategorie ohne Budget: neutral, ohne roten Balken (#166)', async () => {
+    const c = (await db.categories.toArray()).find(
+      (k) =>
+        k.type === 'ausgabe' &&
+        !k.hidden &&
+        !['miete', 'einkauf', 'ausgang'].includes(k.catalogKey ?? ''),
+    )!
+    await store.put('transactions', {
+      id: newId(),
+      deleted: false,
+      date: `${NOW}-02`,
+      categoryId: c.id,
+      amountCents: 5001,
+      myAmountCents: 5001,
+      note: '',
+    })
+    await setup()
+    const zeile = await waitFor(() => rowOf(c.name))
+    const text = within(zeile).getByText('Ohne Budget')
+    expect(text).not.toHaveClass('text-bad')
+    expect(text).toHaveClass('text-muted')
+    expect(within(zeile).queryByRole('progressbar')).not.toBeInTheDocument()
+  })
+
+  it('Fixkosten überschritten bleiben rot, variable Kategorie knapp bleibt «Knapp» (#179)', async () => {
+    await book('miete', 80100)
+    await book('einkauf', 39000)
+    await setup()
+    await waitFor(() => {
+      expect(within(rowOf('Miete')).getByText('Überschritten')).toHaveClass('text-bad')
+      expect(within(rowOf('Einkauf zuhause')).getByText('Knapp')).toBeInTheDocument()
     })
   })
 

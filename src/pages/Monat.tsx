@@ -21,6 +21,8 @@ const STATUS: Record<Ampel, { text: string; color: string; bar: string }> = {
   gruen: { text: 'Im Rahmen', color: 'text-ok', bar: 'bg-ok' },
   gelb: { text: 'Knapp', color: 'text-warn', bar: 'bg-warn' },
   rot: { text: 'Überschritten', color: 'text-bad', bar: 'bg-bad' },
+  neutral: { text: 'Ohne Budget', color: 'text-muted', bar: 'bg-muted' },
+  plan: { text: 'Wie geplant', color: 'text-muted', bar: 'bg-muted' },
 }
 
 function Bar({ pct, className, label }: { pct: number; className: string; label: string }) {
@@ -42,13 +44,11 @@ function Bar({ pct, className, label }: { pct: number; className: string; label:
 function Row({ row, money }: { row: RowView; money: (c: number) => string }) {
   const { category: c } = row
   const isExpense = c.type === 'ausgabe'
-  const status = row.ampel && !row.ampel.noBudget ? STATUS[row.ampel.status] : null
+  const status = row.ampel ? STATUS[row.ampel.status] : null
   const label = isExpense
-    ? row.ampel?.noBudget
-      ? 'Ohne Budget'
-      : row.ampel?.status === 'rot' && row.remaining >= 0
-        ? 'Ausgeschöpft'
-        : (status?.text ?? '')
+    ? row.ampel?.status === 'rot' && row.remaining >= 0
+      ? 'Ausgeschöpft'
+      : (status?.text ?? '')
     : row.available > 0
       ? `${Math.round(row.pct ?? 0)} %`
       : ''
@@ -61,21 +61,16 @@ function Row({ row, money }: { row: RowView; money: (c: number) => string }) {
           {row.available > 0 && <span className="text-muted"> von {money(row.available)}</span>}
         </span>
       </div>
-      {(row.available > 0 || row.ampel) && (
+      {/* Ohne Budget entfällt der Balken (#166): es gibt nichts auszuschöpfen. */}
+      {row.available > 0 && (
         <Bar
           label={`${c.name} ausgeschöpft`}
-          pct={row.pct ?? (row.actual > 0 ? 100 : 0)}
-          className={
-            isExpense ? (row.ampel?.noBudget ? 'bg-bad' : (status?.bar ?? 'bg-ok')) : 'bg-accent'
-          }
+          pct={row.pct ?? 0}
+          className={isExpense ? (status?.bar ?? 'bg-ok') : 'bg-accent'}
         />
       )}
       <div className="flex justify-between text-sm">
-        <span
-          className={isExpense ? (row.ampel?.noBudget ? 'text-bad' : status?.color) : 'text-muted'}
-        >
-          {label}
-        </span>
+        <span className={isExpense ? status?.color : 'text-muted'}>{label}</span>
         <span className="text-muted">
           {isExpense &&
             row.available > 0 &&

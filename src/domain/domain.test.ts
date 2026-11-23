@@ -146,9 +146,22 @@ describe('month', () => {
     expect(ampel(8000, 10000, 80, 100).status).toBe('gelb')
     expect(ampel(10000, 10000, 80, 100).status).toBe('rot')
   })
-  it('ohne Budget: rot nur bei Ausgaben', () => {
-    expect(ampel(500, 0, 80, 100)).toMatchObject({ status: 'rot', noBudget: true })
-    expect(ampel(0, 0, 80, 100)).toMatchObject({ status: 'gruen', noBudget: true })
+  it('ohne Budget: neutral, auch mit Ausgaben (#166)', () => {
+    expect(ampel(500, 0, 80, 100)).toMatchObject({ status: 'neutral', noBudget: true })
+    expect(ampel(0, 0, 80, 100)).toMatchObject({ status: 'neutral', noBudget: true })
+    // Die Schwellen spielen ohne Budget keine Rolle (AK-3).
+    expect(ampel(500, 0, 10, 20)).toMatchObject({ status: 'neutral', noBudget: true })
+  })
+  it('Fixkosten wie geplant: neutral statt gelb/rot, bis das Budget überschritten ist (#179)', () => {
+    const fix = { planned: true }
+    expect(ampel(4990, 5000, 80, 100, fix).status).toBe('plan') // 99.8 %
+    expect(ampel(5000, 5000, 80, 100, fix).status).toBe('plan') // genau 100 %
+    expect(ampel(4000, 5000, 80, 100, fix).status).toBe('plan') // 80 %
+    expect(ampel(3990, 5000, 80, 100, fix).status).toBe('gruen') // unter der Schwelle
+    expect(ampel(5001, 5000, 80, 100, fix).status).toBe('rot') // überschritten
+    // Variabel bleibt wie bisher (AK-3).
+    expect(ampel(4990, 5000, 80, 100).status).toBe('gelb')
+    expect(ampel(5000, 5000, 80, 100).status).toBe('rot')
   })
   it('Hochrechnung: Tag 10 von 30, 300.00 variabel → 900.00 + Fixkosten', () => {
     expect(
