@@ -15,7 +15,7 @@ import {
 } from '../data/hooks'
 import { formatMoney, parseAmount } from '../domain/money'
 import { currentMonth, monthOf, monthRange } from '../domain/period'
-import { goalBalance, neededPerMonth } from '../domain/goals'
+import { goalBalance, goalPlanned, neededPerMonth } from '../domain/goals'
 import { accountSeries, enteredBalance, wealthByMonth } from '../domain/wealth'
 import {
   firstBalanceMonth,
@@ -41,12 +41,16 @@ const monthName = (m: string) => `${MONTH_NAMES[Number(m.slice(5, 7)) - 1]} ${m.
 function GoalCard({
   goal,
   balance,
+  planned = 0,
   country,
   now,
   run,
 }: {
   goal: Goal
+  /** Stand bis heute (#178) */
   balance: number
+  /** Einzahlungen mit Datum nach heute */
+  planned?: number
   country: Country
   now: string
   run: (fn: () => Promise<void>) => void
@@ -86,6 +90,12 @@ function GoalCard({
         <span className="tabular-nums">
           <strong>{money(balance)}</strong>{' '}
           <span className="text-muted">von {money(goal.targetCents)}</span>
+          {planned !== 0 && (
+            <span className="text-muted">
+              {' '}
+              · {planned > 0 ? '+' : '−'} {money(Math.abs(planned))} geplant
+            </span>
+          )}
         </span>
         <span className="font-medium">{Math.round(pct)} %</span>
       </div>
@@ -202,7 +212,9 @@ export function Konten() {
   if (!settings) return null
   const country = settings.country
   const money = (c: number) => formatMoney(c, country)
-  const now = currentMonth()
+  const d = new Date()
+  const now = currentMonth(d)
+  const today = `${now}-${String(d.getDate()).padStart(2, '0')}`
   const period = wealthPeriod(kind, now, step, settings.semesters, firstBalanceMonth(balances))
   const months = monthRange(period.from, period.to)
   const wealth = wealthByMonth(accounts, balances, months)
@@ -572,7 +584,8 @@ export function Konten() {
               <GoalCard
                 key={g.id}
                 goal={g}
-                balance={goalBalance(g, txs)}
+                balance={goalBalance(g, txs, today)}
+                planned={goalPlanned(g, txs, today)}
                 country={country}
                 now={now}
                 run={run}
