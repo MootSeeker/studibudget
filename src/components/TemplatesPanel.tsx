@@ -9,7 +9,7 @@ import {
   monthsForInterval,
   type IntervalEvery,
 } from '../domain/templates'
-import type { Car, Category, Country, Template } from '../domain/types'
+import type { Car, Category, Country, Goal, Template } from '../domain/types'
 import { MONTH_NAMES } from '../lib/months'
 
 export interface TemplatesPanelProps {
@@ -17,10 +17,19 @@ export interface TemplatesPanelProps {
   categories: Category[]
   country: Country
   cars?: Car[]
+  /** Für den Hinweis zum Sparziel einer Vorlage (#177). */
+  goals?: Goal[]
 }
 
 /** Fixkosten-Vorlagen: Betrag, Notiz und Monate anpassen, pausieren oder löschen. */
-export function TemplatesPanel({ templates, categories, country, cars = [] }: TemplatesPanelProps) {
+export function TemplatesPanel({
+  templates,
+  categories,
+  country,
+  cars = [],
+  goals,
+}: TemplatesPanelProps) {
+  const activeGoal = (id: string) => goals?.find((g) => g.id === id && !g.deleted && !g.archived)
   const catName = (id: string) => categories.find((c) => c.id === id)?.name ?? 'Unbekannt'
   type Change = Partial<Omit<Template, 'updatedAt'>>
   const isCarTemplate = (t: Template) => {
@@ -48,6 +57,15 @@ export function TemplatesPanel({ templates, categories, country, cars = [] }: Te
                 <span className="text-sm text-muted">{formatMoney(t.amountCents, country)}</span>
                 {!t.active && <span className="rounded bg-border px-2 text-xs">pausiert</span>}
               </div>
+              {t.goalId && goals && activeGoal(t.goalId) && (
+                <p className="text-xs text-muted">Sparziel: {activeGoal(t.goalId)!.name}</p>
+              )}
+              {t.goalId && goals && !activeGoal(t.goalId) && (
+                <p role="note" className="text-xs text-warn">
+                  Das Sparziel dieser Vorlage gibt es nicht mehr oder es ist archiviert: Buchungen
+                  entstehen ohne Sparziel.
+                </p>
+              )}
               <div className="grid gap-2 sm:grid-cols-2">
                 <input
                   aria-label={`Betrag Vorlage ${catName(t.categoryId)}`}

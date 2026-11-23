@@ -109,6 +109,9 @@ const schemas = {
     noReserve: z.boolean().optional(),
     skipMonths: z.array(month).max(600).optional(),
     carId: id.optional(),
+    // Sparziel der Vorlage (#177); kein Verweis-Zwang: ist das Ziel gelöscht, bucht die Vorlage ohne Ziel.
+    goalId: id.optional(),
+    goalDirection: z.enum(['einzahlung', 'entnahme']).optional(),
   }),
   settlements: z.object({
     ...common,

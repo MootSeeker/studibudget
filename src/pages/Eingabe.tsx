@@ -25,7 +25,7 @@ import { groupMonth } from '../domain/ledger'
 import { formatMoney } from '../domain/money'
 import { addMonths, currentMonth, monthOf } from '../domain/period'
 import { totalsByMonth } from '../domain/stats'
-import { openTemplates, templateToDraft, withSkipped } from '../domain/templates'
+import { openTemplates, templateFromDraft, templateToDraft, withSkipped } from '../domain/templates'
 import type { Transaction } from '../domain/types'
 import { useNow } from '../lib/useNow'
 
@@ -61,17 +61,7 @@ export function Eingabe() {
   async function submit(draft: EntryDraft, opts: { repeat: number[] | null }) {
     if (opts.repeat) {
       const templateId = newId()
-      await store.put('templates', {
-        id: templateId,
-        deleted: false,
-        categoryId: draft.categoryId,
-        amountCents: draft.amountCents,
-        note: draft.note,
-        ...(draft.shared ? { shared: draft.shared } : {}),
-        ...(draft.carId ? { carId: draft.carId } : {}),
-        months: opts.repeat,
-        active: true,
-      })
+      await store.put('templates', templateFromDraft(draft, templateId, opts.repeat))
       draft = { ...draft, templateId, templateMonth: monthOf(draft.date) }
     }
     await store.put('transactions', draft)
@@ -109,9 +99,12 @@ export function Eingabe() {
     const fresh = await db.transactions.toArray()
     const freshTemplates = (await db.templates.toArray()).filter((t) => !t.deleted)
     const stillOpen = new Set(openTemplates(freshTemplates, fresh, month).map((t) => t.id))
+    const activeGoals = new Set(
+      (await db.goals.toArray()).filter((g) => !g.deleted && !g.archived).map((g) => g.id),
+    )
     const drafts = items
       .filter((i) => stillOpen.has(i.template.id))
-      .map((i) => templateToDraft(i.template, month, newId(), i.amountCents, i.note))
+      .map((i) => templateToDraft(i.template, month, newId(), i.amountCents, i.note, activeGoals))
     await store.putMany('transactions', drafts)
   }
 

@@ -4,6 +4,8 @@ import {
   monthsForInterval,
   openTemplates,
   reservePlan,
+  templateFromDraft,
+  templateToDraft,
   withSkipped,
 } from './templates'
 import type { Category, Template } from './types'
@@ -97,5 +99,51 @@ describe('übersprungene Monate', () => {
   it('withSkipped sortiert und vermeidet Doppelte', () => {
     expect(withSkipped(['2026-12'], ['2026-11', '2026-12'])).toEqual(['2026-11', '2026-12'])
     expect(withSkipped(undefined, ['2027-01'])).toEqual(['2027-01'])
+  })
+})
+
+describe('Vorlage mit Sparziel (#177)', () => {
+  const draft = {
+    id: 'b1',
+    deleted: false,
+    date: '2026-10-05',
+    categoryId: 'etf',
+    amountCents: 20000,
+    myAmountCents: 20000,
+    note: 'Monatlich',
+    goalId: 'japan',
+    goalDirection: 'einzahlung' as const,
+  }
+  it('AK-1: die Vorlage übernimmt Sparziel und Richtung', () => {
+    expect(templateFromDraft(draft, 'v1', [1, 2, 3])).toEqual({
+      id: 'v1',
+      deleted: false,
+      categoryId: 'etf',
+      amountCents: 20000,
+      note: 'Monatlich',
+      months: [1, 2, 3],
+      active: true,
+      goalId: 'japan',
+      goalDirection: 'einzahlung',
+    })
+    const { goalId: _g, goalDirection: _d, ...ohne } = draft
+    expect(templateFromDraft(ohne, 'v2', [1])).not.toHaveProperty('goalId')
+  })
+  it('AK-2: die gebuchte Vorlage hat dasselbe Sparziel und dieselbe Richtung', () => {
+    const t = { ...templateFromDraft(draft, 'v1', [11]), updatedAt: '' }
+    const gebucht = templateToDraft(t, '2026-11', 'b2', undefined, undefined, new Set(['japan']))
+    expect(gebucht).toMatchObject({
+      goalId: 'japan',
+      goalDirection: 'einzahlung',
+      templateId: 'v1',
+    })
+    // Ohne Angabe der aktiven Sparziele wie bisher mit Sparziel
+    expect(templateToDraft(t, '2026-11', 'b3')).toMatchObject({ goalId: 'japan' })
+  })
+  it('AK-3: ist das Sparziel gelöscht oder archiviert, entsteht die Buchung ohne Sparziel', () => {
+    const t = { ...templateFromDraft(draft, 'v1', [11]), updatedAt: '' }
+    const gebucht = templateToDraft(t, '2026-11', 'b2', undefined, undefined, new Set())
+    expect(gebucht).not.toHaveProperty('goalId')
+    expect(gebucht).not.toHaveProperty('goalDirection')
   })
 })

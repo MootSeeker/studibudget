@@ -251,6 +251,21 @@ describe('Prüfung der Datei', () => {
     if (r.ok) expect(r.backup.data.persons[0]).not.toHaveProperty('extra')
   })
 
+  it('Vorlage mit Sparziel (#177): die neuen Felder übersteht der Import, eine Vorlage ohne bleibt gültig', async () => {
+    const b = clone(await valid())
+    const t = b.data.templates[0] as Record<string, unknown>
+    t.goalId = crypto.randomUUID()
+    t.goalDirection = 'einzahlung'
+    const r = parseBackup(text(b))
+    expect(r.ok).toBe(true)
+    if (r.ok) expect(r.backup.data.templates[0]).toMatchObject({ goalDirection: 'einzahlung' })
+    t.goalDirection = 'quer'
+    expect(parseBackup(text(b)).ok).toBe(false)
+    delete t.goalId
+    delete t.goalDirection
+    expect(parseBackup(text(b)).ok).toBe(true)
+  })
+
   it.each([
     ['kein JSON', 'das ist kein json', 'kein lesbares JSON'],
     [
