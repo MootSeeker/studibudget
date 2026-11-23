@@ -15,6 +15,11 @@ function key(y: number, mo: number): MonthKey {
   return `${y}-${String(mo).padStart(2, '0')}`
 }
 
+/** Heutiges Datum (lokale Zeit) als YYYY-MM-DD. */
+export function todayIso(d: Date = new Date()): string {
+  return `${currentMonth(d)}-${String(d.getDate()).padStart(2, '0')}`
+}
+
 /** Aktueller Monat (lokale Zeit) als YYYY-MM. */
 export function currentMonth(d: Date = new Date()): MonthKey {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`
