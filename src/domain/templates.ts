@@ -30,7 +30,6 @@ export function withSkipped(current: string[] | undefined, months: string[]): st
   return [...new Set([...(current ?? []), ...months])].sort()
 }
 
-/** Buchung aus einer Vorlage; `amountCents` überschreibt den Betrag (die Aufteilung wird mitgerechnet). */
 /** Vorlage aus einer Buchung mit «Wiederholen»; Sparziel und Richtung kommen mit (#177). */
 export function templateFromDraft(
   draft: Omit<Transaction, 'updatedAt'>,
@@ -54,7 +53,8 @@ export function templateFromDraft(
 }
 
 /**
- * Buchung aus einer Vorlage. `activeGoalIds`: Sparziele, die es noch gibt und die nicht archiviert sind; fehlt das
+ * Buchung aus einer Vorlage; `amountCents` überschreibt den Betrag (die Aufteilung wird mitgerechnet).
+ * `activeGoalIds`: Sparziele, die es noch gibt und die nicht archiviert sind; fehlt das
  * Sparziel der Vorlage darin, entsteht die Buchung ohne Sparziel (#177). Ohne Angabe bleibt das Sparziel.
  */
 export function templateToDraft(
