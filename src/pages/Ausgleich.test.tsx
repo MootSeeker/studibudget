@@ -1,7 +1,7 @@
 import { render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router'
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { db } from '../data/db'
 import { completeOnboarding, type OnboardingInput } from '../data/onboarding'
 import { newId } from '../data/seed'
@@ -9,6 +9,11 @@ import { store } from '../data/store'
 import { addMonths, currentMonth, defaultSemesters } from '../domain/period'
 import { buildSharedEqual, buildSharedPartner } from '../domain/split'
 import { Ausgleich } from './Ausgleich'
+
+/** Tag im aktuellen Monat (#196): die Seite zeigt beim Öffnen den aktuellen Monat. */
+const day = (d: number) => `${currentMonth()}-${String(d).padStart(2, '0')}`
+/** Datum wie in der Liste: «05.10.2026». */
+const shown = (iso: string) => iso.split('-').reverse().join('.')
 
 const norm = (s: string | null) => (s ?? '').replace(/\s/g, ' ').replace('’', "'")
 
@@ -28,13 +33,7 @@ async function onboard(input: OnboardingInput = wg) {
 }
 const personId = async (name: string) =>
   (await db.persons.toArray()).find((p) => p.name === name)!.id
-async function book(
-  total: number,
-  paidBy: 'me' | string,
-  who: string[],
-  note = '',
-  date = '2026-10-01',
-) {
+async function book(total: number, paidBy: 'me' | string, who: string[], note = '', date = day(1)) {
   const cat =
     (await db.categories.toArray()).find(
       (c) => c.catalogKey === 'einkauf' || c.catalogKey === 'kostgeld',
@@ -67,6 +66,61 @@ async function setup() {
 const card = (name: string) => screen.getByText(name, { selector: 'p.font-medium' }).closest('li')!
 
 beforeEach(() => onboard())
+
+async function loeschenStelltSaldoHer() {
+  vi.spyOn(window, 'confirm').mockReturnValue(true)
+  const anna = await personId('Anna')
+  await book(6000, 'me', ['me', anna])
+  await store.put('settlements', {
+    id: newId(),
+    deleted: false,
+    date: day(5),
+    personId: anna,
+    direction: 'ich_erhalte',
+    amountCents: 3000,
+    note: '',
+  })
+  const user = await setup()
+  await waitFor(() => expect(norm(card('Anna').textContent)).toMatch(/ausgeglichen/))
+  await user.click(
+    screen.getByRole('button', {
+      name: new RegExp(`Ausgleichszahlung vom ${shown(day(5)).replace(/\./g, '\\.')} löschen`),
+    }),
+  )
+  await waitFor(() =>
+    expect(norm(card('Anna').textContent)).toMatch(/Anna schuldet dir CHF 30\.00/),
+  )
+  expect((await db.settlements.toArray())[0].deleted).toBe(true)
+}
+
+async function gemeinsameGefiltert() {
+  const [anna, ben] = [await personId('Anna'), await personId('Ben')]
+  await book(6000, 'me', ['me', anna], 'Putzmittel')
+  await book(9000, ben, ['me', ben], 'Pizza')
+  const cat = (await db.categories.toArray())[0]
+  await store.put('transactions', {
+    id: newId(),
+    deleted: false,
+    date: day(2),
+    categoryId: cat.id,
+    amountCents: 999,
+    myAmountCents: 999,
+    note: 'Privat',
+  })
+  const user = await setup()
+  await screen.findByText(/Putzmittel/)
+  expect(screen.getByText(/Pizza/)).toBeInTheDocument()
+  expect(screen.queryByText(/Privat/)).not.toBeInTheDocument()
+  expect(norm(screen.getByText(/Putzmittel/).closest('li')!.textContent)).toMatch(
+    /Bezahlt von dir.*Anna schuldet dir CHF 30\.00/,
+  )
+  expect(norm(screen.getByText(/Pizza/).closest('li')!.textContent)).toMatch(
+    /Bezahlt von Ben.*du schuldest Ben CHF 45\.00/,
+  )
+  await user.selectOptions(screen.getByLabelText('Gemeinsame Buchungen filtern'), 'Anna')
+  expect(screen.queryByText(/Pizza/)).not.toBeInTheDocument()
+  expect(screen.getByText(/Putzmittel/)).toBeInTheDocument()
+}
 
 describe('Salden', () => {
   it('Anna schuldet mir, ich schulde Ben, ausgeglichene Personen werden so benannt', async () => {
@@ -117,7 +171,7 @@ describe('Salden', () => {
     await store.put('transactions', {
       id: newId(),
       deleted: false,
-      date: '2026-10-01',
+      date: day(1),
       categoryId: cat.id,
       amountCents: 10000,
       myAmountCents: 6000,
@@ -217,60 +271,11 @@ describe('Ausgleichszahlung', () => {
     expect(await db.settlements.count()).toBe(0)
   })
 
-  it('Löschen einer Zahlung stellt den Saldo wieder her', async () => {
-    vi.spyOn(window, 'confirm').mockReturnValue(true)
-    const anna = await personId('Anna')
-    await book(6000, 'me', ['me', anna])
-    await store.put('settlements', {
-      id: newId(),
-      deleted: false,
-      date: '2026-10-05',
-      personId: anna,
-      direction: 'ich_erhalte',
-      amountCents: 3000,
-      note: '',
-    })
-    const user = await setup()
-    await waitFor(() => expect(norm(card('Anna').textContent)).toMatch(/ausgeglichen/))
-    await user.click(
-      screen.getByRole('button', { name: /Ausgleichszahlung vom 05\.10\.2026 löschen/ }),
-    )
-    await waitFor(() =>
-      expect(norm(card('Anna').textContent)).toMatch(/Anna schuldet dir CHF 30\.00/),
-    )
-    expect((await db.settlements.toArray())[0].deleted).toBe(true)
-  })
+  it('Löschen einer Zahlung stellt den Saldo wieder her', loeschenStelltSaldoHer)
 })
 
 describe('Gemeinsame Buchungen', () => {
-  it('listet nur geteilte Buchungen mit Wirkung, filterbar nach Person', async () => {
-    const [anna, ben] = [await personId('Anna'), await personId('Ben')]
-    await book(6000, 'me', ['me', anna], 'Putzmittel')
-    await book(9000, ben, ['me', ben], 'Pizza')
-    const cat = (await db.categories.toArray())[0]
-    await store.put('transactions', {
-      id: newId(),
-      deleted: false,
-      date: '2026-10-02',
-      categoryId: cat.id,
-      amountCents: 999,
-      myAmountCents: 999,
-      note: 'Privat',
-    })
-    const user = await setup()
-    await screen.findByText(/Putzmittel/)
-    expect(screen.getByText(/Pizza/)).toBeInTheDocument()
-    expect(screen.queryByText(/Privat/)).not.toBeInTheDocument()
-    expect(norm(screen.getByText(/Putzmittel/).closest('li')!.textContent)).toMatch(
-      /Bezahlt von dir.*Anna schuldet dir CHF 30\.00/,
-    )
-    expect(norm(screen.getByText(/Pizza/).closest('li')!.textContent)).toMatch(
-      /Bezahlt von Ben.*du schuldest Ben CHF 45\.00/,
-    )
-    await user.selectOptions(screen.getByLabelText('Gemeinsame Buchungen filtern'), 'Anna')
-    expect(screen.queryByText(/Pizza/)).not.toBeInTheDocument()
-    expect(screen.getByText(/Putzmittel/)).toBeInTheDocument()
-  })
+  it('listet nur geteilte Buchungen mit Wirkung, filterbar nach Person', gemeinsameGefiltert)
 })
 
 describe('ohne geteilte Kosten', () => {
@@ -374,4 +379,16 @@ describe('Monatsansicht', () => {
     const prev = addMonths(currentMonth(), -1)
     await waitFor(() => expect(screen.getByLabelText('Datum')).toHaveValue(`${prev}-01`))
   })
+})
+
+describe('unabhängig vom heutigen Datum (#196)', () => {
+  beforeEach(() => {
+    // Nur die Uhr verschieben; Timer bleiben echt, damit userEvent und waitFor laufen.
+    vi.useFakeTimers({ toFake: ['Date'] })
+    vi.setSystemTime(new Date('2027-03-15T12:00:00'))
+  })
+  afterEach(() => vi.useRealTimers())
+
+  it('Löschen einer Zahlung, Uhr im März 2027', loeschenStelltSaldoHer)
+  it('gemeinsame Buchungen, Uhr im März 2027', gemeinsameGefiltert)
 })
