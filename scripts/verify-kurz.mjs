@@ -7,6 +7,7 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import {
   bericht,
+  dateiliste,
   exitCode,
   hinzugefuegteZeilen,
   planlauf,
@@ -25,7 +26,8 @@ const tmp = mkdtempSync(join(tmpdir(), 'verify-kurz-'))
 
 const run = (befehl, argumente) =>
   spawnSync(befehl, argumente, { encoding: 'utf8', maxBuffer: 64 * 1024 * 1024 })
-const git = (...argumente) => run('git', argumente)
+// Umlaute in Dateinamen ungequotet ausgeben (#153); `gitPfad` fängt den Rest ab.
+const git = (...argumente) => run('git', ['-c', 'core.quotePath=false', ...argumente])
 
 /** Vitest-Schritte bekommen zusätzlich einen JSON-Bericht, aus dem die roten Tests kommen. */
 function roteTests(pfad) {
@@ -75,13 +77,12 @@ function leitplanken() {
   return { name: 'Leitplanken', status: befunde.length ? 'rot' : 'gruen', befunde }
 }
 
-const neueDateien = () =>
-  git('ls-files', '--others', '--exclude-standard').stdout.split('\n').filter(Boolean)
+const neueDateiAusgabe = () => git('ls-files', '--others', '--exclude-standard').stdout
+const neueDateien = () => dateiliste('', neueDateiAusgabe())
 
 function geaenderteDateien() {
   const basis = git('merge-base', 'main', 'HEAD').stdout.trim()
-  const geaendert = basis ? git('diff', '--name-only', basis).stdout.split('\n') : []
-  return [...new Set([...geaendert, ...neueDateien()].filter(Boolean))]
+  return dateiliste(basis ? git('diff', '--name-only', basis).stdout : '', neueDateiAusgabe())
 }
 
 function plan() {
