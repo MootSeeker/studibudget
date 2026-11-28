@@ -68,7 +68,7 @@
     "jsqr": "^1.4.0",
     "oxlint": "^1.95.0",
     "prettier": "^3.10.1",
-    "supabase": "^2.119.0",
+    "supabase": "^3.4.0",
     "typescript": "~7.0.2",
     "vite": "^8.3.8",
     "vite-plugin-pwa": "^2.0.0",
