@@ -117,8 +117,13 @@ export function buildMonthView(input: MonthViewInput): MonthView {
         category.type === 'ausgabe' ? rolloverCents(category, month, budgets, txs) : 0
       const act = actualForMonth(txs, category.id, month)
       const available = budget + rollover
+      // Geplant (#179): fixe Kategorie oder im Monat nur Buchungen aus Vorlagen.
+      const inMonth = txs.filter((t) => t.categoryId === category.id && monthOf(t.date) === month)
+      const planned = category.fix || (inMonth.length > 0 && inMonth.every((t) => t.templateId))
       const a =
-        category.type === 'ausgabe' ? ampel(act, available, cfg.yellowPct, cfg.redPct) : null
+        category.type === 'ausgabe'
+          ? ampel(act, available, cfg.yellowPct, cfg.redPct, { planned })
+          : null
       return {
         category,
         budget,

@@ -1,7 +1,8 @@
 import { daysInMonth } from './period'
 import type { MonthKey } from './period'
 
-export type Ampel = 'gruen' | 'gelb' | 'rot'
+/** `neutral`: ohne Budget; `plan`: Fixkosten wie geplant. */
+export type Ampel = 'gruen' | 'gelb' | 'rot' | 'neutral' | 'plan'
 
 export interface AmpelResult {
   status: Ampel
@@ -10,19 +11,23 @@ export interface AmpelResult {
   noBudget: boolean
 }
 
-/** Ampel für eine Ausgaben-Kategorie. `available` = Monatsbudget + Übertrag. */
+/**
+ * Ampel für eine Ausgaben-Kategorie. `available` = Monatsbudget + Übertrag.
+ * - Ohne Budget: `neutral` (#166), die Schwellen gelten nur mit Budget.
+ * - `planned` (fixe Kategorie oder nur Vorlagen-Buchungen): ab der gelben Schwelle bis genau zum
+ *   Budget `plan` («Wie geplant», #179); überschritten bleibt `rot`.
+ */
 export function ampel(
   actual: number,
   available: number,
   yellowPct: number,
   redPct: number,
+  opts: { planned?: boolean } = {},
 ): AmpelResult {
-  if (available <= 0) {
-    return actual > 0
-      ? { status: 'rot', pct: null, noBudget: true }
-      : { status: 'gruen', pct: null, noBudget: true }
-  }
+  if (available <= 0) return { status: 'neutral', pct: null, noBudget: true }
   const pct = (actual / available) * 100
+  if (opts.planned && pct >= yellowPct && actual <= available)
+    return { status: 'plan', pct, noBudget: false }
   const status: Ampel = pct >= redPct ? 'rot' : pct >= yellowPct ? 'gelb' : 'gruen'
   return { status, pct, noBudget: false }
 }

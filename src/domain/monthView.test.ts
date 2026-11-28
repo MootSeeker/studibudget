@@ -87,16 +87,35 @@ describe('Restbudget und Ampel', () => {
   const row = (id: string) => v.areas.flatMap((a) => a.rows).find((r) => r.category.id === id)!
 
   it('Ampel pro Ausgabe-Kategorie, Rest als Differenz', () => {
-    expect(row('miete')).toMatchObject({ actual: 80000, remaining: 0, ampel: { status: 'rot' } }) // 100 % = rot
+    // Fixkosten genau wie geplant: neutral statt rot (#179)
+    expect(row('miete')).toMatchObject({ actual: 80000, remaining: 0, ampel: { status: 'plan' } })
     expect(row('essen')).toMatchObject({ remaining: 7000, ampel: { status: 'gelb' } })
     expect(row('spass')).toMatchObject({ remaining: -2000, ampel: { status: 'rot' } })
+  })
+  it('Kategorie nur mit Vorlagen-Buchungen gilt als geplant, gemischt bleibt die Ampel (#179)', () => {
+    const vorlage = { templateId: 'v1', templateMonth: '2026-10' }
+    const nurVorlage = buildMonthView(input({ txs: [tx('2026-10-01', 'essen', 39000, vorlage)] }))
+    const gemischt = buildMonthView(
+      input({
+        txs: [tx('2026-10-01', 'essen', 30000, vorlage), tx('2026-10-02', 'essen', 9000)],
+      }),
+    )
+    const essen = (mv: typeof v) =>
+      mv.areas.flatMap((a) => a.rows).find((r) => r.category.id === 'essen')!
+    expect(essen(nurVorlage).ampel).toMatchObject({ status: 'plan' }) // 97.5 %
+    expect(essen(gemischt).ampel).toMatchObject({ status: 'gelb' })
+    // Überschritten bleibt rot, auch bei Fixkosten (AK-2)
+    const mieteDrueber = buildMonthView(input({ txs: [tx('2026-10-01', 'miete', 80100)] }))
+    expect(
+      mieteDrueber.areas.flatMap((a) => a.rows).find((r) => r.category.id === 'miete')!.ampel,
+    ).toMatchObject({ status: 'rot' })
   })
   it('Einnahmen und Sparen haben keine Ampel, aber einen Fortschritt', () => {
     expect(row('lohn')).toMatchObject({ ampel: null, pct: 100 })
     expect(row('etf')).toMatchObject({ ampel: null, pct: 100 })
   })
   it('ausgeblendete Kategorien erscheinen nur mit Buchungen im Monat', () => {
-    expect(row('alt')).toMatchObject({ actual: 500, ampel: { noBudget: true, status: 'rot' } })
+    expect(row('alt')).toMatchObject({ actual: 500, ampel: { noBudget: true, status: 'neutral' } })
     expect(
       buildMonthView(input())
         .areas.flatMap((a) => a.rows)
