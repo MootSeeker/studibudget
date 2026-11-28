@@ -1,0 +1,16 @@
+# Nichts Lokales ins Image (#169): Geheimnisse, Abhängigkeiten, Builds, Berichte.
+.env
+.env.*
+!.env.example
+*.local
+.git
+node_modules
+dist
+dist-e2e
+mcp-dist
+reports
+test-results
+playwright-report
+.stryker-tmp
+supabase/.temp
+vault

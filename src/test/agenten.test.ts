@@ -5,7 +5,8 @@ import { describe, expect, it } from 'vitest'
 const agent = (name: string) => readFileSync(`.claude/agents/${name}.md`, 'utf8')
 
 function frontmatter(text: string): Record<string, string> {
-  const kopf = text.match(/^---\n([\s\S]*?)\n---/)?.[1] ?? ''
+  // Unter Windows checkt Git mit CRLF aus (#198).
+  const kopf = text.replace(/\r\n/g, '\n').match(/^---\n([\s\S]*?)\n---/)?.[1] ?? ''
   return Object.fromEntries(
     kopf
       .split('\n')
@@ -14,6 +15,16 @@ function frontmatter(text: string): Record<string, string> {
       .map((m) => [m[1], m[2].trim()]),
   )
 }
+
+describe('frontmatter (#198)', () => {
+  it.each([
+    ['LF', '\n'],
+    ['CRLF', '\r\n'],
+  ])('liest das Frontmatter mit %s', (_name, nl) => {
+    const text = ['---', 'model: opus', 'tools: Read, Bash', '---', 'Text'].join(nl)
+    expect(frontmatter(text)).toEqual({ model: 'opus', tools: 'Read, Bash' })
+  })
+})
 
 describe('Agenten-Ablauf (#128)', () => {
   it('AK-1: planer läuft mit Opus und umsetzer mit Haiku, beide ohne Agent-Werkzeug', () => {

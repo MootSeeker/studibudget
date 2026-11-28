@@ -80,6 +80,8 @@ pro Version in [CHANGELOG.md](CHANGELOG.md).
 
 Mails (Bestätigung, Passwort zurücksetzen) landen lokal im Mail-Fänger unter http://127.0.0.1:54324.
 
+**Docker:** Die App lässt sich ohne Node-Installation als Image bauen und lokal ausliefern; Befehle in [docs/docker.md](docs/docker.md).
+
 **Aufbau:** Rechenlogik ohne Oberfläche in `src/domain/`, Datenbank und Sync in `src/data/` und `src/sync/`,
 Verschlüsselung in `src/crypto/`, Seiten in `src/pages/`. Entscheidungen und Begründungen stehen in
 [docs/entscheidungen.md](docs/entscheidungen.md).
