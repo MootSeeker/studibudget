@@ -30,14 +30,45 @@ export function withSkipped(current: string[] | undefined, months: string[]): st
   return [...new Set([...(current ?? []), ...months])].sort()
 }
 
-/** Buchung aus einer Vorlage; `amountCents` überschreibt den Betrag (die Aufteilung wird mitgerechnet). */
+/** Vorlage aus einer Buchung mit «Wiederholen»; Sparziel und Richtung kommen mit (#177). */
+export function templateFromDraft(
+  draft: Omit<Transaction, 'updatedAt'>,
+  id: string,
+  months: number[],
+): Omit<Template, 'updatedAt'> {
+  return {
+    id,
+    deleted: false,
+    categoryId: draft.categoryId,
+    amountCents: draft.amountCents,
+    note: draft.note,
+    ...(draft.shared ? { shared: draft.shared } : {}),
+    ...(draft.carId ? { carId: draft.carId } : {}),
+    months,
+    active: true,
+    ...(draft.goalId
+      ? { goalId: draft.goalId, goalDirection: draft.goalDirection ?? 'einzahlung' }
+      : {}),
+  }
+}
+
+/**
+ * Buchung aus einer Vorlage; `amountCents` überschreibt den Betrag (die Aufteilung wird mitgerechnet).
+ * `activeGoalIds`: Sparziele, die es noch gibt und die nicht archiviert sind; fehlt das
+ * Sparziel der Vorlage darin, entsteht die Buchung ohne Sparziel (#177). Ohne Angabe bleibt das Sparziel.
+ */
 export function templateToDraft(
   template: Template,
   month: MonthKey,
   id: string,
   amountCents: number = template.amountCents,
   note: string = template.note,
+  activeGoalIds?: Set<string>,
 ): Omit<Transaction, 'updatedAt'> {
+  const goal =
+    template.goalId && (!activeGoalIds || activeGoalIds.has(template.goalId))
+      ? { goalId: template.goalId, goalDirection: template.goalDirection ?? 'einzahlung' }
+      : {}
   const shared = template.shared ? rescaleShared(template.shared, amountCents) : undefined
   const mine = shared ? (shared.parts.find((p) => p.who === 'me')?.cents ?? 0) : amountCents
   return {
@@ -50,6 +81,7 @@ export function templateToDraft(
     note,
     ...(shared ? { shared } : {}),
     ...(template.carId ? { carId: template.carId } : {}),
+    ...goal,
     templateId: template.id,
     templateMonth: month,
   }
