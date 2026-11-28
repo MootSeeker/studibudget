@@ -30,6 +30,19 @@ export function isValidSwissIban(iban: string): boolean {
 }
 
 /**
+ * Ist `iban` (bereits normalisiert) eine gültige QR-IBAN (#160)? Erkennbar an der Bank-Kennung (IID, Stellen 5 bis 9)
+ * im Bereich 30000 bis 31999. Eine QR-IBAN verlangt im Zahlteil eine QR-Referenz; der Zahlteil der App hat keine.
+ */
+export function isQrIban(iban: string): boolean {
+  if (!isValidSwissIban(iban)) return false
+  const iid = Number(iban.slice(4, 9))
+  return iid >= 30000 && iid <= 31999
+}
+
+export const QR_IBAN_PROBLEM =
+  'Das ist eine QR-IBAN. Für den Zahlteil braucht es die normale IBAN des Kontos.'
+
+/**
  * Warum ist die Eingabe keine gültige Schweizer oder Liechtensteiner IBAN? `null`, wenn sie gültig ist (Issue #120).
  * Normalisiert vorher selbst; die Gründe sind nach Nutzen für die Korrektur geordnet.
  */
@@ -46,5 +59,6 @@ export function ibanProblem(input: string): string | null {
     return /^(CH|LI)\d{2}/.test(iban)
       ? 'Die Prüfsumme der IBAN stimmt nicht: wahrscheinlich ein Tippfehler.'
       : 'Nach CH oder LI folgen zwei Ziffern.'
+  if (isQrIban(iban)) return QR_IBAN_PROBLEM
   return null
 }

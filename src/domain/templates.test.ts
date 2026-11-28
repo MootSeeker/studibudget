@@ -1,12 +1,14 @@
 import { describe, expect, it } from 'vitest'
 import {
   detectInterval,
+  groupTemplates,
   monthsForInterval,
+  nextDueMonth,
   openTemplates,
   reservePlan,
   withSkipped,
 } from './templates'
-import type { Category, Template } from './types'
+import type { Area, Category, Template } from './types'
 
 const cat = (id: string, type: Category['type'] = 'ausgabe'): Category => ({
   id,
@@ -97,5 +99,52 @@ describe('übersprungene Monate', () => {
   it('withSkipped sortiert und vermeidet Doppelte', () => {
     expect(withSkipped(['2026-12'], ['2026-11', '2026-12'])).toEqual(['2026-11', '2026-12'])
     expect(withSkipped(undefined, ['2027-01'])).toEqual(['2027-01'])
+  })
+})
+
+describe('Liste der Vorlagen (#181)', () => {
+  const area = (id: string, order: number): Area => ({
+    id,
+    updatedAt: '',
+    deleted: false,
+    name: id,
+    order,
+    hidden: false,
+  })
+  const c = (id: string, areaId: string, order: number, type: Category['type'] = 'ausgabe') => ({
+    ...cat(id, type),
+    areaId,
+    order,
+  })
+  const areas = [area('wohnen', 1), area('einnahmen', 0), area('mobil', 2)]
+  const cats = [
+    c('strom', 'wohnen', 1),
+    c('miete', 'wohnen', 0),
+    c('parkplatz', 'mobil', 0),
+    c('lohn', 'einnahmen', 0, 'einnahme'),
+    c('etf', 'mobil', 5, 'sparen'),
+  ]
+  it('AK-1: nach Bereich und Kategorie sortiert, Einnahmen und Sparen getrennt', () => {
+    const ts = ['parkplatz', 'etf', 'strom', 'lohn', 'miete'].map((id) => tpl(id, id, 100, [1]))
+    const groups = groupTemplates(ts, cats, areas)
+    expect(groups.map((g) => [g.type, g.templates.map((t) => t.id)])).toEqual([
+      ['ausgabe', ['miete', 'strom', 'parkplatz']],
+      ['einnahme', ['lohn']],
+      ['sparen', ['etf']],
+    ])
+  })
+  it('leere Gruppen entfallen, unbekannte Kategorien kommen ans Ende der Ausgaben', () => {
+    const groups = groupTemplates([tpl('x', 'weg', 1, [1]), tpl('m', 'miete', 1, [1])], cats, areas)
+    expect(groups.map((g) => [g.type, g.templates.map((t) => t.id)])).toEqual([
+      ['ausgabe', ['m', 'x']],
+    ])
+  })
+  it('AK-3: nächster Fälligkeitsmonat ab dem aktuellen Monat, übersprungene Monate zählen nicht', () => {
+    const t = tpl('s', 'strom', 100, [3, 6, 9, 12])
+    expect(nextDueMonth(t, '2026-11')).toBe('2026-12')
+    expect(nextDueMonth(t, '2026-12')).toBe('2026-12')
+    expect(nextDueMonth({ ...t, skipMonths: ['2026-12'] }, '2026-12')).toBe('2027-03')
+    expect(nextDueMonth({ ...t, active: false }, '2026-11')).toBeNull()
+    expect(nextDueMonth({ ...t, months: [] }, '2026-11')).toBeNull()
   })
 })

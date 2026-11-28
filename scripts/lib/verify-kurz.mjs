@@ -73,6 +73,42 @@ export function exitCode({ schritte, zusatz }) {
   return [...schritte, ...zusatz].some((e) => e.status === 'rot') ? 1 : 0
 }
 
+const BACKSLASH = String.fromCharCode(92)
+const ESCAPES = { a: 7, b: 8, t: 9, n: 10, v: 11, f: 12, r: 13, '"': 34, [BACKSLASH]: 92 }
+
+/**
+ * Dateiname aus der Ausgabe von Git (#153). Namen mit Umlauten setzt Git in Anführungszeichen und schreibt die
+ * UTF-8-Bytes als Oktal (`"Pr\303\274fung.md"`); andere Namen bleiben unverändert.
+ */
+export function gitPfad(z) {
+  if (!(z.length >= 2 && z.startsWith('"') && z.endsWith('"'))) return z
+  const bytes = []
+  const innen = z.slice(1, -1)
+  for (let i = 0; i < innen.length; i++) {
+    const c = innen[i]
+    if (c !== BACKSLASH) {
+      bytes.push(...Buffer.from(c, 'utf8'))
+      continue
+    }
+    const oktal = innen.slice(i + 1, i + 4)
+    if (/^[0-7]{3}$/.test(oktal)) {
+      bytes.push(parseInt(oktal, 8))
+      i += 3
+    } else {
+      const n = innen[i + 1]
+      bytes.push(ESCAPES[n] ?? n.charCodeAt(0))
+      i += 1
+    }
+  }
+  return Buffer.from(bytes).toString('utf8')
+}
+
+/** Geänderte und neue Dateien aus `git diff --name-only` und `git ls-files --others`, ohne Doppelte. */
+export function dateiliste(diffAusgabe, neueAusgabe) {
+  const zeilen = `${diffAusgabe}\n${neueAusgabe}`.split('\n').filter(Boolean).map(gitPfad)
+  return [...new Set(zeilen)]
+}
+
 /** Hinzugefügte Zeilen aus einem Diff mit `-U0`, mit Datei und Zeilennummer in der neuen Fassung. */
 export function hinzugefuegteZeilen(diff) {
   const zeilen = []
@@ -80,7 +116,7 @@ export function hinzugefuegteZeilen(diff) {
   let nummer = 0
   for (const z of diff.split('\n')) {
     if (z.startsWith('+++ ')) {
-      datei = z === '+++ /dev/null' ? null : z.slice(4).replace(/^b\//, '')
+      datei = z === '+++ /dev/null' ? null : gitPfad(z.slice(4)).replace(/^b\//, '')
       continue
     }
     if (z.startsWith('--- ')) continue

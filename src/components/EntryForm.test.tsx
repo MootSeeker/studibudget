@@ -120,3 +120,33 @@ describe('EntryForm: Beteiligte bei gemeinsamen Ausgaben', () => {
     expect(lastDraft(p.onSubmit).myAmountCents).toBe(4500)
   })
 })
+
+describe('Buchungsmaske (#175)', () => {
+  it('AK-1: Platzhalter nach Land: «0,00» in DE, «0.00» in CH', () => {
+    const { unmount } = render(
+      <EntryForm {...props({ settings: { ...settings, country: 'DE' } })} />,
+    )
+    expect(screen.getByLabelText('Betrag (EUR)')).toHaveAttribute('placeholder', '0,00')
+    unmount()
+    render(<EntryForm {...props()} />)
+    expect(screen.getByLabelText('Betrag (CHF)')).toHaveAttribute('placeholder', '0.00')
+  })
+
+  it('AK-2: «Gespeichert.» verschwindet, sobald ein Feld geändert wird', async () => {
+    const user = userEvent.setup()
+    render(<EntryForm {...props()} />)
+    await fillAndSubmit(user)
+    expect(await screen.findByText('Gespeichert.')).toBeInTheDocument()
+    await user.type(screen.getByLabelText(/Betrag/), '5')
+    expect(screen.queryByText('Gespeichert.')).not.toBeInTheDocument()
+  })
+
+  it('AK-2: «Gespeichert.» verschwindet beim Wechsel der Art', async () => {
+    const user = userEvent.setup()
+    render(<EntryForm {...props()} />)
+    await fillAndSubmit(user)
+    expect(await screen.findByText('Gespeichert.')).toBeInTheDocument()
+    await user.click(screen.getByRole('radio', { name: 'Einnahme' }))
+    expect(screen.queryByText('Gespeichert.')).not.toBeInTheDocument()
+  })
+})

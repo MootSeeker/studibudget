@@ -230,3 +230,52 @@ describe('Backup: Export mit verwaistem Kontostand', { tags: ['negativ'] }, () =
     },
   )
 })
+
+describe('Backup: unmögliche Kalenderdaten (#171)', { tags: ['negativ'] }, () => {
+  it.each(['2026-13-01', '2026-02-30', '2026-00-10', '2025-02-29', '2026-13-45', '2026-04-31'])(
+    'Buchung mit %s wird abgelehnt, die Meldung nennt den Pfad',
+    async (d) => {
+      const b = clone(await valid())
+      b.data.transactions[0].date = d
+      expect(errorOf(parse(b))).toMatch(
+        /^Die Backup-Datei ist beschädigt: data\.transactions\.0\.date \(/,
+      )
+    },
+  )
+  it('Sparziel mit unmöglichem Zieldatum wird abgelehnt', async () => {
+    const b = clone(await valid())
+    b.data.goals.push({
+      id: newId(),
+      updatedAt: '',
+      deleted: false,
+      name: 'Velo',
+      targetCents: 1000,
+      targetDate: '2026-02-30',
+      startCents: 0,
+      archived: false,
+    })
+    expect(errorOf(parse(b))).toMatch(/data\.goals\.0\.targetDate/)
+  })
+  it('Ausgleichszahlung mit unmöglichem Datum wird abgelehnt', async () => {
+    const b = clone(await valid())
+    b.data.settlements.push({
+      id: newId(),
+      updatedAt: '',
+      deleted: false,
+      date: '2026-00-10',
+      personId: b.data.persons[0].id,
+      direction: 'ich_erhalte',
+      amountCents: 100,
+      note: '',
+    })
+    expect(errorOf(parse(b))).toMatch(/data\.settlements\.0\.date/)
+  })
+  it.each(['2028-02-29', '2026-12-31', '2026-01-01'])(
+    'gültiges Datum %s bleibt gültig',
+    async (d) => {
+      const b = clone(await valid())
+      b.data.transactions[0].date = d
+      expect(parse(b).ok).toBe(true)
+    },
+  )
+})
