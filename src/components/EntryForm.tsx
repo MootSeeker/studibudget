@@ -163,6 +163,8 @@ export function EntryForm(props: EntryFormProps) {
   return (
     <form
       onSubmit={submit}
+      // Jede Änderung nach dem Speichern macht «Gespeichert.» ungültig (#175).
+      onChange={() => setSavedNote(false)}
       className="space-y-4 rounded-xl border border-border bg-surface p-5"
       aria-label={initial ? 'Buchung bearbeiten' : 'Neue Buchung'}
     >
@@ -197,7 +199,7 @@ export function EntryForm(props: EntryFormProps) {
             inputMode="decimal"
             value={amount}
             onChange={(e) => setAmount(e.target.value)}
-            placeholder="0.00"
+            placeholder={settings.country === 'DE' ? '0,00' : '0.00'}
           />
         </label>
         <label className="block space-y-1">

@@ -39,10 +39,10 @@
       "glob": "src/data/**",
       "ziel": 90,
       "schwelle": {
-        "lines": 97,
-        "statements": 95,
-        "functions": 93,
-        "branches": 93
+        "lines": 98,
+        "statements": 98,
+        "functions": 98,
+        "branches": 96
       }
     },
     {

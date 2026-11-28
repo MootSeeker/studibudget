@@ -89,6 +89,7 @@ export function Budget() {
           cars={cars}
           templates={templates}
           categories={categories}
+          areas={areas}
           country={settings.country}
         />
       )}

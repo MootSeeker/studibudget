@@ -1,4 +1,4 @@
-import { isValidSwissIban, normalizeIban } from './iban'
+import { isQrIban, isValidSwissIban, normalizeIban, QR_IBAN_PROBLEM } from './iban'
 import type { BankDetails, Country } from './types'
 
 /** Inhalt des Swiss QR Codes der QR-Rechnung (Issue #106): Datenstruktur SPC 0200, Adresstyp S, ohne Referenz. */
@@ -89,6 +89,8 @@ export function qrBillStatus(
       ok: false,
       reason: 'Die IBAN in den Einstellungen ist ungültig, daher gibt es keinen Zahlteil.',
     }
+  if (isQrIban(bank.iban))
+    return { ok: false, reason: `${QR_IBAN_PROBLEM} Bitte in den Einstellungen ändern.` }
   if (![bank.holder, bank.zip, bank.town].every((v) => sanitizeQrText(v, 70)))
     return {
       ok: false,
@@ -141,6 +143,10 @@ export function validateQrPayload(payload: string): string[] {
     'Der Zahlungspflichtige muss leer sein.',
   )
   check(l[27] === 'NON', 'Die Referenzart muss NON sein.')
+  check(
+    !(isQrIban(l[3]) && l[27] === 'NON'),
+    'Eine QR-IBAN verlangt die Referenzart QRR; mit NON lehnt die Bank den Zahlteil ab.',
+  )
   check(l[28] === '' && l[29] === '', 'Referenz und Mitteilung müssen leer sein.')
   check(l[30] === 'EPD', 'Das Schlusszeichen muss EPD lauten.')
   check(

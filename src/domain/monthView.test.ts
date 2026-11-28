@@ -180,6 +180,40 @@ describe('Plan, Ist, Prognose', () => {
     )
     expect(booked.ausgaben.forecast).toBe(80000) // Fixkosten bereits gebucht, nichts offen, nichts variabel
   })
+  describe('Hochrechnung ohne Vorlagen und spätere Buchungen (#176)', () => {
+    const heute = { month: '2026-10', day: 10 }
+    it('AK-1: Buchung aus einer Vorlage in nicht fixer Kategorie zählt einmal, nicht hochgerechnet', () => {
+      const v = buildMonthView(
+        input({
+          today: heute,
+          txs: [
+            tx('2026-10-10', 'essen', 46000, { templateId: 'steuer', templateMonth: '2026-10' }),
+            tx('2026-10-05', 'essen', 10000),
+          ],
+        }),
+      )
+      // 46000 einmal + variabel 10000 / 10 × 31 = 31000
+      expect(v.ausgaben.forecast).toBe(46000 + 31000)
+    })
+    it('AK-2: variable Buchung nach heute zählt einmal, aber nicht hochgerechnet', () => {
+      const v = buildMonthView(
+        input({
+          today: heute,
+          txs: [tx('2026-10-05', 'essen', 10000), tx('2026-10-25', 'spass', 5000)],
+        }),
+      )
+      expect(v.ausgaben.forecast).toBe(31000 + 5000)
+    })
+    it('AK-3: nur variable Buchungen bis heute: wie bisher hochgerechnet', () => {
+      const v = buildMonthView(
+        input({
+          today: heute,
+          txs: [tx('2026-10-05', 'essen', 10000), tx('2026-10-10', 'spass', 2000)],
+        }),
+      )
+      expect(v.ausgaben.forecast).toBe(Math.round((12000 / 10) * 31))
+    })
+  })
   it('laufender Monat: offene Einnahmen-Vorlage zählt in die Einnahmen-Prognose', () => {
     const lohn: Template = {
       ...base,
