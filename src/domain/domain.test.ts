@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { actualForMonth, budgetForMonth, rolloverCents } from './budget'
-import { goalBalance, neededPerMonth } from './goals'
+import { goalBalance, goalPlanned, neededPerMonth } from './goals'
 import { formatMoney, parseAmount } from './money'
 import { ampel, averageOfMonths, forecastExpenses } from './month'
 import {
@@ -346,6 +346,27 @@ describe('goals', () => {
     }),
   ]
   it('Stand = Start + Einzahlungen − Entnahmen', () => expect(goalBalance(goal, txs)).toBe(35000))
+  it('Stand bis heute: Einzahlungen nach heute zählen nicht, sondern als geplant (#178)', () => {
+    const mit = [
+      ...txs,
+      tx({ id: '3', date: '2026-10-10', categoryId: 's', myAmountCents: 1000, goalId: 'g' }), // heute
+      tx({ id: '4', date: '2026-10-11', categoryId: 's', myAmountCents: 4200, goalId: 'g' }), // morgen
+      tx({
+        id: '5',
+        date: '2026-11-01',
+        categoryId: 's',
+        myAmountCents: 200,
+        goalId: 'g',
+        goalDirection: 'entnahme',
+      }),
+    ]
+    // vor heute 35000, am heutigen Tag + 1000; danach + 4200 − 200 geplant
+    expect(goalBalance(goal, mit, '2026-10-10')).toBe(36000)
+    expect(goalPlanned(goal, mit, '2026-10-10')).toBe(4000)
+    // ohne Stichtag wie bisher alles (AK-3)
+    expect(goalBalance(goal, mit)).toBe(40000)
+    expect(goalPlanned(goal, txs, '2026-10-10')).toBe(0)
+  })
   it('nötige Monatsrate bis Zielmonat (Okt–Jan = 4 Monate)', () => {
     expect(neededPerMonth(goal, 35000, '2026-10')).toBe(16250)
     expect(neededPerMonth(goal, 100000, '2026-10')).toBe(0)
