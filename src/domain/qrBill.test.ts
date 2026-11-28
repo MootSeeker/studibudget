@@ -122,6 +122,21 @@ describe('qrBillStatus', () => {
   })
 })
 
+describe('QR-IBAN (#160)', () => {
+  const qr = { ...bank, iban: 'CH4431999123000889012' }
+  it('AK-2: gespeicherte QR-IBAN → kein Zahlteil, der Hinweis nennt den Grund', () => {
+    expect(qrBillStatus('CH', qr, 100)).toEqual({
+      ok: false,
+      reason: expect.stringMatching(/QR-IBAN.*normale IBAN/),
+    })
+  })
+  it('AK-3: QR-IBAN mit Referenzart NON ist ein Verstoss', () => {
+    expect(validateQrPayload(buildQrPayload(qr, 100))).toContain(
+      'Eine QR-IBAN verlangt die Referenzart QRR; mit NON lehnt die Bank den Zahlteil ab.',
+    )
+  })
+})
+
 describe('validateQrPayload (Issue #121)', () => {
   const gut = buildQrPayload(bank, 210000)
   const lines = () => gut.split('\n')
