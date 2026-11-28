@@ -105,6 +105,9 @@ export interface Template extends Synced {
   carId?: string
   /** Monate (YYYY-MM), in denen die Vorlage nicht fällig ist (übersprungen). */
   skipMonths?: string[]
+  /** Sparziel der wiederkehrenden Einzahlung (#177). */
+  goalId?: string
+  goalDirection?: 'einzahlung' | 'entnahme'
 }
 
 export interface Settlement extends Synced {

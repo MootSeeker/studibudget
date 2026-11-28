@@ -12,7 +12,7 @@ import {
   nextDueMonth,
   type IntervalEvery,
 } from '../domain/templates'
-import type { Area, Car, Category, Country, Template } from '../domain/types'
+import type { Area, Car, Category, Country, Goal, Template } from '../domain/types'
 import { MONTH_NAMES } from '../lib/months'
 
 export interface TemplatesPanelProps {
@@ -22,6 +22,8 @@ export interface TemplatesPanelProps {
   areas?: Area[]
   country: Country
   cars?: Car[]
+  /** Für den Hinweis zum Sparziel einer Vorlage (#177). */
+  goals?: Goal[]
 }
 
 const GROUP_LABEL: Record<Category['type'], string> = {
@@ -37,7 +39,9 @@ export function TemplatesPanel({
   areas = [],
   country,
   cars = [],
+  goals,
 }: TemplatesPanelProps) {
+  const activeGoal = (id: string) => goals?.find((g) => g.id === id && !g.deleted && !g.archived)
   const now = currentMonth()
   const monthLabel = (m: string) => `${MONTH_NAMES[Number(m.slice(5, 7)) - 1]} ${m.slice(0, 4)}`
   const catName = (id: string) => categories.find((c) => c.id === id)?.name ?? 'Unbekannt'
@@ -83,6 +87,15 @@ export function TemplatesPanel({
                           <span className="rounded bg-border px-2 text-xs">pausiert</span>
                         )}
                       </div>
+                      {t.goalId && goals && activeGoal(t.goalId) && (
+                        <p className="text-xs text-muted">Sparziel: {activeGoal(t.goalId)!.name}</p>
+                      )}
+                      {t.goalId && goals && !activeGoal(t.goalId) && (
+                        <p role="note" className="text-xs text-warn">
+                          Das Sparziel dieser Vorlage gibt es nicht mehr oder es ist archiviert:
+                          Buchungen entstehen ohne Sparziel.
+                        </p>
+                      )}
                       <div className="grid gap-2 sm:grid-cols-2">
                         <input
                           aria-label={`Betrag Vorlage ${catName(t.categoryId)}`}

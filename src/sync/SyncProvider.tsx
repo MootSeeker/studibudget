@@ -10,6 +10,8 @@ interface SyncApi {
   status: SyncStatus
   pending: number
   syncNow(): void
+  /** Abgleich jetzt und warten, bis er durch ist (ohne Fehler zu werfen; danach die Outbox prüfen). */
+  flush(): Promise<void>
   /** Mindestens ein Abgleich mit dem Server ist durchgelaufen. */
   hasSynced: boolean
 }
@@ -47,6 +49,9 @@ export function SyncProvider({ children }: { children: ReactNode }) {
         status,
         pending,
         syncNow: () => void engine?.syncNow(),
+        flush: async () => {
+          await engine?.syncNow()
+        },
         hasSynced: status.lastSyncAt !== undefined,
       }}
     >
@@ -59,6 +64,11 @@ export function useSync(): SyncApi {
   const v = useContext(Ctx)
   if (!v) throw new Error('useSync braucht den SyncProvider')
   return v
+}
+
+/** Wie `useSync`, aber null ausserhalb des SyncProvider (z. B. in Tests einzelner Seiten). */
+export function useSyncOptional(): SyncApi | null {
+  return useContext(Ctx)
 }
 
 export function describeStatus(status: SyncStatus, pending: number): string {

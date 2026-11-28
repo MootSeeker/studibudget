@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { actualForMonth, budgetForMonth, rolloverCents } from './budget'
-import { goalBalance, neededPerMonth } from './goals'
+import { goalBalance, goalPlanned, neededPerMonth } from './goals'
 import { formatMoney, parseAmount } from './money'
 import { ampel, averageOfMonths, forecastExpenses } from './month'
 import {
@@ -23,6 +23,29 @@ describe('money', () => {
     const norm = (s: string) => s.replace(/\s/g, ' ').replace('’', "'")
     expect(norm(formatMoney(123450, 'CH'))).toBe("CHF 1'234.50")
     expect(norm(formatMoney(123450, 'DE'))).toBe('1.234,50 €')
+  })
+  // #164: negatives Format einheitlich «CHF -696.00»; DE unverändert «-1.234,50 €».
+  it.each([
+    [69600, 'CH', 'CHF 696.00'],
+    [-69600, 'CH', 'CHF -696.00'],
+    [0, 'CH', 'CHF 0.00'],
+    [-123450, 'CH', "CHF -1'234.50"],
+    [69600, 'DE', '696,00 €'],
+    [-123450, 'DE', '-1.234,50 €'],
+    [0, 'DE', '0,00 €'],
+  ] as const)('formatMoney(%i, %s) = %s', (cents, country, expected) => {
+    const norm = (s: string) => s.replace(/⁠/g, '').replace(/\s/g, ' ').replace('’', "'")
+    expect(norm(formatMoney(cents, country))).toBe(expected)
+  })
+  it('negative Beträge brechen nicht um: keine normalen Leerzeichen, Minus mit Wortverbinder', () => {
+    for (const country of ['CH', 'DE'] as const) {
+      const s = formatMoney(-69600, country)
+      expect(s).not.toMatch(/ /)
+      expect(s).toMatch(/-⁠\d/)
+    }
+  })
+  it('kleine negative Beträge, die auf 0 runden, zeigen kein Minus', () => {
+    expect(formatMoney(-0, 'CH')).not.toMatch(/-/)
   })
   it.each([
     ['23.50', 2350],
@@ -214,6 +237,34 @@ describe('stats', () => {
     expect(k.fixSharePct).toBeCloseTo((160000 / 180000) * 100)
     expect(k.mostExpensiveMonth).toBe('2026-08')
   })
+  it('Anteil Fixkosten: Vorlagen-Buchungen in nicht fixen Kategorien zählen als fix (#182)', () => {
+    const mitVorlage = [
+      ...txs,
+      tx({
+        id: '7',
+        date: '2026-09-10',
+        categoryId: 'essen',
+        myAmountCents: 20000,
+        templateId: 'v1',
+        templateMonth: '2026-09',
+      }),
+    ]
+    const t = totalsByMonth(mitVorlage, cats, '2026-08', '2026-09')
+    // fix: Miete 160000 (fixe Kategorie) + 20000 aus der Vorlage; gesamt 200000
+    expect(keyFigures(t, mitVorlage, cats).fixSharePct).toBeCloseTo((180000 / 200000) * 100)
+    // Vorlage in einer fixen Kategorie zählt nicht doppelt (AK-2)
+    const vorlageInFix = [
+      ...txs.filter((x) => x.id !== '5'),
+      tx({
+        id: '5',
+        date: '2026-09-02',
+        categoryId: 'miete',
+        myAmountCents: 80000,
+        templateId: 'm',
+      }),
+    ]
+    expect(keyFigures(totals, vorlageInFix, cats).fixSharePct).toBeCloseTo((160000 / 180000) * 100)
+  })
   it('Ø Ausgaben pro Monat: zukünftige Monate zählen nicht im Nenner', () => {
     const future = totalsByMonth(txs, cats, '2026-08', '2026-12')
     // heute ist September: August und September zählen, Oktober bis Dezember nicht
@@ -308,6 +359,27 @@ describe('goals', () => {
     }),
   ]
   it('Stand = Start + Einzahlungen − Entnahmen', () => expect(goalBalance(goal, txs)).toBe(35000))
+  it('Stand bis heute: Einzahlungen nach heute zählen nicht, sondern als geplant (#178)', () => {
+    const mit = [
+      ...txs,
+      tx({ id: '3', date: '2026-10-10', categoryId: 's', myAmountCents: 1000, goalId: 'g' }), // heute
+      tx({ id: '4', date: '2026-10-11', categoryId: 's', myAmountCents: 4200, goalId: 'g' }), // morgen
+      tx({
+        id: '5',
+        date: '2026-11-01',
+        categoryId: 's',
+        myAmountCents: 200,
+        goalId: 'g',
+        goalDirection: 'entnahme',
+      }),
+    ]
+    // vor heute 35000, am heutigen Tag + 1000; danach + 4200 − 200 geplant
+    expect(goalBalance(goal, mit, '2026-10-10')).toBe(36000)
+    expect(goalPlanned(goal, mit, '2026-10-10')).toBe(4000)
+    // ohne Stichtag wie bisher alles (AK-3)
+    expect(goalBalance(goal, mit)).toBe(40000)
+    expect(goalPlanned(goal, txs, '2026-10-10')).toBe(0)
+  })
   it('nötige Monatsrate bis Zielmonat (Okt–Jan = 4 Monate)', () => {
     expect(neededPerMonth(goal, 35000, '2026-10')).toBe(16250)
     expect(neededPerMonth(goal, 100000, '2026-10')).toBe(0)

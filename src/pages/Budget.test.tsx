@@ -62,7 +62,7 @@ describe('Budget-Seite', () => {
       categoryId: (await catByKey('miete')).id,
     })
     await waitFor(() => expect(summary('Ausgaben')).toMatch(/800\.00/))
-    expect(summary('Bleibt übrig')).toMatch(/-800\.00/)
+    expect(summary('Bleibt übrig')).toMatch(/CHF\s-⁠800\.00/)
   })
 
   it('Änderung im selben Monat überschreibt, in einem späteren Monat legt sie einen neuen Eintrag an', async () => {

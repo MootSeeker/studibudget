@@ -1,7 +1,8 @@
 import { useState } from 'react'
 import { useAuth } from '../auth/AuthProvider'
+import { LogoutSection } from './einstellungen/LogoutSection'
 import { supabase } from '../auth/supabase'
-import { Field, Form, buttonClass } from '../auth/ui'
+import { Field, Form } from '../auth/ui'
 import { SubNav } from '../components/SubNav'
 import { useSubNav, type SubNavItem } from '../lib/useSubNav'
 import { supabaseInbox } from '../sync/inbox'
@@ -255,12 +256,7 @@ export function Einstellungen() {
                 <DeleteAccount />
               </div>
             </details>
-            <button className={buttonClass} onClick={() => void auth.logout()}>
-              Abmelden
-            </button>
-            <p className="text-xs text-muted">
-              Beim Abmelden werden die Daten auf diesem Gerät gelöscht.
-            </p>
+            <LogoutSection />
           </div>
         )}
       </section>

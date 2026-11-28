@@ -298,12 +298,14 @@ describe('Sparziele', () => {
     goalId: string,
     cents: number,
     dir: 'einzahlung' | 'entnahme' = 'einzahlung',
+    // Am Monatsersten, damit die Buchung nie nach heute liegt (#178: spätere zählen als geplant).
+    date = `${NOW}-01`,
   ) => {
     const cat = (await db.categories.toArray()).find((c) => c.catalogKey === 'notgroschen')!
     await store.put('transactions', {
       id: newId(),
       deleted: false,
-      date: `${NOW}-05`,
+      date,
       categoryId: cat.id,
       amountCents: cents,
       myAmountCents: cents,
@@ -324,6 +326,24 @@ describe('Sparziele', () => {
     await waitFor(() => expect(norm(card.textContent)).toMatch(/CHF 350\.00 von CHF 1'000\.00/))
     expect(within(card).getByRole('progressbar')).toHaveAttribute('aria-valuenow', '35')
     expect(norm(card.textContent)).toMatch(/Noch CHF 650\.00/)
+  })
+
+  it('Einzahlungen nach heute zählen nicht zum Fortschritt, sondern als geplant (#178)', async () => {
+    const user = await setup()
+    const target = addMonths(NOW, 3)
+    await fill(user, 'Japan', '1000', `${target}-15`)
+    const card = (await screen.findByLabelText('Name Sparziel Japan')).closest('li')!
+    const goal = (await db.goals.toArray())[0]
+    await saveTx(goal.id, 20000)
+    await saveTx(goal.id, 100000, 'einzahlung', `${addMonths(NOW, 1)}-01`)
+    // Beide Buchungen werden asynchron gelesen: zusammen abwarten.
+    await waitFor(() => {
+      expect(norm(card.textContent)).toMatch(/CHF 200\.00 von CHF 1'000\.00/)
+      expect(norm(card.textContent)).toMatch(/\+ CHF 1'000\.00 geplant/)
+    })
+    expect(card).not.toHaveTextContent('Ziel erreicht')
+    expect(within(card).getByRole('progressbar')).toHaveAttribute('aria-valuenow', '20')
+    expect(norm(card.textContent)).toMatch(/nötig: CHF 200\.00 pro Monat/) // 800 / 4 Monate
   })
 
   it('mit Zieldatum: nötige Monatsrate bis zum Zielmonat', async () => {

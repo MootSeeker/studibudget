@@ -232,3 +232,50 @@ describe('Zeilen der Vorlagen (#181)', () => {
     expect(screen.getByRole('heading', { name: 'Ausgaben' })).toBeInTheDocument()
   })
 })
+
+describe('Vorlage mit Sparziel (#177)', () => {
+  const goal = (id: string, archived = false) => ({
+    ...base,
+    id,
+    name: 'Japan',
+    targetCents: 100000,
+    targetDate: null,
+    startCents: 0,
+    archived,
+  })
+  const t: Template = {
+    ...base,
+    id: 'v',
+    categoryId: 'c1',
+    amountCents: 20000,
+    note: '',
+    months: ALL,
+    active: true,
+    goalId: 'g1',
+    goalDirection: 'einzahlung',
+  }
+  it('zeigt das Sparziel der Vorlage', () => {
+    render(
+      <TemplatesPanel templates={[t]} categories={categories} goals={[goal('g1')]} country="CH" />,
+    )
+    expect(screen.getByText('Sparziel: Japan')).toBeInTheDocument()
+  })
+  it('AK-3: gelöschtes oder archiviertes Sparziel → Hinweis', () => {
+    const { unmount } = render(
+      <TemplatesPanel templates={[t]} categories={categories} goals={[]} country="CH" />,
+    )
+    expect(screen.getByRole('note')).toHaveTextContent(
+      'Das Sparziel dieser Vorlage gibt es nicht mehr oder es ist archiviert: Buchungen entstehen ohne Sparziel.',
+    )
+    unmount()
+    render(
+      <TemplatesPanel
+        templates={[t]}
+        categories={categories}
+        goals={[goal('g1', true)]}
+        country="CH"
+      />,
+    )
+    expect(screen.getByRole('note')).toHaveTextContent(/archiviert/)
+  })
+})

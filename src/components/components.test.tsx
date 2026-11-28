@@ -155,7 +155,7 @@ describe('MonthList', () => {
     )
     expect(screen.getByText('Golf')).toBeInTheDocument()
     expect(screen.getByText('Entnahme')).toBeInTheDocument()
-    expect(norm(document.body.textContent)).toMatch(/[-\u2212]30\.00/)
+    expect(norm(document.body.textContent)).toMatch(/CHF -\u206030\.00/)
   })
 })
 

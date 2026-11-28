@@ -6,6 +6,7 @@ import { TemplatesPanel } from '../components/TemplatesPanel'
 import { db } from '../data/db'
 import {
   useAllCars,
+  useAllGoals,
   useAreas,
   useBudgets,
   useCategories,
@@ -35,6 +36,7 @@ export function Budget() {
   const budgets = useBudgets()
   const templates = useTemplates()
   const cars = useAllCars()
+  const goals = useAllGoals()
   const [month, setMonth] = useState(currentMonth())
   const [error, setError] = useState<string | null>(null)
   const tab = useSubNav('ansicht', TABS)
@@ -89,6 +91,7 @@ export function Budget() {
           cars={cars}
           templates={templates}
           categories={categories}
+          goals={goals}
           areas={areas}
           country={settings.country}
         />
