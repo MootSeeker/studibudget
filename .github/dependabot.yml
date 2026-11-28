@@ -1,0 +1,31 @@
+# Dependabot (#190): wöchentlich, gegen main, Minor und Patch je Ökosystem in einem PR.
+# Umgang mit den PRs: vault/40 Betrieb/Betrieb.md, Entscheid in docs/entscheidungen.md.
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: /
+    target-branch: main
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+    labels:
+      - ci
+    groups:
+      npm-minor-und-patch:
+        update-types:
+          - minor
+          - patch
+
+  - package-ecosystem: github-actions
+    directory: /
+    target-branch: main
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+    labels:
+      - ci
+    groups:
+      actions-minor-und-patch:
+        update-types:
+          - minor
+          - patch

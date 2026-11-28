@@ -2,9 +2,10 @@
 typ: referenz
 bereich: betrieb
 status: aktiv
-aktualisiert: 2026-10-10
+aktualisiert: 2026-11-23
 repo-quelle:
   - .github/workflows/deploy.yml
+  - docs/docker.md
   - docs/start-checkliste.md
 tags:
   - typ/referenz
@@ -18,6 +19,7 @@ tags:
   (`VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`) beim Build.
 - **Migrationen:** immer als Datei in `supabase/migrations/`, erst `--dry-run`, dann `npx supabase db push`. Vor dem Einspielen
   auf das echte Projekt bei Kevin nachfragen.
+- **Docker (lokal, #169):** `Dockerfile` und `docker/nginx.conf` bauen ein Image für Test, Demo oder Review, Befehle in `docs/docker.md`. Kein produktives Hosting. Die `VITE_*`-Werte kommen als `--build-arg` beim Bauen.
 - **Supabase-Gratisstufe:** pausiert nach längerer Inaktivität; die App läuft lokal weiter, synchronisiert aber nicht.
 - **Auth-Mails:** Standardversand begrenzt, vor dem Start eigener SMTP ([[Offene Punkte]]).
 - **Weitere Workflows:** `mutation.yml` (Mutationstests, montags 02:00 UTC und auf Abruf, rund 3 Stunden) und `referenzbilder.yml` (Referenzbilder der visuellen Regression erzeugen, auf Abruf).
@@ -26,6 +28,12 @@ tags:
 - **CI-Zwischenspeicher:** Docker-Images des lokalen Supabase (Tar im Actions-Cache, Schlüssel aus Lock-Datei und `supabase/config.toml`) und Playwright-Browser; Wirkung noch zu messen ([[Offene Punkte]], #62). Kosten: keine, das Repo ist öffentlich.
 - **Actions** laufen auf Node 24 (Version aus `.nvmrc`, mindestens 24.15; checkout 7, setup-node 7, cache 6, upload-artifact 7, download-artifact 8, pages 5). Verbleibende `punycode`-/`Buffer()`-Hinweise stammen aus `deploy-pages` und `download-artifact`, nicht aus unserem Code.
 - **Abhängigkeiten:** `overrides` für `glob` (^13) und `qs` (^6.16); `npm audit` soll 0 melden.
+- **Dependabot (#190):** `.github/dependabot.yml` prüft `npm` und `github-actions` wöchentlich, Minor und Patch je Ökosystem in einem gruppierten PR, höchstens 5 offene PRs, Label `ci`. Major-Updates kommen einzeln. Umgang mit den PRs:
+  - Merge nur bei komplett grüner CI und mit Kevins OK, wie bei jedem PR. Kein Auto-Merge.
+  - Titel bleiben englisch und ohne Issue-Nummer (z. B. «Bump vite from 7.1.0 to 7.1.2»): bewusste Ausnahme von Regel 9 in `CLAUDE.md`, weil Dependabot sie selbst setzt und kein Issue dahinter steht. Ein Thema pro PR gilt weiter (eine Gruppe oder ein Major-Update).
+  - Die Workflows brauchen dafür keine Geheimnisse: Dependabot-PRs bekommen keine Actions-Secrets, `GITHUB_TOKEN` nur lesend. «Deploy» baut ohne `VITE_*`-Variablen (die CSP prüft die Supabase-URL nur, wenn sie gesetzt ist), Datenbank- und E2E-Tests laufen gegen das lokale Supabase im Runner. Der Job `deploy` läuft nur auf `main`. Beleg mit dem ersten Dependabot-PR noch offen ([[Offene Punkte]]).
+  - Fremd-Actions (`gitleaks/gitleaks-action`, `lycheeverse/lychee-action`) hängen an einem Commit-SHA mit der Version als Kommentar; Dependabot hebt SHA und Kommentar gemeinsam an. `actions/*` bleiben vorerst an Tags.
+  - Dependabot-Warnungen und Sicherheits-Updates schaltet Kevin in den Repo-Einstellungen ein (Settings → Code security).
 - **Merge-Einstellungen (seit 2026-10-10):** nur Squash-Merge erlaubt (Merge-Commit und Rebase aus), Commit-Titel = PR-Titel, Commit-Nachricht leer (die PR-Nummer im Titel verweist auf Beschreibung und Verlauf). GitHub löscht den Branch nach dem Merge selbst.
 - **Aufräumen:** Remote-Branches löscht GitHub beim Merge; lokal `git fetch --prune` und die lokalen Branches entfernen. `backup-vor-umschreiben` (lokal) ist das Backup von der Historienbereinigung.
 

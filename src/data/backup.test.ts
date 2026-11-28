@@ -6,6 +6,7 @@ import {
   BACKUP_TABLES,
   backupFileName,
   exportBackup,
+  isCalendarDate,
   parseBackup,
   type Backup,
 } from './backup'
@@ -482,4 +483,19 @@ describe('Semester im Backup (Issue #183)', () => {
       expect(semesters[0].name).toBe('Herbst')
     },
   )
+})
+
+describe('isCalendarDate (#171)', () => {
+  it.each([
+    ['2028-02-29', true],
+    ['2000-02-29', true],
+    ['1900-02-29', false],
+    ['2025-02-29', false],
+    ['2026-12-31', true],
+    ['2026-11-31', false],
+    ['2026-13-01', false],
+    ['2026-00-10', false],
+    ['2026-01-00', false],
+    ['2026-1-01', false],
+  ])('%s → %s', (s, ok) => expect(isCalendarDate(s)).toBe(ok))
 })

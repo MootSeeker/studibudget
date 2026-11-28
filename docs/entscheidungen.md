@@ -286,6 +286,14 @@ beträgt 15 s, `asyncUtilTimeout` 4 s.
 - Bewusst nicht der Eigenanteil: Er enthält den Anteil der anderen schon nicht mehr, die erhaltene Rückzahlung würde doppelt abgezogen.
 - Ausgleichszahlungen zählen weiterhin nicht ins Budget und nicht in Monat oder Statistik.
 
+## Abhängigkeiten mit Dependabot (Issue #190)
+
+- Dependabot prüft `npm` und `github-actions` wöchentlich. Minor und Patch kommen je Ökosystem gruppiert in einem PR, Major-Updates einzeln. So bleibt die Zahl der PRs klein, und ein Bruch durch ein Major-Update ist einem PR zuzuordnen.
+- Die PRs tragen das vorhandene Label `ci`, keine neuen Labels. Titel bleiben englisch und ohne Issue-Nummer: bewusste Ausnahme von der Regel «Titel mit Issue-Nummer», weil Dependabot sie setzt und kein Issue dahinter steht.
+- Kein Auto-Merge: Merge nur bei grüner CI und mit OK, wie bei jedem PR.
+- Fremd-Actions ausserhalb von `actions/*` hängen an einem Commit-SHA mit der Version als Kommentar, damit ein verschobener Tag keinen fremden Code einschleust. Dependabot hält SHA und Kommentar aktuell.
+- Nicht gewählt: Renovate (mehr Einstellungen, als das Projekt braucht), CodeQL und Branch-Schutz (eigene Themen).
+
 ## Teststrategie
 
 - **Pyramide:** viele schnelle Unit-Tests, wenige Ende-zu-Ende-Tests. Ein Fehler wird auf der tiefstmöglichen Ebene getestet.

@@ -13,7 +13,17 @@ export const BACKUP_TABLES = SYNCED_TABLES.filter((t): t is BackupTable => t !==
 
 const id = z.uuid()
 const month = z.string().regex(/^\d{4}-(0[1-9]|1[0-2])$/)
-const date = z.string().regex(/^\d{4}-\d{2}-\d{2}$/)
+/** Echtes Kalenderdatum YYYY-MM-DD: Monat 01 bis 12, Tag passend zum Monat inklusive Schaltjahr (#171). */
+export function isCalendarDate(s: string): boolean {
+  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(s)
+  if (!m) return false
+  const [y, mo, d] = [Number(m[1]), Number(m[2]), Number(m[3])]
+  if (mo < 1 || mo > 12 || d < 1) return false
+  const leap = (y % 4 === 0 && y % 100 !== 0) || y % 400 === 0
+  const days = [31, leap ? 29 : 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31][mo - 1]
+  return d <= days
+}
+const date = z.string().refine(isCalendarDate, 'kein gültiges Datum')
 const cents = z.number().int().min(0).max(100_000_000_00)
 const text = (max: number) => z.string().max(max)
 const name = (max = 80) => z.string().trim().min(1).max(max)

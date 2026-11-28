@@ -337,11 +337,56 @@ describe('Sparziele', () => {
   it('erreichtes und überfälliges Ziel', async () => {
     const user = await setup()
     await fill(user, 'Alt', '100', `${addMonths(NOW, -2)}-01`)
+    await user.click(await screen.findByRole('button', { name: 'Trotzdem anlegen' }))
     const alt = (await screen.findByLabelText('Name Sparziel Alt')).closest('li')!
     expect(alt).toHaveTextContent('Zieldatum vorbei, noch')
     const goal = (await db.goals.toArray())[0]
     await saveTx(goal.id, 10000)
     await waitFor(() => expect(alt).toHaveTextContent('Ziel erreicht'))
+  })
+
+  describe('Zieldatum in der Vergangenheit (#167)', () => {
+    beforeEach(() => {
+      // Nur die Uhr fest; Timer bleiben echt, damit userEvent und waitFor laufen.
+      vi.useFakeTimers({ toFake: ['Date'] })
+      vi.setSystemTime(new Date('2027-03-15T12:00:00'))
+    })
+    afterEach(() => vi.useRealTimers())
+
+    it('AK-1/AK-4: erst ein Hinweis, angelegt wird erst nach Bestätigung', async () => {
+      const user = await setup()
+      await fill(user, 'Velo', '500', '2027-03-14')
+      expect(await screen.findByRole('alert')).toHaveTextContent(
+        'Das Zieldatum 14.03.2027 liegt in der Vergangenheit.',
+      )
+      expect(await db.goals.count()).toBe(0)
+      await user.click(screen.getByRole('button', { name: 'Trotzdem anlegen' }))
+      await waitFor(async () => expect(await db.goals.count()).toBe(1))
+      expect((await db.goals.toArray())[0].targetDate).toBe('2027-03-14')
+    })
+    it('AK-1: nach dem Korrigieren des Datums wird ohne Rückfrage angelegt', async () => {
+      const user = await setup()
+      await fill(user, 'Velo', '500', '2020-01-01')
+      await screen.findByRole('alert')
+      fireEvent.change(screen.getByLabelText('Zieldatum (optional)'), {
+        target: { value: '2027-05-01' },
+      })
+      expect(screen.queryByRole('alert')).not.toBeInTheDocument()
+      await user.click(screen.getByRole('button', { name: 'Sparziel anlegen' }))
+      await waitFor(async () => expect(await db.goals.count()).toBe(1))
+    })
+    it('AK-2: Zieldatum heute wie bisher', async () => {
+      const user = await setup()
+      await fill(user, 'Heute', '100', '2027-03-15')
+      await waitFor(async () => expect(await db.goals.count()).toBe(1))
+      expect(screen.queryByRole('alert')).not.toBeInTheDocument()
+    })
+    it('AK-2: ohne Zieldatum wie bisher', async () => {
+      const user = await setup()
+      await fill(user, 'Ohne', '100')
+      await waitFor(async () => expect(await db.goals.count()).toBe(1))
+      expect(screen.queryByRole('alert')).not.toBeInTheDocument()
+    })
   })
 
   it('Fehler bei ungültigen Angaben; Archivieren blendet aus', async () => {

@@ -83,8 +83,18 @@ export function buildMonthView(input: MonthViewInput): MonthView {
   const typeOf = new Map(categories.map((c) => [c.id, c.type]))
   const openSum = (type: Category['type']) =>
     open.filter((t) => typeOf.get(t.categoryId) === type).reduce((s, t) => s + myCents(t), 0)
-  const fixIds = categories.filter((c) => c.type === 'ausgabe' && c.fix).map((c) => c.id)
-  const fixBooked = fixIds.reduce((s, id) => s + actualForMonth(txs, id, month), 0)
+  // Fix (#176): fixe Kategorien und Buchungen aus Vorlagen zählen einmal und werden nicht hochgerechnet,
+  // ebenso variable Buchungen mit Datum nach heute.
+  const fixIds = new Set(categories.filter((c) => c.type === 'ausgabe' && c.fix).map((c) => c.id))
+  const todayIso = `${month}-${String(input.today.day).padStart(2, '0')}`
+  const expensesInMonth = txs.filter(
+    (t) => typeOf.get(t.categoryId) === 'ausgabe' && monthOf(t.date) === month,
+  )
+  const isFix = (t: Transaction) => fixIds.has(t.categoryId) || Boolean(t.templateId)
+  const fixBooked = expensesInMonth.filter(isFix).reduce((s, t) => s + t.myAmountCents, 0)
+  const variableLater = expensesInMonth
+    .filter((t) => !isFix(t) && t.date > todayIso)
+    .reduce((s, t) => s + t.myAmountCents, 0)
   let fc: { e: number; a: number; s: number } | null = null
   if (phase === 'past') fc = { e: actual.einnahmen, a: actual.ausgaben, s: actual.sparen }
   if (phase === 'current')
@@ -93,9 +103,9 @@ export function buildMonthView(input: MonthViewInput): MonthView {
       a: forecastExpenses({
         month,
         dayOfMonth: input.today.day,
-        fixBooked,
+        fixBooked: fixBooked + variableLater,
         fixOpen: openSum('ausgabe'),
-        variableSoFar: actual.ausgaben - fixBooked,
+        variableSoFar: actual.ausgaben - fixBooked - variableLater,
       }),
       s: actual.sparen + openSum('sparen'),
     }
