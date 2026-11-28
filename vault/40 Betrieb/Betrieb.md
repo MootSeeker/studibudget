@@ -5,6 +5,7 @@ status: aktiv
 aktualisiert: 2026-11-23
 repo-quelle:
   - .github/workflows/deploy.yml
+  - docs/docker.md
   - docs/start-checkliste.md
 tags:
   - typ/referenz
@@ -18,6 +19,7 @@ tags:
   (`VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`) beim Build.
 - **Migrationen:** immer als Datei in `supabase/migrations/`, erst `--dry-run`, dann `npx supabase db push`. Vor dem Einspielen
   auf das echte Projekt bei Kevin nachfragen.
+- **Docker (lokal, #169):** `Dockerfile` und `docker/nginx.conf` bauen ein Image für Test, Demo oder Review, Befehle in `docs/docker.md`. Kein produktives Hosting. Die `VITE_*`-Werte kommen als `--build-arg` beim Bauen.
 - **Supabase-Gratisstufe:** pausiert nach längerer Inaktivität; die App läuft lokal weiter, synchronisiert aber nicht.
 - **Auth-Mails:** Standardversand begrenzt, vor dem Start eigener SMTP ([[Offene Punkte]]).
 - **Weitere Workflows:** `mutation.yml` (Mutationstests, montags 02:00 UTC und auf Abruf, rund 3 Stunden) und `referenzbilder.yml` (Referenzbilder der visuellen Regression erzeugen, auf Abruf).
