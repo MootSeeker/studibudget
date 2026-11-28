@@ -134,9 +134,11 @@ describe('Einstellungen: Konto', () => {
   })
 
   it('Abmelden ruft logout auf', async () => {
+    await db.outbox.clear() // nichts ausstehend; mit ausstehenden Änderungen siehe LogoutSection.test.tsx
     const user = await open('Passwort ändern')
     await user.click(screen.getByRole('button', { name: 'Abmelden' }))
-    expect(auth.logout).toHaveBeenCalled()
+    // Vorher wird die Outbox gelesen (#170): asynchron.
+    await waitFor(() => expect(auth.logout).toHaveBeenCalled())
   })
 })
 

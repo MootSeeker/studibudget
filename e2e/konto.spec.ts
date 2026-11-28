@@ -76,6 +76,8 @@ test('Abmelden leert die Daten auf dem Gerät', async ({ eingerichtet: { page } 
     )
   expect(await zeilen()).toBeGreaterThan(0)
 
+  // Ohne ausstehende Änderungen meldet «Abmelden» ohne Rückfrage ab (#170).
+  await syncAbwarten(page)
   await einstellungen(page, 'Konto')
   await page.getByRole('button', { name: 'Abmelden' }).click()
   await expect(page.getByRole('heading', { name: 'Anmelden' })).toBeVisible()
