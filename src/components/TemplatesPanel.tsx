@@ -3,24 +3,43 @@ import { isCarCategory } from '../data/catalog'
 import { store } from '../data/store'
 import { formatMoney, parseAmount } from '../domain/money'
 import { rescaleShared } from '../domain/split'
+import { currentMonth } from '../domain/period'
 import {
   detectInterval,
+  groupTemplates,
   INTERVALS,
   monthsForInterval,
+  nextDueMonth,
   type IntervalEvery,
 } from '../domain/templates'
-import type { Car, Category, Country, Template } from '../domain/types'
+import type { Area, Car, Category, Country, Template } from '../domain/types'
 import { MONTH_NAMES } from '../lib/months'
 
 export interface TemplatesPanelProps {
   templates: Template[]
   categories: Category[]
+  /** Für die Reihenfolge wie unter Budget › Monatsbudget (#181). */
+  areas?: Area[]
   country: Country
   cars?: Car[]
 }
 
+const GROUP_LABEL: Record<Category['type'], string> = {
+  ausgabe: 'Ausgaben',
+  einnahme: 'Einnahmen',
+  sparen: 'Sparen',
+}
+
 /** Fixkosten-Vorlagen: Betrag, Notiz und Monate anpassen, pausieren oder löschen. */
-export function TemplatesPanel({ templates, categories, country, cars = [] }: TemplatesPanelProps) {
+export function TemplatesPanel({
+  templates,
+  categories,
+  areas = [],
+  country,
+  cars = [],
+}: TemplatesPanelProps) {
+  const now = currentMonth()
+  const monthLabel = (m: string) => `${MONTH_NAMES[Number(m.slice(5, 7)) - 1]} ${m.slice(0, 4)}`
   const catName = (id: string) => categories.find((c) => c.id === id)?.name ?? 'Unbekannt'
   type Change = Partial<Omit<Template, 'updatedAt'>>
   const isCarTemplate = (t: Template) => {
@@ -40,169 +59,191 @@ export function TemplatesPanel({ templates, categories, country, cars = [] }: Te
           Noch keine Vorlagen. Setze beim Erfassen einer Buchung das Häkchen «Wiederholen».
         </p>
       ) : (
-        <ul className="mt-3 space-y-4">
-          {templates.map((t) => (
-            <li key={t.id} className="space-y-2 rounded-md border border-border p-3">
-              <div className="flex flex-wrap items-center gap-2">
-                <strong className="text-sm">{catName(t.categoryId)}</strong>
-                <span className="text-sm text-muted">{formatMoney(t.amountCents, country)}</span>
-                {!t.active && <span className="rounded bg-border px-2 text-xs">pausiert</span>}
-              </div>
-              <div className="grid gap-2 sm:grid-cols-2">
-                <input
-                  aria-label={`Betrag Vorlage ${catName(t.categoryId)}`}
-                  className={inputClass}
-                  inputMode="decimal"
-                  defaultValue={(t.amountCents / 100).toFixed(2)}
-                  onBlur={(e) => {
-                    const cents = parseAmount(e.target.value)
-                    if (cents && cents > 0 && cents !== t.amountCents)
-                      void save(t, (cur) => ({
-                        amountCents: cents,
-                        ...(cur.shared ? { shared: rescaleShared(cur.shared, cents) } : {}),
-                      }))
-                  }}
-                />
-                <input
-                  aria-label={`Notiz Vorlage ${catName(t.categoryId)}`}
-                  className={inputClass}
-                  defaultValue={t.note}
-                  onBlur={(e) =>
-                    e.target.value !== t.note && void save(t, { note: e.target.value.trim() })
-                  }
-                />
-              </div>
-              {isCarTemplate(t) && cars.some((c) => !c.archived || c.id === t.carId) && (
-                <label className="block space-y-1">
-                  <span className="text-xs text-muted">Auto</span>
-                  <select
-                    aria-label={`Auto ${catName(t.categoryId)}`}
-                    className={inputClass}
-                    value={t.carId ?? ''}
-                    onChange={(e) =>
-                      void store.patch('templates', t.id, {
-                        carId: e.target.value === '' ? undefined : e.target.value,
-                      })
-                    }
-                  >
-                    <option value="">Kein bestimmtes Auto</option>
-                    {cars
-                      .filter((c) => !c.archived || c.id === t.carId)
-                      .map((c) => (
-                        <option key={c.id} value={c.id}>
-                          {c.name}
-                        </option>
-                      ))}
-                  </select>
-                </label>
-              )}
-              <div className="grid gap-2 sm:grid-cols-2">
-                <label className="block space-y-1">
-                  <span className="text-xs text-muted">Intervall</span>
-                  <select
-                    aria-label={`Intervall ${catName(t.categoryId)}`}
-                    className={inputClass}
-                    value={String(detectInterval(t.months)?.every ?? 'eigene')}
-                    onChange={(e) => {
-                      if (e.target.value === 'eigene') return
-                      const every = Number(e.target.value) as IntervalEvery
-                      void save(t, (cur) => ({
-                        months: monthsForInterval(
-                          every,
-                          detectInterval(cur.months)?.startMonth ?? cur.months[0] ?? 1,
-                        ),
-                      }))
-                    }}
-                  >
-                    {INTERVALS.map((i) => (
-                      <option key={i.every} value={i.every}>
-                        {i.label}
-                      </option>
-                    ))}
-                    {detectInterval(t.months) === null && (
-                      <option value="eigene">Eigene Auswahl</option>
-                    )}
-                  </select>
-                </label>
-                {t.months.length < 12 && (
-                  <label className="flex items-center gap-2 self-end pb-2 text-sm">
-                    <input
-                      type="checkbox"
-                      checked={!t.noReserve}
-                      onChange={(e) => void save(t, { noReserve: !e.target.checked })}
-                    />
-                    In Rückstellung einrechnen
-                  </label>
-                )}
-              </div>
-              <div
-                className="flex flex-wrap gap-1"
-                role="group"
-                aria-label={`Monate ${catName(t.categoryId)}`}
-              >
-                {MONTH_NAMES.map((name, i) => {
-                  const on = t.months.includes(i + 1)
+        <div className="mt-3 space-y-5">
+          {groupTemplates(templates, categories, areas).map((g) => (
+            <section key={g.type} className="space-y-3">
+              <h3 className="text-sm font-semibold text-muted">{GROUP_LABEL[g.type]}</h3>
+              <ul className="space-y-4">
+                {g.templates.map((t) => {
+                  const due = t.months.length < 12 ? nextDueMonth(t, now) : null
                   return (
-                    <button
-                      key={name}
-                      type="button"
-                      aria-pressed={on}
-                      className={`rounded border px-2 py-1 text-xs ${on ? 'border-accent bg-accent/10' : 'border-border text-muted'}`}
-                      onClick={() => {
-                        // Auf dem aktuellen Stand umschalten, nicht auf dem Bildschirmzustand.
-                        void save(t, (cur) => {
-                          const months = cur.months.includes(i + 1)
-                            ? cur.months.filter((m) => m !== i + 1)
-                            : [...cur.months, i + 1].sort((a, b) => a - b)
-                          return months.length > 0 ? { months } : {}
-                        })
-                      }}
-                    >
-                      {name.slice(0, 3)}
-                    </button>
+                    <li key={t.id} className="space-y-2 rounded-md border border-border p-3">
+                      <div data-testid="vorlage-kopf" className="flex flex-wrap items-center gap-2">
+                        <strong className="text-sm">
+                          {catName(t.categoryId)}
+                          {t.note && <span className="font-normal"> · {t.note}</span>}
+                        </strong>
+                        <span className="text-sm text-muted">
+                          {formatMoney(t.amountCents, country)}
+                        </span>
+                        {due && (
+                          <span className="text-xs text-muted">nächste: {monthLabel(due)}</span>
+                        )}
+                        {!t.active && (
+                          <span className="rounded bg-border px-2 text-xs">pausiert</span>
+                        )}
+                      </div>
+                      <div className="grid gap-2 sm:grid-cols-2">
+                        <input
+                          aria-label={`Betrag Vorlage ${catName(t.categoryId)}`}
+                          className={inputClass}
+                          inputMode="decimal"
+                          defaultValue={(t.amountCents / 100).toFixed(2)}
+                          onBlur={(e) => {
+                            const cents = parseAmount(e.target.value)
+                            if (cents && cents > 0 && cents !== t.amountCents)
+                              void save(t, (cur) => ({
+                                amountCents: cents,
+                                ...(cur.shared ? { shared: rescaleShared(cur.shared, cents) } : {}),
+                              }))
+                          }}
+                        />
+                        <input
+                          aria-label={`Notiz Vorlage ${catName(t.categoryId)}`}
+                          className={inputClass}
+                          defaultValue={t.note}
+                          onBlur={(e) =>
+                            e.target.value !== t.note &&
+                            void save(t, { note: e.target.value.trim() })
+                          }
+                        />
+                      </div>
+                      {isCarTemplate(t) && cars.some((c) => !c.archived || c.id === t.carId) && (
+                        <label className="block space-y-1">
+                          <span className="text-xs text-muted">Auto</span>
+                          <select
+                            aria-label={`Auto ${catName(t.categoryId)}`}
+                            className={inputClass}
+                            value={t.carId ?? ''}
+                            onChange={(e) =>
+                              void store.patch('templates', t.id, {
+                                carId: e.target.value === '' ? undefined : e.target.value,
+                              })
+                            }
+                          >
+                            <option value="">Kein bestimmtes Auto</option>
+                            {cars
+                              .filter((c) => !c.archived || c.id === t.carId)
+                              .map((c) => (
+                                <option key={c.id} value={c.id}>
+                                  {c.name}
+                                </option>
+                              ))}
+                          </select>
+                        </label>
+                      )}
+                      <div className="grid gap-2 sm:grid-cols-2">
+                        <label className="block space-y-1">
+                          <span className="text-xs text-muted">Intervall</span>
+                          <select
+                            aria-label={`Intervall ${catName(t.categoryId)}`}
+                            className={inputClass}
+                            value={String(detectInterval(t.months)?.every ?? 'eigene')}
+                            onChange={(e) => {
+                              if (e.target.value === 'eigene') return
+                              const every = Number(e.target.value) as IntervalEvery
+                              void save(t, (cur) => ({
+                                months: monthsForInterval(
+                                  every,
+                                  detectInterval(cur.months)?.startMonth ?? cur.months[0] ?? 1,
+                                ),
+                              }))
+                            }}
+                          >
+                            {INTERVALS.map((i) => (
+                              <option key={i.every} value={i.every}>
+                                {i.label}
+                              </option>
+                            ))}
+                            {detectInterval(t.months) === null && (
+                              <option value="eigene">Eigene Auswahl</option>
+                            )}
+                          </select>
+                        </label>
+                        {t.months.length < 12 && (
+                          <label className="flex items-center gap-2 self-end pb-2 text-sm">
+                            <input
+                              type="checkbox"
+                              checked={!t.noReserve}
+                              onChange={(e) => void save(t, { noReserve: !e.target.checked })}
+                            />
+                            In Rückstellung einrechnen
+                          </label>
+                        )}
+                      </div>
+                      <div
+                        className="flex flex-wrap gap-1"
+                        role="group"
+                        aria-label={`Monate ${catName(t.categoryId)}`}
+                      >
+                        {MONTH_NAMES.map((name, i) => {
+                          const on = t.months.includes(i + 1)
+                          return (
+                            <button
+                              key={name}
+                              type="button"
+                              aria-pressed={on}
+                              className={`rounded border px-2 py-1 text-xs ${on ? 'border-accent bg-accent/10' : 'border-border text-muted'}`}
+                              onClick={() => {
+                                // Auf dem aktuellen Stand umschalten, nicht auf dem Bildschirmzustand.
+                                void save(t, (cur) => {
+                                  const months = cur.months.includes(i + 1)
+                                    ? cur.months.filter((m) => m !== i + 1)
+                                    : [...cur.months, i + 1].sort((a, b) => a - b)
+                                  return months.length > 0 ? { months } : {}
+                                })
+                              }}
+                            >
+                              {name.slice(0, 3)}
+                            </button>
+                          )
+                        })}
+                      </div>
+                      {t.skipMonths && t.skipMonths.length > 0 && (
+                        <div className="flex flex-wrap items-center gap-1 text-xs text-muted">
+                          <span>Übersprungen:</span>
+                          {t.skipMonths.map((m) => (
+                            <button
+                              key={m}
+                              type="button"
+                              className="rounded border border-border px-2 py-1"
+                              aria-label={`Überspringen aufheben ${m} ${catName(t.categoryId)}`}
+                              onClick={() =>
+                                void save(t, (cur) => ({
+                                  skipMonths: (cur.skipMonths ?? []).filter((x) => x !== m),
+                                }))
+                              }
+                            >
+                              {MONTH_NAMES[Number(m.slice(5, 7)) - 1].slice(0, 3)} {m.slice(0, 4)} ×
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                      <div className="flex gap-3 text-sm">
+                        <button
+                          className="text-accent underline"
+                          onClick={() => void save(t, { active: !t.active })}
+                        >
+                          {t.active ? 'Pausieren' : 'Fortsetzen'}
+                        </button>
+                        <button
+                          className="text-red-600 underline dark:text-red-400"
+                          onClick={() =>
+                            window.confirm(
+                              'Vorlage löschen? Bereits gebuchte Monate bleiben bestehen.',
+                            ) && void store.remove('templates', t.id)
+                          }
+                        >
+                          Löschen
+                        </button>
+                      </div>
+                    </li>
                   )
                 })}
-              </div>
-              {t.skipMonths && t.skipMonths.length > 0 && (
-                <div className="flex flex-wrap items-center gap-1 text-xs text-muted">
-                  <span>Übersprungen:</span>
-                  {t.skipMonths.map((m) => (
-                    <button
-                      key={m}
-                      type="button"
-                      className="rounded border border-border px-2 py-1"
-                      aria-label={`Überspringen aufheben ${m} ${catName(t.categoryId)}`}
-                      onClick={() =>
-                        void save(t, (cur) => ({
-                          skipMonths: (cur.skipMonths ?? []).filter((x) => x !== m),
-                        }))
-                      }
-                    >
-                      {MONTH_NAMES[Number(m.slice(5, 7)) - 1].slice(0, 3)} {m.slice(0, 4)} ×
-                    </button>
-                  ))}
-                </div>
-              )}
-              <div className="flex gap-3 text-sm">
-                <button
-                  className="text-accent underline"
-                  onClick={() => void save(t, { active: !t.active })}
-                >
-                  {t.active ? 'Pausieren' : 'Fortsetzen'}
-                </button>
-                <button
-                  className="text-red-600 underline dark:text-red-400"
-                  onClick={() =>
-                    window.confirm('Vorlage löschen? Bereits gebuchte Monate bleiben bestehen.') &&
-                    void store.remove('templates', t.id)
-                  }
-                >
-                  Löschen
-                </button>
-              </div>
-            </li>
+              </ul>
+            </section>
           ))}
-        </ul>
+        </div>
       )}
     </details>
   )

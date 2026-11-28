@@ -1,6 +1,6 @@
 import { rescaleShared } from './split'
-import type { MonthKey } from './period'
-import type { Category, Template, Transaction } from './types'
+import { addMonths, type MonthKey } from './period'
+import type { Area, Category, Template, Transaction } from './types'
 
 const monthNumber = (m: MonthKey) => Number(m.slice(5, 7))
 
@@ -120,4 +120,49 @@ export function reservePlan(
     })
   }
   return { items, totalCents: items.reduce((s, i) => s + i.perMonthCents, 0) }
+}
+
+export interface TemplateGroup {
+  type: Category['type']
+  templates: Template[]
+}
+
+/**
+ * Vorlagen für die Liste (#181): getrennt nach Ausgaben, Einnahmen und Sparen, darin nach Bereich und Kategorie
+ * wie unter Budget › Monatsbudget. Unbekannte Kategorien stehen am Ende der Ausgaben; leere Gruppen entfallen.
+ */
+export function groupTemplates(
+  templates: Template[],
+  categories: Category[],
+  areas: Area[],
+): TemplateGroup[] {
+  const areaOrder = new Map(areas.map((a) => [a.id, a.order]))
+  const catOf = new Map(categories.map((c) => [c.id, c]))
+  const key = (t: Template): [number, number] => {
+    const c = catOf.get(t.categoryId)
+    if (!c) return [Infinity, Infinity]
+    return [areaOrder.get(c.areaId) ?? Infinity, c.order]
+  }
+  const sorted = [...templates].sort((a, b) => {
+    const [aa, ac] = key(a)
+    const [ba, bc] = key(b)
+    return aa === ba ? (ac === bc ? 0 : ac < bc ? -1 : 1) : aa < ba ? -1 : 1
+  })
+  const types: Category['type'][] = ['ausgabe', 'einnahme', 'sparen']
+  return types
+    .map((type) => ({
+      type,
+      templates: sorted.filter((t) => (catOf.get(t.categoryId)?.type ?? 'ausgabe') === type),
+    }))
+    .filter((g) => g.templates.length > 0)
+}
+
+/** Nächster Monat ab `from` (inklusive), in dem die Vorlage fällig ist; null, wenn pausiert oder ohne Monate. */
+export function nextDueMonth(t: Template, from: MonthKey): MonthKey | null {
+  if (!t.active || t.months.length === 0) return null
+  for (let i = 0; i < 36; i++) {
+    const m = addMonths(from, i)
+    if (t.months.includes(Number(m.slice(5, 7))) && !t.skipMonths?.includes(m)) return m
+  }
+  return null
 }
