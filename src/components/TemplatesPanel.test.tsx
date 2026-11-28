@@ -180,3 +180,55 @@ describe('TemplatesPanel', () => {
     expect(screen.queryByLabelText(/^Auto /)).not.toBeInTheDocument()
   })
 })
+
+describe('Zeilen der Vorlagen (#181)', () => {
+  it('AK-1/AK-2/AK-3/AK-4: Reihenfolge, Notiz, nächste Fälligkeit und Pause in der Kopfzeile', () => {
+    vi.useFakeTimers({ toFake: ['Date'] })
+    vi.setSystemTime(new Date('2026-11-15T12:00:00'))
+    const areas = [
+      { ...base, id: 'a2', name: 'Mobilität', order: 2, hidden: false },
+      { ...base, id: 'a1', name: 'Wohnen', order: 1, hidden: false },
+    ]
+    const cats = [
+      { ...category('c1', 'Miete', 'a1'), order: 0 },
+      { ...category('c2', 'Strom', 'a1'), order: 1 },
+      category('c3', 'Parkplatz', 'a2'),
+      { ...category('c4', 'ETF', 'a2'), type: 'sparen' as const },
+    ]
+    const t = (id: string, categoryId: string, extra: Partial<Template> = {}): Template => ({
+      ...base,
+      id,
+      categoryId,
+      amountCents: 1000,
+      note: '',
+      months: ALL,
+      active: true,
+      ...extra,
+    })
+    render(
+      <TemplatesPanel
+        templates={[
+          t('t4', 'c4'),
+          t('t3', 'c3', { note: 'Autoabstellplatz', active: false }),
+          t('t2', 'c2', { months: [3, 6, 9, 12], note: 'pro Quartal' }),
+          t('t1', 'c1'),
+        ]}
+        categories={cats}
+        areas={areas}
+        country="CH"
+      />,
+    )
+    vi.useRealTimers()
+    const kopf = screen
+      .getAllByTestId('vorlage-kopf')
+      .map((k) => k.textContent?.replace(/\s/g, ' '))
+    expect(kopf).toEqual([
+      'MieteCHF 10.00',
+      'Strom · pro QuartalCHF 10.00nächste: Dezember 2026',
+      'Parkplatz · AutoabstellplatzCHF 10.00pausiert',
+      'ETFCHF 10.00',
+    ])
+    expect(screen.getByRole('heading', { name: 'Sparen' })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: 'Ausgaben' })).toBeInTheDocument()
+  })
+})

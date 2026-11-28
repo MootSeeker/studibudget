@@ -14,7 +14,7 @@ import {
   useSettings,
 } from '../data/hooks'
 import { formatMoney, parseAmount } from '../domain/money'
-import { currentMonth, monthOf, monthRange } from '../domain/period'
+import { currentMonth, monthOf, monthRange, todayIso } from '../domain/period'
 import { goalBalance, neededPerMonth } from '../domain/goals'
 import { accountSeries, enteredBalance, wealthByMonth } from '../domain/wealth'
 import {
@@ -198,6 +198,8 @@ export function Konten() {
   const [goalTarget, setGoalTarget] = useState('')
   const [goalDate, setGoalDate] = useState('')
   const [goalStart, setGoalStart] = useState('')
+  // Zieldatum vor heute (#167): erst nach Bestätigung anlegen.
+  const [pastDateWarn, setPastDateWarn] = useState(false)
 
   if (!settings) return null
   const country = settings.country
@@ -490,6 +492,8 @@ export function Konten() {
             const target = parseAmount(goalTarget)
             const start = goalStart.trim() === '' ? 0 : parseAmount(goalStart)
             if (target === null || start === null) return setError('Bitte gib gültige Beträge ein.')
+            if (goalDate && goalDate < todayIso() && !pastDateWarn) return setPastDateWarn(true)
+            setPastDateWarn(false)
             run(async () => {
               await ops.addGoal({
                 name: goalName,
@@ -533,7 +537,10 @@ export function Konten() {
               className={inputClass}
               type="date"
               value={goalDate}
-              onChange={(e) => setGoalDate(e.target.value)}
+              onChange={(e) => {
+                setGoalDate(e.target.value)
+                setPastDateWarn(false)
+              }}
             />
           </label>
           <label className="block space-y-1">
@@ -545,9 +552,18 @@ export function Konten() {
               onChange={(e) => setGoalStart(e.target.value)}
             />
           </label>
+          {pastDateWarn && (
+            <p
+              role="alert"
+              className="rounded-md border border-warn/40 bg-warn/10 px-3 py-2 text-sm sm:col-span-2"
+            >
+              Das Zieldatum {goalDate.split('-').reverse().join('.')} liegt in der Vergangenheit.
+              Korrigiere es oder lege das Ziel trotzdem an.
+            </p>
+          )}
           <div className="sm:col-span-2">
             <button className={buttonClass} type="submit">
-              Sparziel anlegen
+              {pastDateWarn ? 'Trotzdem anlegen' : 'Sparziel anlegen'}
             </button>
           </div>
         </form>

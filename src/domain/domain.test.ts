@@ -10,6 +10,7 @@ import {
   monthRange,
   resolvePeriod,
   semesterOf,
+  todayIso,
 } from './period'
 import { balances } from './settlement'
 import { buildSharedEqual, buildSharedPartner, myShare, splitByPercent, splitEqual } from './split'
@@ -321,5 +322,11 @@ describe('goals', () => {
     expect(neededPerMonth(goal, 35000, '2026-10')).toBe(16250)
     expect(neededPerMonth(goal, 100000, '2026-10')).toBe(0)
     expect(neededPerMonth({ ...goal, targetDate: null }, 0, '2026-10')).toBeNull()
+  })
+})
+
+describe('todayIso (#167)', () => {
+  it('lokales Datum als YYYY-MM-DD', () => {
+    expect(todayIso(new Date(2027, 2, 5, 23, 30))).toBe('2027-03-05')
   })
 })
